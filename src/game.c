@@ -1,6 +1,6 @@
 #include <stdbool.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "game.h"
 
@@ -62,9 +62,9 @@ Rank get_rank(Card card) { return (Rank)((card - 1) % 13); }
 
 bool suits_differ_by_color(Suit suit1, Suit suit2) {
   return ((suit1 == SPADES || suit1 == CLUBS) &&
-             (suit2 == HEARTS || suit2 == DIAMONDS)) ||
+          (suit2 == HEARTS || suit2 == DIAMONDS)) ||
          ((suit1 == HEARTS || suit1 == DIAMONDS) &&
-             (suit2 == SPADES || suit2 == CLUBS));
+          (suit2 == SPADES || suit2 == CLUBS));
 }
 
 MoveResult freecell_move_to_foundation(Freecell *freecell, Card card) {
@@ -264,62 +264,45 @@ MoveResult freecell_move(Freecell *freecell, Move move) {
 }
 
 Game game_init(void) {
-    Game game = {
-        .freecell = freecell_init(),
-        .move_count = 0,
-        .history_head = NULL,
-        .current = NULL
-    };
-    return game;
+  Game game = {
+      .freecell = freecell_init(),
+      .move_count = 0,
+      .history = vec_init(sizeof(Move)),
+  };
+  return game;
 }
 
-MoveResult game_move(Game* game, Move move) {
-    MoveResult result = freecell_move(&game->freecell, move);
-    if (result == MOVE_SUCCESS) {
-        game->move_count++;
-
-        MoveList* new_move = malloc(sizeof(MoveList));
-        new_move->move = move;
-        new_move->prev = game->current;
-        new_move->next = NULL;
-
-        if (game->current) {
-            game->current->next = new_move;
-        } else {
-            game->history_head = new_move;
-        }
-        game->current = new_move;
-    }
-    return result;
+MoveResult game_move(Game *game, Move move) {
+  MoveResult result = freecell_move(&game->freecell, move);
+  if (result == MOVE_SUCCESS) {
+    game->move_count++;
+    vec_push_back(&game->history, &move);
+  }
+  return result;
 }
 
-void game_undo(Game* game) {
-    if (game->current == NULL) {
-        return;
-    }
+void game_undo(Game *game) {
+  if (game->history.size == 0) {
+    return;
+  }
 
-    MoveList* last_move = game->current;
-    game->current = last_move->prev;
+  Move last_move;
+  char *move = (char *)game->history.data +
+               (game->history.size - 1) * game->history.elem_size;
+  memcpy(&last_move, move, sizeof(Move));
 
-    Move reverse_move = last_move->move;
-    reverse_move.from = last_move->move.to;
-    reverse_move.to = last_move->move.from;
+  vec_pop_back(&game->history);
 
-    freecell_move(&game->freecell, reverse_move);
-    
-    if (last_move->prev) {
-        last_move->prev->next = NULL;
-    } else {
-        game->history_head = NULL;
-    }
-    
-    free(last_move);
+  Move reverse_move = {
+      .from = last_move.to,
+      .to = last_move.from,
+      .size = last_move.size,
+  };
+
+  // We dont check return value because we assume the game state is valid
+  freecell_move(&game->freecell, reverse_move);
+  game->move_count++; // Freecell rules allow undoing moves, so we increment the
+                      // move count
 }
 
-void game_free(Game* game) {
-    while (game->history_head != NULL) {
-        MoveList* temp = game->history_head;
-        game->history_head = game->history_head->next;
-        free(temp);
-    }
-}
+void game_free(Game *game) { vec_free(&game->history); }

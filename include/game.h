@@ -1,6 +1,8 @@
 #pragma once
 #include <stdint.h>
 
+#include "vector.h"
+
 typedef uint8_t Suit;
 enum {
   SPADES,
@@ -141,17 +143,10 @@ typedef struct {
   Cascade cascade[8];
 } Freecell;
 
-typedef struct MoveList_s {
-  Move move;
-  struct MoveList_s *prev;
-  struct MoveList_s *next;
-} MoveList;
-
 typedef struct {
   Freecell freecell;
   size_t move_count;
-  MoveList *history_head;
-  MoveList *current;
+  Vector history;
 } Game;
 
 Game game_init(void);
