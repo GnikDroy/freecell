@@ -31,6 +31,7 @@ function(glfw_build)
     set(GLFW_BUILD_DOCS      OFF CACHE INTERNAL "Build the GLFW documentation")
     set(GLFW_INSTALL         OFF CACHE INTERNAL "Generate installation target")
     set(USE_MSVC_RUNTIME_LIBRARY_DLL OFF CACHE INTERNAL "Use MSVC Runtime")
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded" CACHE STRING "" FORCE)
     FetchContent_Declare(
             glfw
             GIT_REPOSITORY https://github.com/glfw/glfw
@@ -84,6 +85,8 @@ project(freecell C)
 
 # Main exe
 add_executable(freecell WIN32 src/main.c src/game.c src/stb_image.c src/debug.c)
+set_property(TARGET freecell PROPERTY MSVC_RUNTIME_LIBRARY MultiThreadedDebug)
+target_link_options(freecell PRIVATE -static)
 target_link_libraries(freecell OpenGL::GL stb::stb glfw glad User32.lib)
 target_include_directories(freecell PRIVATE ${PROJECT_SOURCE_DIR}/include)
 # Tests
