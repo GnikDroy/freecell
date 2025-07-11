@@ -1,6 +1,7 @@
 #pragma once
 
 #include "callbacks.h"
+#include "debug.h"
 #include "game.h"
 #include "vector.h"
 #include "world.h"
@@ -15,7 +16,7 @@ typedef struct {
   float uv_top, uv_bottom, uv_left, uv_right;
   float x, y;
   float width, height;
-  float r, g, b;
+  float r, g, b, a;
 } Sprite;
 
 typedef struct {
@@ -38,6 +39,7 @@ DeckSprite generate_deck_sprites(void) {
     deck_sprite.card[index].r = 1.0;
     deck_sprite.card[index].g = 1.0;
     deck_sprite.card[index].b = 1.0;
+    deck_sprite.card[index].a = 1.0;
 
     deck_sprite.card[index].width = (float)SINGLE_CARD_WIDTH * SCALE;
     deck_sprite.card[index].height = (float)SINGLE_CARD_HEIGHT * SCALE;
@@ -89,38 +91,26 @@ typedef struct {
   DeckSprite deck_sprites;
 } Renderer;
 
-const char *vertexShaderSource =
-    "#version 330 core \n"
-    "layout (location = 0) in vec3 aPos;"
-    "layout (location = 1) in vec3 aColor;"
-    "layout (location = 2) in vec2 tex_coords_in;"
-    "out vec3 outColor;"
-    "out vec2 tex_coords;"
-    "uniform mat4 projection;"
-    "void main() {"
-    "   gl_Position = projection * vec4(aPos.x, aPos.y, aPos.z, 1.0);"
-    "   tex_coords = tex_coords_in;"
-    "   outColor = aColor;"
-    "}";
-const char *fragmentShaderSource =
-    "#version 330 core \n"
-    "out vec4 FragColor;"
-    "in vec3 outColor;"
-    "in vec2 tex_coords;"
-    "uniform sampler2D spritesheet;"
-    "void main()"
-    "{"
-    "    vec4 texColor = texture(spritesheet, tex_coords);"
-    "    FragColor = texColor * vec4(outColor, 1.0);"
-    "}";
+const char vertexShaderSource[] = {
+#embed "shaders/main_vs.glsl"
+    , '\0'};
+
+const char fragmentShaderSource[] = {
+#embed "shaders/main_fs.glsl"
+    , '\0'};
 
 Renderer renderer_init(GLFWwindow *window, World *world) {
+  glEnable(GL_DEBUG_OUTPUT);
+  glDebugMessageCallback(openglDebugCallback, NULL);
+
   uint32_t vertexShader = glCreateShader(GL_VERTEX_SHADER);
-  glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+  const char *vertexShaderSourcePtr = {vertexShaderSource};
+  glShaderSource(vertexShader, 1, &vertexShaderSourcePtr, NULL);
   glCompileShader(vertexShader);
 
   uint32_t fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-  glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+  const char *fragmentShaderSourcePtr = {fragmentShaderSource};
+  glShaderSource(fragmentShader, 1, &fragmentShaderSourcePtr, NULL);
   glCompileShader(fragmentShader);
 
   uint32_t shaderProgram = glCreateProgram();
@@ -130,6 +120,10 @@ Renderer renderer_init(GLFWwindow *window, World *world) {
 
   glDeleteShader(vertexShader);
   glDeleteShader(fragmentShader);
+
+  // Enable blending
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   uint32_t VAO;
   glGenVertexArrays(1, &VAO);
@@ -143,15 +137,15 @@ Renderer renderer_init(GLFWwindow *window, World *world) {
   glBindVertexArray(VAO);
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void *)0);
   glEnableVertexAttribArray(0);
 
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
+  glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 9 * sizeof(float),
                         (void *)(3 * sizeof(float)));
   glEnableVertexAttribArray(1);
 
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
-                        (void *)(6 * sizeof(float)));
+  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(float),
+                        (void *)(7 * sizeof(float)));
   glEnableVertexAttribArray(2);
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
@@ -197,7 +191,7 @@ void renderer_clear(Renderer renderer) {
 #pragma pack(push, 1)
 typedef struct {
   float x, y, z;
-  float r, g, b;
+  float r, g, b, a;
   float u, v;
 } Vertex;
 #pragma pack(pop)
@@ -217,9 +211,6 @@ void mat4_ortho(float left, float right, float bottom, float top, float near,
 void renderer_render_sprite(Sprite sprite, Vector *vertices_vec,
                             Vector *indices_vec) {
   Vertex vertices[4] = {0};
-  for (int i = 0; i < 4; i++) {
-    vertices[i].r = vertices[i].g = vertices[i].b = 1.0f;
-  }
 
   float x = sprite.x;
   float y = sprite.y;
@@ -247,6 +238,7 @@ void renderer_render_sprite(Sprite sprite, Vector *vertices_vec,
     vertices[i].r = sprite.r;
     vertices[i].g = sprite.g;
     vertices[i].b = sprite.b;
+    vertices[i].a = sprite.a;
   }
 
   vertices[0].u = sprite.uv_right;
@@ -306,9 +298,7 @@ void renderer_draw_cards(Renderer renderer, Game *game) {
     Sprite sprite = renderer.deck_sprites.card[card];
     if (card == NONE) {
       sprite = renderer.deck_sprites.card[ACE_SPADES + 13 * i];
-      sprite.r = 0.5f;
-      sprite.g = 0.5f;
-      sprite.b = 0.5f;
+      sprite.a = 0.5f;
     }
     sprite.x = (sprite.width + GAP) * i + sprite.width / 2.f + MARGIN_X;
     sprite.x = window_width - sprite.x;

@@ -13,7 +13,7 @@ endif()
 
 # Only do these if this is the main project, and not if it is included through add_subdirectory
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
-    set(CMAKE_C_STANDARD 99)
+    set(CMAKE_C_STANDARD 23)
     set(FETCHCONTENT_QUIET FALSE)
 
     # Let's nicely support folders in IDEs
@@ -83,22 +83,9 @@ find_package(OpenGL REQUIRED)
 project(freecell C)
 
 # Main exe
-add_executable(freecell WIN32 src/main.c src/game.c src/stb_image.c)
+add_executable(freecell WIN32 src/main.c src/game.c src/stb_image.c src/debug.c)
 target_link_libraries(freecell OpenGL::GL stb::stb glfw glad User32.lib)
 target_include_directories(freecell PRIVATE ${PROJECT_SOURCE_DIR}/include)
-target_compile_options(freecell PRIVATE /MT)
-
-
-target_link_options(
-        freecell PRIVATE
-        /SUBSYSTEM:Windows
-)
-
-add_custom_command(TARGET freecell POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${CMAKE_CURRENT_SOURCE_DIR}/assets/ $<TARGET_FILE_DIR:freecell>/assets/
-    COMMENT "COPY assests directory to build"
-)
 # Tests
 
 add_executable(tests src/test.c)
@@ -106,6 +93,4 @@ target_link_libraries(tests User32.lib)
 target_include_directories(tests PRIVATE ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src)
 
 
-target_link_options(
-        tests PRIVATE
-)
+target_link_options(tests PRIVATE)
