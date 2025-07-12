@@ -3,6 +3,7 @@
 #include <time.h>
 
 #include "callbacks.h"
+#include "constants.h"
 #include "renderer.h"
 #include "window.h"
 #include "world.h"
@@ -25,11 +26,6 @@ void gameloop(GLFWwindow *window) {
   double start_time = glfwGetTime();
 
   while (running) {
-    int window_width, window_height;
-    glfwGetWindowSize(window, &window_width, &window_height);
-    mat4_ortho(0.0f, (float)window_width, (float)window_height, 0.0f, -1.0f,
-               1.0f, world.projection);
-
     glfwSwapBuffers(window);
     glfwPollEvents();
 
@@ -48,20 +44,24 @@ void gameloop(GLFWwindow *window) {
 
 int main(void) {
   srand((uint32_t)time(NULL));
+
   Game game = game_init();
   game_free(&game);
 
-  GLFWwindow *window = window_init((WindowConfig){.width = 1280,
-                                                  .height = 800,
-                                                  .min_width = 1100,
-                                                  .min_height = 600,
-                                                  .max_width = GLFW_DONT_CARE,
-                                                  .max_height = GLFW_DONT_CARE,
-                                                  .title = "Freecell",
-                                                  .vsync = true,
-                                                  .on_close = on_close,
-                                                  .on_window_resize = on_resize,
-                                                  .on_mouse_click = NULL});
+  GLFWwindow *window = window_init((WindowConfig){
+      .width = VIRTUAL_WIDTH,
+      .height = VIRTUAL_HEIGHT,
+      .min_width = GAME_MIN_WIDTH,
+      .min_height = GAME_MIN_HEIGHT,
+      .max_width = GLFW_DONT_CARE,
+      .max_height = GLFW_DONT_CARE,
+      .title = GAME_TITLE,
+      .vsync = true,
+      .on_close = on_close,
+      .on_window_resize = on_resize,
+      .on_mouse_click = NULL,
+  });
+
   gameloop(window);
 
   window_free(window);

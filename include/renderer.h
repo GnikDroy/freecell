@@ -1,6 +1,7 @@
 #pragma once
 
 #include "callbacks.h"
+#include "constants.h"
 #include "debug.h"
 #include "game.h"
 #include "vector.h"
@@ -24,7 +25,7 @@ typedef struct {
 } DeckSprite;
 
 DeckSprite generate_deck_sprites(void) {
-  const float SCALE = 1.3f;
+  const float SCALE = 1.0f;
 
   DeckSprite deck_sprite = {0};
   const int ROW = 4;
@@ -54,8 +55,11 @@ DeckSprite generate_deck_sprites(void) {
       deck_sprite.card[index].uv_top -
       (float)SINGLE_CARD_HEIGHT / (float)TOTAL_HEIGHT;
 
-  deck_sprite.card[index].uv_left = 0;
+  deck_sprite.card[index].uv_left =
+      (SINGLE_CARD_WIDTH + CARDSHEET_OFFSET_X) / (float)TOTAL_WIDTH;
+
   deck_sprite.card[index].uv_right =
+      deck_sprite.card[index].uv_left +
       (float)SINGLE_CARD_WIDTH / (float)TOTAL_WIDTH;
 
   for (int i = 0; i < COL; i++) {
@@ -91,25 +95,17 @@ typedef struct {
   DeckSprite deck_sprites;
 } Renderer;
 
-const char vertexShaderSource[] = {
-#embed "shaders/main_vs.glsl"
-    , '\0'};
-
-const char fragmentShaderSource[] = {
-#embed "shaders/main_fs.glsl"
-    , '\0'};
-
 Renderer renderer_init(GLFWwindow *window, World *world) {
   glEnable(GL_DEBUG_OUTPUT);
   glDebugMessageCallback(openglDebugCallback, NULL);
 
   uint32_t vertexShader = glCreateShader(GL_VERTEX_SHADER);
-  const char *vertexShaderSourcePtr = {vertexShaderSource};
+  const char *vertexShaderSourcePtr = {MAIN_VERTEX_SHADER_SOURCE};
   glShaderSource(vertexShader, 1, &vertexShaderSourcePtr, NULL);
   glCompileShader(vertexShader);
 
   uint32_t fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-  const char *fragmentShaderSourcePtr = {fragmentShaderSource};
+  const char *fragmentShaderSourcePtr = {MAIN_FRAGMENT_SHADER_SOURCE};
   glShaderSource(fragmentShader, 1, &fragmentShaderSourcePtr, NULL);
   glCompileShader(fragmentShader);
 
@@ -184,7 +180,7 @@ void renderer_free(Renderer *renderer) {
 
 void renderer_clear(Renderer renderer) {
   (void)renderer;
-  glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+  glClearColor(0.2f, 0.4f, 0.2f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT);
 }
 
@@ -196,18 +192,6 @@ typedef struct {
 } Vertex;
 #pragma pack(pop)
 
-void mat4_ortho(float left, float right, float bottom, float top, float near,
-                float far, float *out) {
-  memset(out, 0, sizeof(float) * 16);
-  out[0] = 2.0f / (right - left);
-  out[5] = 2.0f / (top - bottom);
-  out[10] = -2.0f / (far - near);
-  out[12] = -(right + left) / (right - left);
-  out[13] = -(top + bottom) / (top - bottom);
-  out[14] = -(far + near) / (far - near);
-  out[15] = 1.0f;
-}
-
 void renderer_render_sprite(Sprite sprite, Vector *vertices_vec,
                             Vector *indices_vec) {
   Vertex vertices[4] = {0};
@@ -215,8 +199,8 @@ void renderer_render_sprite(Sprite sprite, Vector *vertices_vec,
   float x = sprite.x;
   float y = sprite.y;
 
-  float halfW = (float)sprite.width / 2.f;
-  float halfH = (float)sprite.height / 2.f;
+  float halfW = sprite.width / 2.f;
+  float halfH = sprite.height / 2.f;
 
   vertices[0].x = x + halfW;
   vertices[0].y = y - halfH;
@@ -272,9 +256,6 @@ void renderer_draw_cards(Renderer renderer, Game *game) {
   Vector vertices = vec_init(sizeof(Vertex));
   Vector indices = vec_init(sizeof(uint32_t));
 
-  int window_width, window_height;
-  glfwGetWindowSize(renderer.window, &window_width, &window_height);
-
   // render free cells
   for (int i = 0; i < 4; i++) {
     const int MARGIN_Y = 30;
@@ -282,7 +263,9 @@ void renderer_draw_cards(Renderer renderer, Game *game) {
     const int GAP = 15;
     Card card = game->freecell.reserve[i];
     Sprite sprite = renderer.deck_sprites.card[card];
-
+    if (card == NONE) {
+      sprite.a = 0.5f;
+    }
     sprite.x = (sprite.width + GAP) * i + sprite.width / 2.f + MARGIN_X;
     sprite.y = sprite.height / 2.f + MARGIN_Y;
 
@@ -301,7 +284,7 @@ void renderer_draw_cards(Renderer renderer, Game *game) {
       sprite.a = 0.5f;
     }
     sprite.x = (sprite.width + GAP) * i + sprite.width / 2.f + MARGIN_X;
-    sprite.x = window_width - sprite.x;
+    sprite.x = VIRTUAL_WIDTH - sprite.x;
     sprite.y = sprite.height / 2.f + MARGIN_Y;
 
     renderer_render_sprite(sprite, &vertices, &indices);
@@ -313,18 +296,19 @@ void renderer_draw_cards(Renderer renderer, Game *game) {
   const int GAP = 15;
   const float total_width =
       cascade_count * sample.width + (cascade_count - 1) * GAP;
-  float start_x = (window_width - total_width) / 2.0f;
+  float start_x = (VIRTUAL_WIDTH - total_width) / 2.0f;
 
   for (int i = 0; i < cascade_count; i++) {
     const int MARGIN_Y = SINGLE_CARD_HEIGHT * 2;
     const int MARGIN_X = 0;
-    const int OVERLAP = 25;
+    const int OVERLAP = 20;
 
     Cascade *cascade = &game->freecell.cascade[i];
     for (int j = 0; j < cascade->size; j++) {
       Card card = cascade->cards[j];
 
       Sprite sprite = renderer.deck_sprites.card[card];
+
       sprite.x =
           start_x + i * (sprite.width + GAP) + sprite.width / 2.f + MARGIN_X;
       sprite.y = sprite.height / 2.f + MARGIN_Y + OVERLAP * j;
