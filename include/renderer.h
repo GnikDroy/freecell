@@ -29,5 +29,11 @@ void renderer_free(Renderer *renderer);
 
 void renderer_clear(Renderer renderer);
 
+uint32_t renderer_create_texture_from_image(Image *image);
+
+void renderer_set_shader(uint32_t shader);
+
+void renderer_bind_texture(uint32_t slot, GLenum target, uint32_t texture);
+
 void renderer_draw_mesh(Renderer renderer, Vector *vertices, Vector *indices,
                         GLenum primitive);

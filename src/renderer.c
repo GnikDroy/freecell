@@ -1,6 +1,7 @@
 #include "renderer.h"
 #include "constants.h"
 #include "debug.h"
+#include "log.h"
 #include "shader.h"
 
 Renderer renderer_init(GLFWwindow *window, World *world) {
@@ -50,17 +51,8 @@ Renderer renderer_init(GLFWwindow *window, World *world) {
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
   glBindVertexArray(0);
 
-  uint32_t textures;
-  Image *spritesheet = &world->assets.spritesheet;
-  glGenTextures(1, &textures);
-  glBindTexture(GL_TEXTURE_2D, textures);
-  glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, spritesheet->width,
-                 spritesheet->height);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, spritesheet->width,
-                  spritesheet->height, GL_RGBA, GL_UNSIGNED_BYTE,
-                  spritesheet->data);
+  uint32_t texture =
+      renderer_create_texture_from_image(&world->assets.spritesheet);
 
   Renderer renderer = {
       .window = window,
@@ -68,9 +60,39 @@ Renderer renderer_init(GLFWwindow *window, World *world) {
       .VBO = VBO,
       .VAO = VAO,
       .EBO = EBO,
-      .textures = textures,
+      .textures = texture,
   };
   return renderer;
+}
+
+uint32_t renderer_create_texture_from_image(Image *image) {
+  uint32_t texture;
+
+  GLenum internalFormat = GL_RGBA8;
+  GLenum format = GL_RGBA;
+
+  if (image->channels == 1) {
+    internalFormat = GL_R8;
+    format = GL_RED;
+  } else if (image->channels == 3) {
+    internalFormat = GL_RGB8;
+    format = GL_RGB;
+  } else if (image->channels == 4) {
+    internalFormat = GL_RGBA8;
+    format = GL_RGBA;
+  } else {
+    log_error("Unsupported image channel count: %d", image->channels);
+    exit(EXIT_FAILURE);
+  }
+
+  glGenTextures(1, &texture);
+  glBindTexture(GL_TEXTURE_2D, texture);
+  glTexStorage2D(GL_TEXTURE_2D, 1, internalFormat, image->width, image->height);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image->width, image->height, format,
+                  GL_UNSIGNED_BYTE, image->data);
+  return texture;
 }
 
 void renderer_free(Renderer *renderer) {
@@ -85,6 +107,13 @@ void renderer_clear(Renderer renderer) {
   (void)renderer;
   glClearColor(0.2f, 0.4f, 0.2f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT);
+}
+
+void renderer_set_shader(uint32_t shader) { glUseProgram(shader); }
+
+void renderer_bind_texture(uint32_t slot, GLenum target, uint32_t texture) {
+  glActiveTexture(GL_TEXTURE0 + slot);
+  glBindTexture(target, texture);
 }
 
 void renderer_draw_mesh(Renderer renderer, Vector *vertices, Vector *indices,

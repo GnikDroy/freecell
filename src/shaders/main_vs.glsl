@@ -8,9 +8,10 @@ out vec4 outColor;
 out vec2 tex_coords;
 
 uniform mat4 projection;
+uniform mat4 view;
 
 void main() {
-   gl_Position = projection * vec4(aPos.x, aPos.y, aPos.z, 1.0);
+   gl_Position = projection * view * vec4(aPos.x, aPos.y, aPos.z, 1.0);
    tex_coords = tex_coords_in;
    outColor = aColor;
 }

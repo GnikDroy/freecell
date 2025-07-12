@@ -1,5 +1,7 @@
 #include "render_system.h"
 #include "constants.h"
+#include "renderer.h"
+#include "shader.h"
 
 void renderer_render_sprite(Sprite sprite, Vector *vertices_vec,
                             Vector *indices_vec) {
@@ -136,13 +138,13 @@ static void renderer_draw_cards(Renderer renderer, World *world) {
 }
 
 void renderer_draw(Renderer renderer, World *world) {
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, renderer.textures);
+  renderer_bind_texture(0, GL_TEXTURE_2D, renderer.textures);
 
-  glUseProgram(renderer.shader);
-  glUniform1i(glGetUniformLocation(renderer.shader, "spritesheet"), 0);
-  glUniformMatrix4fv(glGetUniformLocation(renderer.shader, "projection"), 1,
-                     GL_FALSE, world->projection);
+  renderer_set_shader(renderer.shader);
+  shader_set_mat4(renderer.shader, "view", world->camera.view);
+  shader_set_mat4(renderer.shader, "projection", world->camera.projection);
+
+  shader_set_int(renderer.shader, "spritesheet", 0);
 
   renderer_draw_cards(renderer, world);
 }

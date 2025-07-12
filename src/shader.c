@@ -50,3 +50,11 @@ uint32_t shader_compile(const char *vertex_shader_source,
 
   return shaderProgram;
 }
+
+void shader_set_int(uint32_t shader, const char *name, int value) {
+  glUniform1i(glGetUniformLocation(shader, name), value);
+}
+
+void shader_set_mat4(uint32_t shader, const char *name, const float *value) {
+  glUniformMatrix4fv(glGetUniformLocation(shader, name), 1, GL_FALSE, value);
+}

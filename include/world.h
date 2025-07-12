@@ -2,11 +2,12 @@
 #include <stdint.h>
 
 #include "assets.h"
+#include "camera.h"
 #include "game.h"
 
 typedef struct {
   Game game;
-  float projection[16];
+  Camera camera;
   Assets assets;
 } World;
 
