@@ -1,0 +1,149 @@
+#include "render_system.h"
+#include "constants.h"
+
+void renderer_render_sprite(Sprite sprite, Vector *vertices_vec,
+                            Vector *indices_vec) {
+  Vertex vertices[4] = {0};
+
+  float x = sprite.x;
+  float y = sprite.y;
+
+  float halfW = sprite.width / 2.f;
+  float halfH = sprite.height / 2.f;
+
+  vertices[0].x = x + halfW;
+  vertices[0].y = y - halfH;
+  vertices[0].z = 0.0f;
+
+  vertices[1].x = x + halfW;
+  vertices[1].y = y + halfH;
+  vertices[1].z = 0.0f;
+
+  vertices[2].x = x - halfW;
+  vertices[2].y = y + halfH;
+  vertices[2].z = 0.0f;
+
+  vertices[3].x = x - halfW;
+  vertices[3].y = y - halfH;
+  vertices[3].z = 0.0f;
+
+  for (size_t i = 0; i < sizeof(vertices) / sizeof(vertices[0]); i++) {
+    vertices[i].r = sprite.r;
+    vertices[i].g = sprite.g;
+    vertices[i].b = sprite.b;
+    vertices[i].a = sprite.a;
+  }
+
+  vertices[0].u = sprite.uv_right;
+  vertices[0].v = sprite.uv_top;
+
+  vertices[1].u = sprite.uv_right;
+  vertices[1].v = sprite.uv_bottom;
+
+  vertices[2].u = sprite.uv_left;
+  vertices[2].v = sprite.uv_bottom;
+
+  vertices[3].u = sprite.uv_left;
+  vertices[3].v = sprite.uv_top;
+
+  uint32_t base_index = (uint32_t)vertices_vec->size;
+  uint32_t indices[6] = {
+      base_index + 0, base_index + 1, base_index + 3,
+      base_index + 1, base_index + 2, base_index + 3,
+  };
+
+  for (size_t i = 0; i < sizeof(vertices) / sizeof(vertices[0]); i++) {
+    vec_push_back(vertices_vec, &vertices[i]);
+  }
+
+  for (size_t i = 0; i < sizeof(indices) / sizeof(indices[0]); i++) {
+    vec_push_back(indices_vec, &indices[i]);
+  }
+}
+
+static void renderer_draw_cards(Renderer renderer, World *world) {
+  Vector vertices = vec_init(sizeof(Vertex));
+  Vector indices = vec_init(sizeof(uint32_t));
+
+  Sprite *deck = world->assets.deck;
+  Freecell *freecell = &world->game.freecell;
+
+  // render free cells
+  for (int i = 0; i < 4; i++) {
+    const int MARGIN_Y = 30;
+    const int MARGIN_X = 30;
+    const int GAP = 15;
+    Card card = freecell->reserve[i];
+    Sprite sprite = deck[card];
+    if (card == NONE) {
+      sprite.a = 0.5f;
+    }
+    sprite.x = (sprite.width + GAP) * i + sprite.width / 2.f + MARGIN_X;
+    sprite.y = sprite.height / 2.f + MARGIN_Y;
+
+    renderer_render_sprite(sprite, &vertices, &indices);
+  }
+
+  // render foundation
+  for (int i = 0; i < 4; i++) {
+    const int MARGIN_Y = 30;
+    const int MARGIN_X = 30;
+    const int GAP = 15;
+    Card card = freecell->foundation[i];
+    Sprite sprite = deck[card];
+    if (card == NONE) {
+      sprite = deck[ACE_SPADES + 13 * i];
+      sprite.a = 0.5f;
+    }
+    sprite.x = (sprite.width + GAP) * i + sprite.width / 2.f + MARGIN_X;
+    sprite.x = VIRTUAL_WIDTH - sprite.x;
+    sprite.y = sprite.height / 2.f + MARGIN_Y;
+
+    renderer_render_sprite(sprite, &vertices, &indices);
+  }
+
+  // render cascades centered
+  Sprite sample = deck[NONE];
+  const int cascade_count = 8;
+  const int GAP = 15;
+  const float total_width =
+      cascade_count * sample.width + (cascade_count - 1) * GAP;
+  float start_x = (VIRTUAL_WIDTH - total_width) / 2.0f;
+
+  for (int i = 0; i < cascade_count; i++) {
+    const int MARGIN_Y = sample.height * 2;
+    const int MARGIN_X = 0;
+    const int OVERLAP = 20;
+
+    Cascade *cascade = &freecell->cascade[i];
+    for (int j = 0; j < cascade->size; j++) {
+      Card card = cascade->cards[j];
+
+      Sprite sprite = deck[card];
+
+      sprite.x =
+          start_x + i * (sprite.width + GAP) + sprite.width / 2.f + MARGIN_X;
+      sprite.y = sprite.height / 2.f + MARGIN_Y + OVERLAP * j;
+
+      renderer_render_sprite(sprite, &vertices, &indices);
+    }
+  }
+
+  renderer_draw_mesh(renderer, &vertices, &indices, GL_TRIANGLES);
+
+  vec_free(&vertices);
+  vec_free(&indices);
+}
+
+void renderer_draw(Renderer renderer, World *world) {
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, renderer.textures);
+
+  glUseProgram(renderer.shader);
+  glUniform1i(glGetUniformLocation(renderer.shader, "spritesheet"), 0);
+  glUniformMatrix4fv(glGetUniformLocation(renderer.shader, "projection"), 1,
+                     GL_FALSE, world->projection);
+
+  renderer_draw_cards(renderer, world);
+}
+

@@ -5,6 +5,7 @@
 #include "callbacks.h"
 #include "constants.h"
 #include "renderer.h"
+#include "render_system.h"
 #include "window.h"
 #include "world.h"
 

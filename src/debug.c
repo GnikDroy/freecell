@@ -1,8 +1,7 @@
 #include "debug.h"
-#include <glad/glad.h>
 
 #ifdef DEBUG
- #include <stdio.h>
+#include "log.h"
 void APIENTRY openglDebugCallback(GLenum source, GLenum type, GLuint id,
                                   GLenum severity, GLsizei length,
                                   const GLchar *message,
@@ -13,12 +12,13 @@ void APIENTRY openglDebugCallback(GLenum source, GLenum type, GLuint id,
   if (severity == GL_DEBUG_SEVERITY_NOTIFICATION)
     return;
 
-  fprintf(stderr, "OpenGL Debug Message:\n");
-  fprintf(stderr, "Source: 0x%x\n", source);
-  fprintf(stderr, "Type: 0x%x\n", type);
-  fprintf(stderr, "ID: %u\n", id);
-  fprintf(stderr, "Severity: 0x%x\n", severity);
-  fprintf(stderr, "Message: %s\n\n", message);
+  log_error("OpenGL Debug Message:\n"
+            "Source: 0x%x\n"
+            "Type: 0x%x\n"
+            "ID: %u\n"
+            "Severity: 0x%x\n"
+            "Message: %s\n\n",
+            source, type, id, severity, message);
 }
 #else
 void APIENTRY openglDebugCallback(GLenum source, GLenum type, GLuint id,

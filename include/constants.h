@@ -1,17 +1,12 @@
 #pragma once
 
-const char GAME_TITLE[] = "Freecell";
-const int GAME_MIN_WIDTH = 800;
-const int GAME_MIN_HEIGHT = 600;
+extern const char GAME_TITLE[];
+extern const int GAME_MIN_WIDTH;
+extern const int GAME_MIN_HEIGHT;
 
-const int VIRTUAL_WIDTH = 1100;
-const int VIRTUAL_HEIGHT = 800;
+extern const int VIRTUAL_WIDTH;
+extern const int VIRTUAL_HEIGHT;
 
-const char MAIN_VERTEX_SHADER_SOURCE[] = {
-#embed "shaders/main_vs.glsl"
-    , '\0'};
+extern const char MAIN_VERTEX_SHADER_SOURCE[];
 
-const char MAIN_FRAGMENT_SHADER_SOURCE[] = {
-#embed "shaders/main_fs.glsl"
-    , '\0'};
-
+extern const char MAIN_FRAGMENT_SHADER_SOURCE[];

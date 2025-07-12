@@ -93,6 +93,10 @@ enum {
   KING_CLUBS,
 };
 
+inline Suit get_suit(Card card) { return (Suit)((card - 1) / 13); }
+
+inline Rank get_rank(Card card) { return (Rank)((card - 1) % 13); }
+
 typedef struct {
   uint8_t size;
 

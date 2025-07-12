@@ -85,11 +85,20 @@ add_executable(
     WIN32 
     src/main.c
 
+    src/assets.c
+    src/card_sprites.c
+    src/constants.c
     src/debug.c
     src/game.c
     src/image.c
+    src/renderer.c
     src/utils.c
     src/vector.c
+    src/window.c
+    src/world.c
+    src/log.c
+    src/shader.c
+    src/render_system.c
 
     src/stb_image.c
 )
@@ -97,11 +106,24 @@ set_property(TARGET freecell PROPERTY MSVC_RUNTIME_LIBRARY MultiThreadedDebug)
 target_link_options(freecell PRIVATE -static)
 target_link_libraries(freecell OpenGL::GL stb::stb glfw glad User32.lib)
 target_include_directories(freecell PRIVATE ${PROJECT_SOURCE_DIR}/include)
+
 # Tests
+add_executable(
+    tests 
+    src/test.c 
 
-add_executable(tests src/test.c src/vector.c)
-target_link_libraries(tests User32.lib)
-target_include_directories(tests PRIVATE ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src)
+    src/vector.c 
+    src/world.c
+    src/assets.c
+    src/constants.c
+    src/image.c
+    src/card_sprites.c
+    src/utils.c
 
+    src/stb_image.c
+)
+
+target_link_libraries(tests stb::stb User32.lib)
+target_include_directories(tests PRIVATE ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src )
 
 target_link_options(tests PRIVATE)

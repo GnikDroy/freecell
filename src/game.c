@@ -15,12 +15,12 @@ static void shuffle_deck(Deck deck) {
   }
 }
 
-uint8_t freecell_push_cascade(Cascade *cascade, Card card) {
+static uint8_t freecell_push_cascade(Cascade *cascade, Card card) {
   cascade->cards[cascade->size++] = card;
   return cascade->size;
 }
 
-Card freecell_pop_cascade(Cascade *cascade) {
+static Card freecell_pop_cascade(Cascade *cascade) {
   if (cascade->size == 0) {
     return NONE;
   }
@@ -56,18 +56,14 @@ Freecell freecell_init(void) {
   return game;
 }
 
-Suit get_suit(Card card) { return (Suit)((card - 1) / 13); }
-
-Rank get_rank(Card card) { return (Rank)((card - 1) % 13); }
-
-bool suits_differ_by_color(Suit suit1, Suit suit2) {
+static bool suits_differ_by_color(Suit suit1, Suit suit2) {
   return ((suit1 == SPADES || suit1 == CLUBS) &&
           (suit2 == HEARTS || suit2 == DIAMONDS)) ||
          ((suit1 == HEARTS || suit1 == DIAMONDS) &&
           (suit2 == SPADES || suit2 == CLUBS));
 }
 
-MoveResult freecell_move_to_foundation(Freecell *freecell, Card card) {
+static MoveResult freecell_move_to_foundation(Freecell *freecell, Card card) {
   Suit card_suit = get_suit(card);
   Rank card_rank = get_rank(card);
 
@@ -86,8 +82,8 @@ MoveResult freecell_move_to_foundation(Freecell *freecell, Card card) {
   return MOVE_ERROR;
 }
 
-MoveResult freecell_move_to_reserve(Freecell *freecell, Card card,
-                                    SelectionLocation dest) {
+static MoveResult freecell_move_to_reserve(Freecell *freecell, Card card,
+                                           SelectionLocation dest) {
   if (card == NONE) {
     return MOVE_ERROR;
   }
@@ -100,8 +96,8 @@ MoveResult freecell_move_to_reserve(Freecell *freecell, Card card,
   return MOVE_SUCCESS;
 }
 
-MoveResult freecell_move_to_cascade_single(Freecell *freecell, Card card,
-                                           SelectionLocation dest) {
+static MoveResult freecell_move_to_cascade_single(Freecell *freecell, Card card,
+                                                  SelectionLocation dest) {
   Cascade *cascade = &freecell->cascade[dest - CASCADE_1];
 
   if (cascade->size == 0) {
@@ -127,7 +123,7 @@ MoveResult freecell_move_to_cascade_single(Freecell *freecell, Card card,
   }
 }
 
-MoveResult freecell_move_to_cascade(Freecell *freecell, Move move) {
+static MoveResult freecell_move_to_cascade(Freecell *freecell, Move move) {
   uint8_t empty_cascades = 0;
   for (int i = 0; i < 8; i++) {
     if (freecell->cascade[i].size == 0) {
@@ -190,7 +186,7 @@ MoveResult freecell_move_to_cascade(Freecell *freecell, Move move) {
   }
 }
 
-MoveResult freecell_move(Freecell *freecell, Move move) {
+static MoveResult freecell_move(Freecell *freecell, Move move) {
   if (move.from == move.to || move.size <= 0) {
     return MOVE_ERROR;
   }
