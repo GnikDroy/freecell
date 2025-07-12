@@ -5,8 +5,8 @@ Rect compute_hitbox(Sprite *sprite) {
   Rect hitbox = {
       .height = sprite->height,
       .width = sprite->width,
-      .x = sprite->x - sprite->width / 2.f,
-      .y = sprite->y - sprite->height / 2.f,
+      .x = sprite->x,
+      .y = sprite->y,
   };
 
   return hitbox;

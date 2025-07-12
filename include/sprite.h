@@ -6,3 +6,7 @@ typedef struct {
   float width, height;
   float r, g, b, a;
 } Sprite;
+
+typedef struct {
+  float r, g, b, a;
+} Color;

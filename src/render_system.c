@@ -8,6 +8,72 @@
 #include "ui_element.h"
 #include "ui_layout.h"
 
+void mesh_push_hitbox(Mesh *mesh, Rect hitbox, Color color) {
+  Vertex vertices[4] = {0};
+
+  float x = hitbox.x;
+  float y = hitbox.y;
+
+  float halfW = hitbox.width / 2.f;
+  float halfH = hitbox.height / 2.f;
+
+  vertices[0].x = x + halfW;
+  vertices[0].y = y - halfH;
+  vertices[0].z = 0.0f;
+
+  vertices[1].x = x + halfW;
+  vertices[1].y = y + halfH;
+  vertices[1].z = 0.0f;
+
+  vertices[2].x = x - halfW;
+  vertices[2].y = y + halfH;
+  vertices[2].z = 0.0f;
+
+  vertices[3].x = x - halfW;
+  vertices[3].y = y - halfH;
+  vertices[3].z = 0.0f;
+
+  for (size_t i = 0; i < sizeof(vertices) / sizeof(vertices[0]); i++) {
+    vertices[i].r = color.r;
+    vertices[i].g = color.g;
+    vertices[i].b = color.b;
+    vertices[i].a = color.a;
+    vertices[i].u = 0.0f;
+    vertices[i].v = 0.0f;
+  }
+
+  uint32_t base_index = (uint32_t)mesh->vertices.size;
+  uint32_t indices[8] = {
+      base_index + 0, base_index + 1, base_index + 1, base_index + 2,
+      base_index + 2, base_index + 3, base_index + 3, base_index + 0,
+  };
+
+  for (size_t i = 0; i < sizeof(vertices) / sizeof(vertices[0]); i++) {
+    vec_push_back(&mesh->vertices, &vertices[i]);
+  }
+
+  for (size_t i = 0; i < sizeof(indices) / sizeof(indices[0]); i++) {
+    vec_push_back(&mesh->indices, &indices[i]);
+  }
+}
+
+void mesh_push_ui_hitboxes(Mesh *mesh, Vector *vec) {
+  for (size_t i = 0; i < vec->size; i++) {
+    UIElement ui_element;
+    memcpy(&ui_element, (uint8_t *)vec->data + i * vec->elem_size,
+           vec->elem_size);
+
+    Color color = {
+        .r = 10.f,
+        .g = 10.f,
+        .b = 10.f,
+        .a = 10.f,
+    };
+
+    mesh_push_hitbox(mesh, ui_element.hitbox, color);
+  }
+}
+
 void mesh_push_sprite(Mesh *mesh, Sprite sprite) {
   Vertex vertices[4] = {0};
 
@@ -89,10 +155,14 @@ void renderer_draw(World *world) {
   ui_push_world(&ui_elements, world);
 
   Mesh mesh = mesh_init();
-  mesh_push_ui_elements(&mesh, &ui_elements);
 
+  // mesh_push_ui_elements(&mesh, &ui_elements);
+  // upload_mesh(&world->assets.game_mesh, &mesh);
+  // renderer_draw_mesh(&world->assets.game_mesh, GL_TRIANGLES);
+
+  mesh_push_ui_hitboxes(&mesh, &ui_elements);
   upload_mesh(&world->assets.game_mesh, &mesh);
-  renderer_draw_mesh(&world->assets.game_mesh, GL_TRIANGLES);
+  renderer_draw_mesh(&world->assets.game_mesh, GL_LINES);
 
   vec_free(&ui_elements);
   mesh_free(&mesh);
