@@ -1,10 +1,10 @@
 #pragma once
 
-#include "renderer.h"
 #include "sprite.h"
+#include "world.h"
 
 struct World;
 
-void renderer_render_sprite(Sprite sprite, Mesh* mesh);
+void mesh_push_sprite(Mesh *mesh, Sprite sprite);
 
-void renderer_draw(Renderer renderer, World *world);
+void renderer_draw(World *world);

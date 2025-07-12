@@ -1,7 +1,8 @@
+#include "shader.h"
 #include <glad/glad.h>
 #include "log.h"
 
-uint32_t shader_compile(const char *vertex_shader_source,
+uint32_t shader_init(const char *vertex_shader_source,
                         const char *fragment_shader_source) {
   uint32_t vertexShader = glCreateShader(GL_VERTEX_SHADER);
   glShaderSource(vertexShader, 1, &vertex_shader_source, NULL);
@@ -51,10 +52,15 @@ uint32_t shader_compile(const char *vertex_shader_source,
   return shaderProgram;
 }
 
-void shader_set_int(uint32_t shader, const char *name, int value) {
+void shader_free(Shader* shader) {
+  glDeleteProgram(*shader);
+  shader = NULL;
+}
+
+void shader_set_int(Shader shader, const char *name, int value) {
   glUniform1i(glGetUniformLocation(shader, name), value);
 }
 
-void shader_set_mat4(uint32_t shader, const char *name, const float *value) {
+void shader_set_mat4(Shader shader, const char *name, const float *value) {
   glUniformMatrix4fv(glGetUniformLocation(shader, name), 1, GL_FALSE, value);
 }

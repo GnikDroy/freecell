@@ -3,7 +3,7 @@
 #include "renderer.h"
 #include "shader.h"
 
-void renderer_render_sprite(Sprite sprite, Mesh *mesh) {
+void mesh_push_sprite(Mesh *mesh, Sprite sprite) {
   Vertex vertices[4] = {0};
 
   float x = sprite.x;
@@ -62,8 +62,7 @@ void renderer_render_sprite(Sprite sprite, Mesh *mesh) {
   }
 }
 
-static void renderer_draw_cards(Renderer renderer, World *world) {
-  Mesh mesh = mesh_init();
+static void mesh_create_world(Mesh *mesh, World *world) {
 
   Sprite *deck = world->assets.deck;
   Freecell *freecell = &world->game.freecell;
@@ -81,7 +80,7 @@ static void renderer_draw_cards(Renderer renderer, World *world) {
     sprite.x = (sprite.width + GAP) * i + sprite.width / 2.f + MARGIN_X;
     sprite.y = sprite.height / 2.f + MARGIN_Y;
 
-    renderer_render_sprite(sprite, &mesh);
+    mesh_push_sprite(mesh, sprite);
   }
 
   // render foundation
@@ -99,7 +98,7 @@ static void renderer_draw_cards(Renderer renderer, World *world) {
     sprite.x = VIRTUAL_WIDTH - sprite.x;
     sprite.y = sprite.height / 2.f + MARGIN_Y;
 
-    renderer_render_sprite(sprite, &mesh);
+    mesh_push_sprite(mesh, sprite);
   }
 
   // render cascades centered
@@ -125,23 +124,25 @@ static void renderer_draw_cards(Renderer renderer, World *world) {
           start_x + i * (sprite.width + GAP) + sprite.width / 2.f + MARGIN_X;
       sprite.y = sprite.height / 2.f + MARGIN_Y + OVERLAP * j;
 
-      renderer_render_sprite(sprite, &mesh);
+      mesh_push_sprite(mesh, sprite);
     }
   }
-
-  upload_mesh(&renderer.mesh, &mesh);
-  renderer_draw_mesh(&renderer.mesh, GL_TRIANGLES);
-  mesh_free(&mesh);
 }
 
-void renderer_draw(Renderer renderer, World *world) {
-  renderer_bind_texture(0, GL_TEXTURE_2D, renderer.textures);
+void renderer_draw(World *world) {
+  renderer_bind_texture(0, GL_TEXTURE_2D, world->assets.spritesheet_texture);
 
-  renderer_set_shader(renderer.shader);
-  shader_set_mat4(renderer.shader, "view", world->camera.view);
-  shader_set_mat4(renderer.shader, "projection", world->camera.projection);
+  renderer_set_shader(world->assets.main_shader);
+  shader_set_mat4(world->assets.main_shader, "view", world->camera.view);
+  shader_set_mat4(world->assets.main_shader, "projection",
+                  world->camera.projection);
+  shader_set_int(world->assets.main_shader, "spritesheet", 0);
 
-  shader_set_int(renderer.shader, "spritesheet", 0);
+  Mesh mesh = mesh_init();
 
-  renderer_draw_cards(renderer, world);
+  mesh_create_world(&mesh, world);
+  upload_mesh(&world->assets.game_mesh, &mesh);
+  renderer_draw_mesh(&world->assets.game_mesh, GL_TRIANGLES);
+
+  mesh_free(&mesh);
 }

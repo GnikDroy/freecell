@@ -96,6 +96,7 @@ add_executable(
     src/render_system.c
     src/renderer.c
     src/shader.c
+    src/texture.c
     src/utils.c
     src/vector.c
     src/window.c
@@ -113,18 +114,26 @@ add_executable(
     tests 
     src/test.c 
 
-    src/vector.c 
-    src/world.c
     src/assets.c
-    src/constants.c
-    src/image.c
     src/card_sprites.c
+    src/constants.c
+    src/debug.c
+    src/image.c
+    src/log.c
+    src/mesh.c
+    src/render_system.c
+    src/renderer.c
+    src/shader.c
+    src/texture.c
     src/utils.c
+    src/vector.c
+    src/window.c
+    src/world.c
 
     src/stb_image.c
 )
 
-target_link_libraries(tests stb::stb User32.lib)
+target_link_libraries(tests OpenGL::GL stb::stb glfw glad User32.lib)
 target_include_directories(tests PRIVATE ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src )
 
 target_link_options(tests PRIVATE)
