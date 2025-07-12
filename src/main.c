@@ -33,7 +33,7 @@ void gameloop(GLFWwindow *window) {
     double dt = glfwGetTime() - start_time;
     (void)dt;
 
-    renderer_clear(renderer);
+    renderer_clear();
     renderer_draw(renderer, &world);
     handle_events(window, &world);
     start_time = glfwGetTime();

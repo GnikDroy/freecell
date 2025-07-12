@@ -91,14 +91,15 @@ add_executable(
     src/debug.c
     src/game.c
     src/image.c
+    src/log.c
+    src/mesh.c
+    src/render_system.c
     src/renderer.c
+    src/shader.c
     src/utils.c
     src/vector.c
     src/window.c
     src/world.c
-    src/log.c
-    src/shader.c
-    src/render_system.c
 
     src/stb_image.c
 )

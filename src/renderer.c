@@ -2,11 +2,16 @@
 #include "constants.h"
 #include "debug.h"
 #include "log.h"
+#include "mesh.h"
 #include "shader.h"
 
 Renderer renderer_init(GLFWwindow *window, World *world) {
   glEnable(GL_DEBUG_OUTPUT);
   glDebugMessageCallback(openglDebugCallback, NULL);
+
+  // Enable blending
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   uint32_t shaderProgram =
       shader_compile(MAIN_VERTEX_SHADER_SOURCE, MAIN_FRAGMENT_SHADER_SOURCE);
@@ -15,53 +20,16 @@ Renderer renderer_init(GLFWwindow *window, World *world) {
     exit(EXIT_FAILURE);
   }
 
-  // Enable blending
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-  uint32_t VAO;
-  glGenVertexArrays(1, &VAO);
-
-  uint32_t VBO;
-  glGenBuffers(1, &VBO);
-
-  uint32_t EBO;
-  glGenBuffers(1, &EBO);
-
-  glBindVertexArray(VAO);
-  glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-  size_t stride = sizeof(Vertex);
-
-  // Position (location = 0)
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride,
-                        (void *)offsetof(Vertex, x));
-  glEnableVertexAttribArray(0);
-
-  // Color (location = 1)
-  glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, stride,
-                        (void *)offsetof(Vertex, r));
-  glEnableVertexAttribArray(1);
-
-  // TexCoords (location = 2)
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride,
-                        (void *)offsetof(Vertex, u));
-  glEnableVertexAttribArray(2);
-
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-  glBindVertexArray(0);
-
   uint32_t texture =
       renderer_create_texture_from_image(&world->assets.spritesheet);
 
   Renderer renderer = {
       .window = window,
       .shader = shaderProgram,
-      .VBO = VBO,
-      .VAO = VAO,
-      .EBO = EBO,
+      .mesh = gpu_mesh_init(),
       .textures = texture,
   };
+
   return renderer;
 }
 
@@ -96,15 +64,12 @@ uint32_t renderer_create_texture_from_image(Image *image) {
 }
 
 void renderer_free(Renderer *renderer) {
-  glDeleteBuffers(1, &renderer->VBO);
-  glDeleteBuffers(1, &renderer->EBO);
+  gpu_mesh_free(&renderer->mesh);
   glDeleteTextures(1, &renderer->textures);
-  glDeleteVertexArrays(1, &renderer->VAO);
   glDeleteProgram(renderer->shader);
 }
 
-void renderer_clear(Renderer renderer) {
-  (void)renderer;
+void renderer_clear() {
   glClearColor(0.2f, 0.4f, 0.2f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT);
 }
@@ -116,17 +81,8 @@ void renderer_bind_texture(uint32_t slot, GLenum target, uint32_t texture) {
   glBindTexture(target, texture);
 }
 
-void renderer_draw_mesh(Renderer renderer, Vector *vertices, Vector *indices,
-                        GLenum primitive) {
-  glBindBuffer(GL_ARRAY_BUFFER, renderer.VBO);
-  glBufferData(GL_ARRAY_BUFFER, vertices->size * vertices->elem_size,
-               vertices->data, GL_STATIC_DRAW);
-
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderer.EBO);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices->size * indices->elem_size,
-               indices->data, GL_STATIC_DRAW);
-
-  glBindVertexArray(renderer.VAO);
-  glDrawElements(primitive, (GLsizei)indices->size, GL_UNSIGNED_INT, 0);
+void renderer_draw_mesh(GPUMesh *mesh, GLenum primitive) {
+  glBindVertexArray(mesh->VAO);
+  glDrawElements(primitive, (GLsizei)mesh->index_count, GL_UNSIGNED_INT, 0);
   glBindVertexArray(0);
 }

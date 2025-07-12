@@ -3,8 +3,7 @@
 #include "renderer.h"
 #include "shader.h"
 
-void renderer_render_sprite(Sprite sprite, Vector *vertices_vec,
-                            Vector *indices_vec) {
+void renderer_render_sprite(Sprite sprite, Mesh *mesh) {
   Vertex vertices[4] = {0};
 
   float x = sprite.x;
@@ -48,24 +47,23 @@ void renderer_render_sprite(Sprite sprite, Vector *vertices_vec,
   vertices[3].u = sprite.uv_left;
   vertices[3].v = sprite.uv_top;
 
-  uint32_t base_index = (uint32_t)vertices_vec->size;
+  uint32_t base_index = (uint32_t)mesh->vertices.size;
   uint32_t indices[6] = {
       base_index + 0, base_index + 1, base_index + 3,
       base_index + 1, base_index + 2, base_index + 3,
   };
 
   for (size_t i = 0; i < sizeof(vertices) / sizeof(vertices[0]); i++) {
-    vec_push_back(vertices_vec, &vertices[i]);
+    vec_push_back(&mesh->vertices, &vertices[i]);
   }
 
   for (size_t i = 0; i < sizeof(indices) / sizeof(indices[0]); i++) {
-    vec_push_back(indices_vec, &indices[i]);
+    vec_push_back(&mesh->indices, &indices[i]);
   }
 }
 
 static void renderer_draw_cards(Renderer renderer, World *world) {
-  Vector vertices = vec_init(sizeof(Vertex));
-  Vector indices = vec_init(sizeof(uint32_t));
+  Mesh mesh = mesh_init();
 
   Sprite *deck = world->assets.deck;
   Freecell *freecell = &world->game.freecell;
@@ -83,7 +81,7 @@ static void renderer_draw_cards(Renderer renderer, World *world) {
     sprite.x = (sprite.width + GAP) * i + sprite.width / 2.f + MARGIN_X;
     sprite.y = sprite.height / 2.f + MARGIN_Y;
 
-    renderer_render_sprite(sprite, &vertices, &indices);
+    renderer_render_sprite(sprite, &mesh);
   }
 
   // render foundation
@@ -101,7 +99,7 @@ static void renderer_draw_cards(Renderer renderer, World *world) {
     sprite.x = VIRTUAL_WIDTH - sprite.x;
     sprite.y = sprite.height / 2.f + MARGIN_Y;
 
-    renderer_render_sprite(sprite, &vertices, &indices);
+    renderer_render_sprite(sprite, &mesh);
   }
 
   // render cascades centered
@@ -127,14 +125,13 @@ static void renderer_draw_cards(Renderer renderer, World *world) {
           start_x + i * (sprite.width + GAP) + sprite.width / 2.f + MARGIN_X;
       sprite.y = sprite.height / 2.f + MARGIN_Y + OVERLAP * j;
 
-      renderer_render_sprite(sprite, &vertices, &indices);
+      renderer_render_sprite(sprite, &mesh);
     }
   }
 
-  renderer_draw_mesh(renderer, &vertices, &indices, GL_TRIANGLES);
-
-  vec_free(&vertices);
-  vec_free(&indices);
+  upload_mesh(&renderer.mesh, &mesh);
+  renderer_draw_mesh(&renderer.mesh, GL_TRIANGLES);
+  mesh_free(&mesh);
 }
 
 void renderer_draw(Renderer renderer, World *world) {
@@ -148,4 +145,3 @@ void renderer_draw(Renderer renderer, World *world) {
 
   renderer_draw_cards(renderer, world);
 }
-
