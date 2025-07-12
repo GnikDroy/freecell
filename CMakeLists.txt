@@ -97,6 +97,7 @@ add_executable(
     src/renderer.c
     src/shader.c
     src/texture.c
+    src/ui_layout.c
     src/utils.c
     src/vector.c
     src/window.c
@@ -125,6 +126,7 @@ add_executable(
     src/renderer.c
     src/shader.c
     src/texture.c
+    src/ui_layout.c
     src/utils.c
     src/vector.c
     src/window.c

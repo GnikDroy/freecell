@@ -1,7 +1,12 @@
+#include <stdint.h>
+#include <string.h>
+
 #include "render_system.h"
-#include "constants.h"
+
 #include "renderer.h"
 #include "shader.h"
+#include "ui_element.h"
+#include "ui_layout.h"
 
 void mesh_push_sprite(Mesh *mesh, Sprite sprite) {
   Vertex vertices[4] = {0};
@@ -62,88 +67,13 @@ void mesh_push_sprite(Mesh *mesh, Sprite sprite) {
   }
 }
 
-static void mesh_push_freecells(Mesh *mesh, World *world) {
-  Sprite *deck = world->assets.deck;
-  Freecell *freecell = &world->game.freecell;
-
-  const int MARGIN_Y = 30;
-  const int MARGIN_X = 30;
-  const int GAP = 15;
-
-  for (int i = 0; i < 4; i++) {
-    Card card = freecell->reserve[i];
-    Sprite sprite = deck[card];
-    if (card == NONE) {
-      sprite.a = 0.5f;
-    }
-    sprite.x = (sprite.width + GAP) * i + sprite.width / 2.f + MARGIN_X;
-    sprite.y = sprite.height / 2.f + MARGIN_Y;
-
-    mesh_push_sprite(mesh, sprite);
+void mesh_push_ui_elements(Mesh *mesh, Vector *vec) {
+  for (size_t i = 0; i < vec->size; i++) {
+    UIElement ui_element;
+    memcpy(&ui_element, (uint8_t *)vec->data + i * vec->elem_size,
+           vec->elem_size);
+    mesh_push_sprite(mesh, ui_element.sprite);
   }
-}
-
-static void mesh_push_foundation(Mesh *mesh, World *world) {
-  Sprite *deck = world->assets.deck;
-  Freecell *freecell = &world->game.freecell;
-
-  const int MARGIN_Y = 30;
-  const int MARGIN_X = 30;
-  const int GAP = 15;
-
-  for (int i = 0; i < 4; i++) {
-    Card card = freecell->foundation[i];
-    Sprite sprite = deck[card];
-    if (card == NONE) {
-      sprite = deck[ACE_SPADES + 13 * i];
-      sprite.a = 0.5f;
-    }
-    sprite.x = (sprite.width + GAP) * i + sprite.width / 2.f + MARGIN_X;
-    sprite.x = VIRTUAL_WIDTH - sprite.x;
-    sprite.y = sprite.height / 2.f + MARGIN_Y;
-
-    mesh_push_sprite(mesh, sprite);
-  }
-}
-
-static void mesh_push_cascade(Mesh *mesh, World *world, Cascade *cascade,
-                              int x_offset) {
-  Sprite *deck = world->assets.deck;
-
-  const int MARGIN_Y = deck[NONE].height * 2;
-  const int OVERLAP = 20;
-
-  for (int j = 0; j < cascade->size; j++) {
-    Card card = cascade->cards[j];
-    Sprite sprite = deck[card];
-    sprite.x = x_offset;
-    sprite.y = sprite.height / 2.f + MARGIN_Y + OVERLAP * j;
-
-    mesh_push_sprite(mesh, sprite);
-  }
-}
-
-static void mesh_push_cascades(Mesh *mesh, World *world) {
-  Sprite *deck = world->assets.deck;
-  Freecell *freecell = &world->game.freecell;
-
-  const int CASCADE_COUNT = 8;
-  const int GAP = 15;
-
-  const float total_width =
-      CASCADE_COUNT * deck[NONE].width + (CASCADE_COUNT - 1) * GAP;
-  for (int i = 0; i < CASCADE_COUNT; i++) {
-    int x_offset = (VIRTUAL_WIDTH - total_width) / 2.0f +
-                   i * (deck[NONE].width + GAP) + deck[NONE].width / 2.f;
-    Cascade *cascade = &freecell->cascade[i];
-    mesh_push_cascade(mesh, world, cascade, x_offset);
-  }
-}
-
-static void mesh_create_world(Mesh *mesh, World *world) {
-  mesh_push_freecells(mesh, world);
-  mesh_push_foundation(mesh, world);
-  mesh_push_cascades(mesh, world);
 }
 
 void renderer_draw(World *world) {
@@ -155,11 +85,15 @@ void renderer_draw(World *world) {
                   world->camera.projection);
   shader_set_int(world->assets.main_shader, "spritesheet", 0);
 
-  Mesh mesh = mesh_init();
+  Vector ui_elements = vec_init(sizeof(UIElement));
+  ui_push_world(&ui_elements, world);
 
-  mesh_create_world(&mesh, world);
+  Mesh mesh = mesh_init();
+  mesh_push_ui_elements(&mesh, &ui_elements);
+
   upload_mesh(&world->assets.game_mesh, &mesh);
   renderer_draw_mesh(&world->assets.game_mesh, GL_TRIANGLES);
 
+  vec_free(&ui_elements);
   mesh_free(&mesh);
 }
