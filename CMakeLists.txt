@@ -1,14 +1,11 @@
 cmake_minimum_required(VERSION 3.20)
 
-# Set the default build type
 set(default_build_type "Release")
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
     set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
             STRING "Choose the type of build." FORCE)
-    # Set the possible values of build type for cmake-gui
-    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
-            "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release")
 endif()
 
 # Only do these if this is the main project, and not if it is included through add_subdirectory
@@ -20,9 +17,8 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     set_property(GLOBAL PROPERTY USE_FOLDERS ON)
     set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 endif()
+
 Include(FetchContent)
-
-
 
 # Setup glfw
 function(glfw_build)
@@ -84,14 +80,26 @@ find_package(OpenGL REQUIRED)
 project(freecell C)
 
 # Main exe
-add_executable(freecell WIN32 src/main.c src/game.c src/stb_image.c src/debug.c)
+add_executable(
+    freecell 
+    WIN32 
+    src/main.c
+
+    src/debug.c
+    src/game.c
+    src/image.c
+    src/utils.c
+    src/vector.c
+
+    src/stb_image.c
+)
 set_property(TARGET freecell PROPERTY MSVC_RUNTIME_LIBRARY MultiThreadedDebug)
 target_link_options(freecell PRIVATE -static)
 target_link_libraries(freecell OpenGL::GL stb::stb glfw glad User32.lib)
 target_include_directories(freecell PRIVATE ${PROJECT_SOURCE_DIR}/include)
 # Tests
 
-add_executable(tests src/test.c)
+add_executable(tests src/test.c src/vector.c)
 target_link_libraries(tests User32.lib)
 target_include_directories(tests PRIVATE ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src)
 
