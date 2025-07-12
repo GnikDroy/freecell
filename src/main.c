@@ -22,20 +22,22 @@ void handle_events(GLFWwindow *window, World *world) {
 
 void gameloop(GLFWwindow *window) {
   World world = world_init();
-  Renderer renderer = renderer_init(window);
+  Renderer renderer = renderer_init();
 
-  double start_time = glfwGetTime();
-
+  glfwSetWindowUserPointer(window, &world);
   draw_world(&world); // compute & upload meshes once
 
-  while (running) {
+  const Color clear_color = {.r = 0.2f, .g = 0.4f, .b = 0.2f, .a = 1.0f};
+
+  double start_time = glfwGetTime();
+  while (world.running) {
     glfwSwapBuffers(window);
     glfwPollEvents();
 
     double dt = glfwGetTime() - start_time;
     (void)dt;
 
-    renderer_clear();
+    renderer_clear(clear_color);
 
     render_world(&world);
 
@@ -49,9 +51,6 @@ void gameloop(GLFWwindow *window) {
 
 int main(void) {
   srand((uint32_t)time(NULL));
-
-  Game game = game_init();
-  game_free(&game);
 
   GLFWwindow *window = window_init((WindowConfig){
       .width = VIRTUAL_WIDTH,

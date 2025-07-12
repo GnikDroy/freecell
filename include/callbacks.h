@@ -6,14 +6,14 @@
 #include <GLFW/glfw3.h>
 
 #include "constants.h"
+#include "world.h"
 
 struct GLFWwindow;
 
-bool running = true;
-
 inline static void on_close(GLFWwindow *window) {
   (void)window;
-  running = false;
+  World* world = glfwGetWindowUserPointer(window);
+  world->running = false;
 }
 
 inline static void on_resize(GLFWwindow *window, int width, int height) {

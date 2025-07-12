@@ -8,6 +8,7 @@
 
 World world_init(void) {
   World world;
+  world.running = true;
   world.game = game_init();
   world.assets = assets_init();
 

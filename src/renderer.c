@@ -2,7 +2,7 @@
 #include "debug.h"
 #include "mesh.h"
 
-Renderer renderer_init(GLFWwindow *window) {
+Renderer renderer_init() {
   glEnable(GL_DEBUG_OUTPUT);
   glDebugMessageCallback(openglDebugCallback, NULL);
 
@@ -10,17 +10,14 @@ Renderer renderer_init(GLFWwindow *window) {
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  Renderer renderer = {
-      .window = window,
-  };
-
+  Renderer renderer = {0};
   return renderer;
 }
 
 void renderer_free(Renderer *renderer) { (void)renderer; }
 
-void renderer_clear() {
-  glClearColor(0.2f, 0.4f, 0.2f, 1.0f);
+void renderer_clear(Color color) {
+  glClearColor(color.r, color.g, color.b, color.a);
   glClear(GL_COLOR_BUFFER_BIT);
 }
 

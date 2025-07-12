@@ -100,10 +100,10 @@ void mesh_push_sprite(Mesh *mesh, Sprite sprite) {
   vertices[3].z = 0.0f;
 
   for (size_t i = 0; i < sizeof(vertices) / sizeof(vertices[0]); i++) {
-    vertices[i].r = sprite.r;
-    vertices[i].g = sprite.g;
-    vertices[i].b = sprite.b;
-    vertices[i].a = sprite.a;
+    vertices[i].r = sprite.color.r;
+    vertices[i].g = sprite.color.g;
+    vertices[i].b = sprite.color.b;
+    vertices[i].a = sprite.color.a;
   }
 
   vertices[0].u = sprite.uv_right;

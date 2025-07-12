@@ -14,10 +14,10 @@ const int HEIGHT = (ROW + 1) * (CARD_HEIGHT + CARD_GAP_Y) - CARD_GAP_Y;
 
 static Sprite get_card_sprite_at_idx(int row, int col) {
   Sprite sprite = {0};
-  sprite.r = 1.0f;
-  sprite.g = 1.0f;
-  sprite.b = 1.0f;
-  sprite.a = 1.0f;
+  sprite.color.r = 1.0f;
+  sprite.color.g = 1.0f;
+  sprite.color.b = 1.0f;
+  sprite.color.a = 1.0f;
 
   sprite.width = (float)CARD_WIDTH;
   sprite.height = (float)CARD_HEIGHT;

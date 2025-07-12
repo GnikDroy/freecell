@@ -18,10 +18,6 @@ typedef struct {
 } ButtonUIMeta;
 
 typedef struct {
-  float x, y, width, height;
-} Rect;
-
-typedef struct {
   UIType type;
   Sprite sprite;
   Rect hitbox;

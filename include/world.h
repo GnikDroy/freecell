@@ -8,7 +8,10 @@
 #include "sprite.h"
 
 typedef struct {
+  bool running;
+
   Game game;
+
   Camera camera;
   Assets assets;
 
@@ -21,7 +24,6 @@ typedef struct {
 
   GPUMesh hitbox_gpu_mesh;
   Mesh hitbox_mesh;
-
 } World;
 
 World world_init(void);

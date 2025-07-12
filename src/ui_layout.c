@@ -25,7 +25,7 @@ void ui_push_freecells(Vector *vec, World *world) {
     Sprite sprite = deck[card];
 
     if (card == NONE) {
-      sprite.a = 0.5f;
+      sprite.color.a = 0.5f;
     }
 
     sprite.x = (sprite.width + GAP) * i + sprite.width / 2.f + MARGIN_X;
@@ -60,7 +60,7 @@ void ui_push_foundation(Vector *vec, World *world) {
     Sprite sprite = deck[card];
     if (card == NONE) {
       sprite = deck[ACE_SPADES + 13 * i];
-      sprite.a = 0.5f;
+      sprite.color.a = 0.5f;
     }
     sprite.x = (sprite.width + GAP) * i + sprite.width / 2.f + MARGIN_X;
     sprite.x = VIRTUAL_WIDTH - sprite.x;
