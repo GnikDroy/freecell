@@ -13,7 +13,7 @@ Rect compute_hitbox(Sprite *sprite) {
 }
 
 void ui_push_freecells(Vector *vec, World *world) {
-  Sprite *deck = world->assets.deck;
+  Sprite *deck = world->deck;
   Freecell *freecell = &world->game.freecell;
 
   const int MARGIN_Y = 30;
@@ -48,7 +48,7 @@ void ui_push_freecells(Vector *vec, World *world) {
 }
 
 void ui_push_foundation(Vector *vec, World *world) {
-  Sprite *deck = world->assets.deck;
+  Sprite *deck = world->deck;
   Freecell *freecell = &world->game.freecell;
 
   const int MARGIN_Y = 30;
@@ -86,7 +86,7 @@ void ui_push_cascade(Vector *vec, World *world, int cascade_index,
                      int x_offset) {
   Freecell *freecell = &world->game.freecell;
   Cascade *cascade = &freecell->cascade[cascade_index];
-  Sprite *deck = world->assets.deck;
+  Sprite *deck = world->deck;
 
   const int MARGIN_Y = deck[NONE].height * 2;
   const int OVERLAP = 20;
@@ -114,7 +114,7 @@ void ui_push_cascade(Vector *vec, World *world, int cascade_index,
 }
 
 void ui_push_cascades(Vector *vec, World *world) {
-  Sprite *deck = world->assets.deck;
+  Sprite *deck = world->deck;
 
   const int CASCADE_COUNT = 8;
   const int GAP = 15;

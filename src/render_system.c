@@ -142,7 +142,20 @@ void mesh_push_ui_elements(Mesh *mesh, Vector *vec) {
   }
 }
 
-void renderer_draw(World *world) {
+void draw_world(World *world) {
+  world->ui_elements.size = 0;
+  ui_push_world(&world->ui_elements, world);
+
+  mesh_clear(&world->game_mesh);
+  mesh_push_ui_elements(&world->game_mesh, &world->ui_elements);
+  upload_mesh(&world->game_gpu_mesh, &world->game_mesh);
+
+  mesh_clear(&world->hitbox_mesh);
+  mesh_push_ui_hitboxes(&world->hitbox_mesh, &world->ui_elements);
+  upload_mesh(&world->hitbox_gpu_mesh, &world->hitbox_mesh);
+}
+
+void render_world(World *world) {
   renderer_bind_texture(0, GL_TEXTURE_2D, world->assets.spritesheet_texture);
 
   renderer_set_shader(world->assets.main_shader);
@@ -151,19 +164,6 @@ void renderer_draw(World *world) {
                   world->camera.projection);
   shader_set_int(world->assets.main_shader, "spritesheet", 0);
 
-  Vector ui_elements = vec_init(sizeof(UIElement));
-  ui_push_world(&ui_elements, world);
-
-  Mesh mesh = mesh_init();
-
-  // mesh_push_ui_elements(&mesh, &ui_elements);
-  // upload_mesh(&world->assets.game_mesh, &mesh);
-  // renderer_draw_mesh(&world->assets.game_mesh, GL_TRIANGLES);
-
-  mesh_push_ui_hitboxes(&mesh, &ui_elements);
-  upload_mesh(&world->assets.game_mesh, &mesh);
-  renderer_draw_mesh(&world->assets.game_mesh, GL_LINES);
-
-  vec_free(&ui_elements);
-  mesh_free(&mesh);
+  renderer_draw_mesh(&world->game_gpu_mesh, GL_TRIANGLES);
+  renderer_draw_mesh(&world->hitbox_gpu_mesh, GL_LINES);
 }

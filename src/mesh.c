@@ -12,6 +12,11 @@ Mesh mesh_init() {
   return mesh;
 }
 
+void mesh_clear(Mesh* mesh) {
+  mesh->vertices.size = 0;
+  mesh->indices.size = 0;
+}
+
 void mesh_free(Mesh *mesh) {
   vec_free(&mesh->vertices);
   vec_free(&mesh->indices);

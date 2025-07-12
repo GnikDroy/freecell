@@ -4,8 +4,8 @@
 
 #include "callbacks.h"
 #include "constants.h"
-#include "renderer.h"
 #include "render_system.h"
+#include "renderer.h"
 #include "window.h"
 #include "world.h"
 
@@ -26,6 +26,8 @@ void gameloop(GLFWwindow *window) {
 
   double start_time = glfwGetTime();
 
+  draw_world(&world); // compute & upload meshes once
+
   while (running) {
     glfwSwapBuffers(window);
     glfwPollEvents();
@@ -34,7 +36,9 @@ void gameloop(GLFWwindow *window) {
     (void)dt;
 
     renderer_clear();
-    renderer_draw(&world);
+
+    render_world(&world);
+
     handle_events(window, &world);
     start_time = glfwGetTime();
   }

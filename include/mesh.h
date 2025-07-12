@@ -24,6 +24,8 @@ typedef struct {
 
 Mesh mesh_init();
 
+void mesh_clear(Mesh *mesh);
+
 void mesh_free(Mesh *mesh);
 
 GPUMesh gpu_mesh_init();

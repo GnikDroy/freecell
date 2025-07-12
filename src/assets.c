@@ -1,5 +1,4 @@
 #include "assets.h"
-#include "card_sprites.h"
 #include "constants.h"
 #include "shader.h"
 #include "texture.h"
@@ -18,8 +17,6 @@ Assets assets_init() {
   if (assets.main_shader == 0) {
     exit(EXIT_FAILURE);
   }
-  generate_card_sprites(assets.deck);
-  assets.game_mesh = gpu_mesh_init();
   return assets;
 }
 
@@ -27,5 +24,4 @@ void assets_free(Assets *assets) {
   image_free(&assets->spritesheet);
   shader_free(&assets->main_shader);
   texture_free(&assets->spritesheet_texture);
-  gpu_mesh_free(&assets->game_mesh);
 }
