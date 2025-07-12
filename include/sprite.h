@@ -1,12 +1,6 @@
 #pragma once
 
-typedef struct {
-  float r, g, b, a;
-} Color;
-
-typedef struct {
-  float x, y, width, height;
-} Rect;
+#include "color.h"
 
 typedef struct {
   float uv_top, uv_bottom, uv_left, uv_right;

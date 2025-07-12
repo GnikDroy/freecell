@@ -1,5 +1,6 @@
 #pragma once
 #include "game.h"
+#include "rect.h"
 #include "sprite.h"
 
 typedef enum {
