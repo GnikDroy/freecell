@@ -62,16 +62,15 @@ void mesh_push_sprite(Mesh *mesh, Sprite sprite) {
   }
 }
 
-static void mesh_create_world(Mesh *mesh, World *world) {
-
+static void mesh_push_freecells(Mesh *mesh, World *world) {
   Sprite *deck = world->assets.deck;
   Freecell *freecell = &world->game.freecell;
 
-  // render free cells
+  const int MARGIN_Y = 30;
+  const int MARGIN_X = 30;
+  const int GAP = 15;
+
   for (int i = 0; i < 4; i++) {
-    const int MARGIN_Y = 30;
-    const int MARGIN_X = 30;
-    const int GAP = 15;
     Card card = freecell->reserve[i];
     Sprite sprite = deck[card];
     if (card == NONE) {
@@ -82,12 +81,17 @@ static void mesh_create_world(Mesh *mesh, World *world) {
 
     mesh_push_sprite(mesh, sprite);
   }
+}
 
-  // render foundation
+static void mesh_push_foundation(Mesh *mesh, World *world) {
+  Sprite *deck = world->assets.deck;
+  Freecell *freecell = &world->game.freecell;
+
+  const int MARGIN_Y = 30;
+  const int MARGIN_X = 30;
+  const int GAP = 15;
+
   for (int i = 0; i < 4; i++) {
-    const int MARGIN_Y = 30;
-    const int MARGIN_X = 30;
-    const int GAP = 15;
     Card card = freecell->foundation[i];
     Sprite sprite = deck[card];
     if (card == NONE) {
@@ -100,33 +104,46 @@ static void mesh_create_world(Mesh *mesh, World *world) {
 
     mesh_push_sprite(mesh, sprite);
   }
+}
 
-  // render cascades centered
-  Sprite sample = deck[NONE];
-  const int cascade_count = 8;
-  const int GAP = 15;
-  const float total_width =
-      cascade_count * sample.width + (cascade_count - 1) * GAP;
-  float start_x = (VIRTUAL_WIDTH - total_width) / 2.0f;
+static void mesh_push_cascade(Mesh *mesh, World *world, Cascade *cascade,
+                              int x_offset) {
+  Sprite *deck = world->assets.deck;
 
-  for (int i = 0; i < cascade_count; i++) {
-    const int MARGIN_Y = sample.height * 2;
-    const int MARGIN_X = 0;
-    const int OVERLAP = 20;
+  const int MARGIN_Y = deck[NONE].height * 2;
+  const int OVERLAP = 20;
 
-    Cascade *cascade = &freecell->cascade[i];
-    for (int j = 0; j < cascade->size; j++) {
-      Card card = cascade->cards[j];
+  for (int j = 0; j < cascade->size; j++) {
+    Card card = cascade->cards[j];
+    Sprite sprite = deck[card];
+    sprite.x = x_offset;
+    sprite.y = sprite.height / 2.f + MARGIN_Y + OVERLAP * j;
 
-      Sprite sprite = deck[card];
-
-      sprite.x =
-          start_x + i * (sprite.width + GAP) + sprite.width / 2.f + MARGIN_X;
-      sprite.y = sprite.height / 2.f + MARGIN_Y + OVERLAP * j;
-
-      mesh_push_sprite(mesh, sprite);
-    }
+    mesh_push_sprite(mesh, sprite);
   }
+}
+
+static void mesh_push_cascades(Mesh *mesh, World *world) {
+  Sprite *deck = world->assets.deck;
+  Freecell *freecell = &world->game.freecell;
+
+  const int CASCADE_COUNT = 8;
+  const int GAP = 15;
+
+  const float total_width =
+      CASCADE_COUNT * deck[NONE].width + (CASCADE_COUNT - 1) * GAP;
+  for (int i = 0; i < CASCADE_COUNT; i++) {
+    int x_offset = (VIRTUAL_WIDTH - total_width) / 2.0f +
+                   i * (deck[NONE].width + GAP) + deck[NONE].width / 2.f;
+    Cascade *cascade = &freecell->cascade[i];
+    mesh_push_cascade(mesh, world, cascade, x_offset);
+  }
+}
+
+static void mesh_create_world(Mesh *mesh, World *world) {
+  mesh_push_freecells(mesh, world);
+  mesh_push_foundation(mesh, world);
+  mesh_push_cascades(mesh, world);
 }
 
 void renderer_draw(World *world) {
