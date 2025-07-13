@@ -84,12 +84,6 @@ void controller_update(GLFWwindow *window, World *world, float dt) {
     bake_world(world);
     controller->bake_pending = false;
   }
-
-  // if (glfwGetKey(window, GLFW_KEY_UP)) {
-  // } else if (glfwGetKey(window, GLFW_KEY_DOWN)) {
-  // } else if (glfwGetKey(window, GLFW_KEY_LEFT)) {
-  // } else if (glfwGetKey(window, GLFW_KEY_RIGHT)) {
-  // }
 }
 
 void controller_start_drag(World *world) {
@@ -175,10 +169,13 @@ void controller_end_drag(World *world) {
     if (dest.type == UI_CARD) {
       SelectionLocation from_location = from.meta.card.selection_location;
       SelectionLocation dest_location = dest.meta.card.selection_location;
+
       uint8_t size = 1;
-      // uint8_t from_card_index = dest.meta.card.card_index;
-      // world->game.freecell.cascade[from_location - CASCADE_1].size -
-      // from_card_index;
+
+      if (selection_location_is_cascade(from_location)) {
+        size = world->game.freecell.cascade[from_location - CASCADE_1].size -
+               from.meta.card.card_index;
+      }
 
       Move move = {
           .from = from_location,
@@ -190,17 +187,51 @@ void controller_end_drag(World *world) {
 
       if (result == MOVE_SUCCESS) {
         world->controller.layout_pending = true;
+        return;
       }
     }
   }
 
   // Reset original position and hitbox
-
   from.sprite.x = drag_state->original_position.x;
   from.sprite.y = drag_state->original_position.y;
   from.sprite.z = 0.0f;
   from.hitbox = compute_hitbox(&from.sprite);
   memcpy(dragged_element, &from, sizeof(UIElement));
+}
+
+void controller_on_key(GLFWwindow *window, int key, int scancode, int action,
+                       int mods) {
+  (void)scancode;
+  (void)mods;
+
+  World *world = glfwGetWindowUserPointer(window);
+  Controller *controller = &world->controller;
+  if (action == GLFW_PRESS) {
+    if (key == GLFW_KEY_SPACE) {
+      controller->debug = !controller->debug;
+    } else if (key == GLFW_KEY_ESCAPE) {
+      game_undo(&world->game);
+      controller->layout_pending = true;
+    } else if (key == GLFW_KEY_N) {
+      game_new(&world->game);
+      controller->layout_pending = true;
+    }
+  }
+}
+
+void controller_on_mouse_click(GLFWwindow *window, int code, int state,
+                               int mods) {
+  (void)mods;
+
+  World *world = glfwGetWindowUserPointer(window);
+  if (code == GLFW_MOUSE_BUTTON_LEFT) {
+    if (state == GLFW_PRESS) {
+      controller_start_drag(world);
+    } else if (state == GLFW_RELEASE) {
+      controller_end_drag(world);
+    }
+  }
 }
 
 void controller_on_framebuffer_resize(GLFWwindow *window, int width,
@@ -226,26 +257,6 @@ void controller_on_framebuffer_resize(GLFWwindow *window, int width,
   glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
 }
 
-void controller_on_key(GLFWwindow *window, int key, int scancode, int action,
-                       int mods) {
-  (void)scancode;
-  (void)mods;
-
-  World *world = glfwGetWindowUserPointer(window);
-  Controller *controller = &world->controller;
-  if (action == GLFW_PRESS) {
-    if (key == GLFW_KEY_SPACE) {
-      controller->debug = !controller->debug;
-    } else if (key == GLFW_KEY_ESCAPE) {
-      game_undo(&world->game);
-      controller->layout_pending = true;
-    } else if (key == GLFW_KEY_N) {
-      game_new(&world->game);
-      controller->layout_pending = true;
-    }
-  }
-}
-
 void controller_on_cursor_position(GLFWwindow *window, double x, double y) {
   World *world = glfwGetWindowUserPointer(window);
   Controller *controller = &world->controller;
@@ -260,19 +271,5 @@ void controller_on_cursor_position(GLFWwindow *window, double x, double y) {
   if (controller->drag_state.dragging) {
     controller_update_drag(world);
     controller->bake_pending = true;
-  }
-}
-
-void controller_on_mouse_click(GLFWwindow *window, int code, int state,
-                               int mods) {
-  (void)mods;
-
-  World *world = glfwGetWindowUserPointer(window);
-  if (code == GLFW_MOUSE_BUTTON_LEFT) {
-    if (state == GLFW_PRESS) {
-      controller_start_drag(world);
-    } else if (state == GLFW_RELEASE) {
-      controller_end_drag(world);
-    }
   }
 }

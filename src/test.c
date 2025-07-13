@@ -80,15 +80,17 @@ void test_freecell_move_to_foundation(void) {
   Card ace_spades = ACE_SPADES;
   Card two_spades = TWO_SPADES;
 
-  MoveResult res = freecell_move_to_foundation(&game, ace_spades);
+  MoveResult res = freecell_validate_to_foundation(&game, ace_spades);
   assert(res == MOVE_SUCCESS);
+  freecell_move_to_foundation(&game, ace_spades);
   assert(game.foundation[SPADES] == ace_spades);
 
-  res = freecell_move_to_foundation(&game, two_spades);
+  res = freecell_validate_to_foundation(&game, two_spades);
   assert(res == MOVE_SUCCESS);
+  freecell_move_to_foundation(&game, two_spades);
   assert(game.foundation[SPADES] == two_spades);
 
-  res = freecell_move_to_foundation(&game, two_spades);
+  res = freecell_validate_to_foundation(&game, two_spades);
   assert(res == MOVE_ERROR);
 
   print_test_result("test_freecell_move_to_foundation", true);
@@ -98,14 +100,15 @@ void test_freecell_move_to_reserve(void) {
   Freecell game = {0};
   Card card = ACE_SPADES;
 
-  MoveResult res = freecell_move_to_reserve(&game, card, RESERVE_1);
+  MoveResult res = freecell_validate_to_reserve(&game, card, RESERVE_1);
   assert(res == MOVE_SUCCESS);
+  freecell_move_to_reserve(&game, card, RESERVE_1);
   assert(game.reserve[0] == card);
 
-  res = freecell_move_to_reserve(&game, TWO_SPADES, RESERVE_1);
+  res = freecell_validate_to_reserve(&game, TWO_SPADES, RESERVE_1);
   assert(res == MOVE_ERROR);
 
-  res = freecell_move_to_reserve(&game, NONE, RESERVE_2);
+  res = freecell_validate_to_reserve(&game, NONE, RESERVE_2);
   assert(res == MOVE_ERROR);
 
   print_test_result("test_freecell_move_to_reserve", true);
@@ -116,21 +119,26 @@ void test_freecell_move_to_cascade_single(void) {
   Cascade *c = &game.cascade[0];
 
   Card card = TWO_SPADES;
-  MoveResult res = freecell_move_to_cascade_single(&game, card, CASCADE_1);
+  MoveResult res = freecell_validate_to_cascade_single(&game, card, CASCADE_1);
   assert(res == MOVE_SUCCESS);
+  freecell_move_to_cascade_single(&game, card, CASCADE_1);
   assert(c->size == 1);
   assert(c->cards[0] == card);
 
   Card card2 = ACE_SPADES;
-  res = freecell_move_to_cascade_single(&game, card2, CASCADE_1);
+  res = freecell_validate_to_cascade_single(&game, card2, CASCADE_1);
   assert(res == MOVE_ERROR_WRONG_SUIT);
 
   Card card3 = THREE_DIAMONDS;
-  res = freecell_move_to_cascade_single(&game, card3, CASCADE_1);
+  res = freecell_validate_to_cascade_single(&game, card3, CASCADE_1);
   assert(res == MOVE_ERROR_WRONG_RANK);
 
   Card card4 = ACE_DIAMONDS;
-  res = freecell_move_to_cascade_single(&game, card4, CASCADE_1);
+  res = freecell_validate_to_cascade_single(&game, card4, CASCADE_1);
+  assert(res == MOVE_SUCCESS);
+  freecell_move_to_cascade_single(&game, card4, CASCADE_1);
+  assert(c->size == 2);
+  assert(c->cards[1] == card4);
 
   print_test_result("test_freecell_move_to_cascade_single", true);
 }
@@ -154,10 +162,11 @@ void test_freecell_move_to_foundation_wrong_rank(void) {
   Card ace_spades = ACE_SPADES;
   Card three_spades = THREE_SPADES;
 
-  MoveResult res = freecell_move_to_foundation(&game, ace_spades);
+  MoveResult res = freecell_validate_to_foundation(&game, ace_spades);
   assert(res == MOVE_SUCCESS);
+  freecell_move_to_foundation(&game, ace_spades);
 
-  res = freecell_move_to_foundation(&game, three_spades);
+  res = freecell_validate_to_foundation(&game, three_spades);
   assert(res == MOVE_ERROR);
 
   print_test_result("test_freecell_move_to_foundation_wrong_rank", true);
@@ -168,10 +177,11 @@ void test_freecell_move_to_reserve_full_slot(void) {
   Card card1 = ACE_SPADES;
   Card card2 = TWO_HEARTS;
 
-  MoveResult res = freecell_move_to_reserve(&game, card1, RESERVE_1);
+  MoveResult res = freecell_validate_to_reserve(&game, card1, RESERVE_1);
   assert(res == MOVE_SUCCESS);
+  freecell_move_to_reserve(&game, card1, RESERVE_1);
 
-  res = freecell_move_to_reserve(&game, card2, RESERVE_1);
+  res = freecell_validate_to_reserve(&game, card2, RESERVE_1);
   assert(res == MOVE_ERROR);
 
   print_test_result("test_freecell_move_to_reserve_full_slot", true);
@@ -210,12 +220,13 @@ void test_freecell_move_to_cascade_invalid_rank_gap(void) {
   Freecell game = {0};
 
   Card card = FOUR_SPADES;
-  MoveResult res = freecell_move_to_cascade_single(&game, card, CASCADE_1);
+  MoveResult res = freecell_validate_to_cascade_single(&game, card, CASCADE_1);
   assert(res == MOVE_SUCCESS);
+  freecell_move_to_cascade_single(&game, card, CASCADE_1);
 
   Card card2 = TWO_HEARTS;
 
-  res = freecell_move_to_cascade_single(&game, card2, CASCADE_1);
+  res = freecell_validate_to_cascade_single(&game, card2, CASCADE_1);
   assert(res == MOVE_ERROR_WRONG_RANK);
 
   print_test_result("test_freecell_move_to_cascade_invalid_rank_gap", true);
@@ -225,11 +236,13 @@ void test_freecell_move_reserve_to_cascade(void) {
   Freecell game = {0};
 
   Card card = THREE_DIAMONDS;
-  MoveResult res = freecell_move_to_reserve(&game, card, RESERVE_1);
+  MoveResult res = freecell_validate_to_reserve(&game, card, RESERVE_1);
   assert(res == MOVE_SUCCESS);
+  freecell_move_to_reserve(&game, card, RESERVE_1);
 
-  res = freecell_move_to_cascade_single(&game, card, CASCADE_1);
+  res = freecell_validate_to_cascade_single(&game, card, CASCADE_1);
   assert(res == MOVE_SUCCESS);
+  freecell_move_to_cascade_single(&game, card, CASCADE_1);
 
   game.reserve[0] = NONE;
 
@@ -240,7 +253,7 @@ void test_freecell_move_to_foundation_invalid_start(void) {
   Freecell game = {0};
   Card two_spades = TWO_SPADES;
 
-  MoveResult res = freecell_move_to_foundation(&game, two_spades);
+  MoveResult res = freecell_validate_to_foundation(&game, two_spades);
   assert(res == MOVE_ERROR);
 
   print_test_result("test_freecell_move_to_foundation_invalid_start", true);
