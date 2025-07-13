@@ -2,47 +2,33 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "callbacks.h"
 #include "constants.h"
 #include "render_system.h"
 #include "renderer.h"
 #include "window.h"
 #include "world.h"
 
-void handle_events(GLFWwindow *window, World *world) {
-  (void)window;
-  (void)world;
-
-  // if (glfwGetKey(window, GLFW_KEY_UP)) {
-  // } else if (glfwGetKey(window, GLFW_KEY_DOWN)) {
-  // } else if (glfwGetKey(window, GLFW_KEY_LEFT)) {
-  // } else if (glfwGetKey(window, GLFW_KEY_RIGHT)) {
-  // }
-}
-
 void gameloop(GLFWwindow *window) {
   World world = world_init();
   Renderer renderer = renderer_init();
 
   glfwSetWindowUserPointer(window, &world);
-  draw_world(&world); // compute & upload meshes once
 
   const Color clear_color = {.r = 0.2f, .g = 0.4f, .b = 0.2f, .a = 1.0f};
 
-  double start_time = glfwGetTime();
+  double time = glfwGetTime();
   while (world.running) {
     glfwSwapBuffers(window);
     glfwPollEvents();
 
-    double dt = glfwGetTime() - start_time;
-    (void)dt;
+    double dt = glfwGetTime() - time;
+
+    controller_update(window, &world, dt);
 
     renderer_clear(clear_color);
-
     render_world(&world);
 
-    handle_events(window, &world);
-    start_time = glfwGetTime();
+    time = glfwGetTime();
   }
 
   renderer_free(&renderer);
@@ -61,9 +47,11 @@ int main(void) {
       .max_height = GLFW_DONT_CARE,
       .title = GAME_TITLE,
       .vsync = true,
-      .on_close = on_close,
-      .on_window_resize = on_resize,
+      .on_close = controller_on_close,
+      .on_window_resize = controller_on_resize,
+      .on_key = controller_on_key,
       .on_mouse_click = NULL,
+      .on_cursor_position = controller_on_cursor_position,
   });
 
   gameloop(window);

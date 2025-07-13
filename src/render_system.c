@@ -1,78 +1,15 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "debug.h"
 #include "render_system.h"
-
 #include "renderer.h"
+
+#include "mesh.h"
 #include "shader.h"
 #include "ui_element.h"
 #include "ui_layout.h"
-
-void mesh_push_hitbox(Mesh *mesh, Rect hitbox, Color color) {
-  Vertex vertices[4] = {0};
-
-  float x = hitbox.x;
-  float y = hitbox.y;
-
-  float halfW = hitbox.width / 2.f;
-  float halfH = hitbox.height / 2.f;
-
-  vertices[0].x = x + halfW;
-  vertices[0].y = y - halfH;
-  vertices[0].z = 0.0f;
-
-  vertices[1].x = x + halfW;
-  vertices[1].y = y + halfH;
-  vertices[1].z = 0.0f;
-
-  vertices[2].x = x - halfW;
-  vertices[2].y = y + halfH;
-  vertices[2].z = 0.0f;
-
-  vertices[3].x = x - halfW;
-  vertices[3].y = y - halfH;
-  vertices[3].z = 0.0f;
-
-  for (size_t i = 0; i < sizeof(vertices) / sizeof(vertices[0]); i++) {
-    vertices[i].r = color.r;
-    vertices[i].g = color.g;
-    vertices[i].b = color.b;
-    vertices[i].a = color.a;
-    vertices[i].u = 0.0f;
-    vertices[i].v = 0.0f;
-  }
-
-  uint32_t base_index = (uint32_t)mesh->vertices.size;
-  uint32_t indices[8] = {
-      base_index + 0, base_index + 1, base_index + 1, base_index + 2,
-      base_index + 2, base_index + 3, base_index + 3, base_index + 0,
-  };
-
-  for (size_t i = 0; i < sizeof(vertices) / sizeof(vertices[0]); i++) {
-    vec_push_back(&mesh->vertices, &vertices[i]);
-  }
-
-  for (size_t i = 0; i < sizeof(indices) / sizeof(indices[0]); i++) {
-    vec_push_back(&mesh->indices, &indices[i]);
-  }
-}
-
-void mesh_push_ui_hitboxes(Mesh *mesh, Vector *vec) {
-  for (size_t i = 0; i < vec->size; i++) {
-    UIElement ui_element;
-    memcpy(&ui_element, (uint8_t *)vec->data + i * vec->elem_size,
-           vec->elem_size);
-
-    Color color = {
-        .r = 10.f,
-        .g = 10.f,
-        .b = 10.f,
-        .a = 10.f,
-    };
-
-    mesh_push_hitbox(mesh, ui_element.hitbox, color);
-  }
-}
+#include "vector.h"
 
 void mesh_push_sprite(Mesh *mesh, Sprite sprite) {
   Vertex vertices[4] = {0};
@@ -138,21 +75,21 @@ void mesh_push_ui_elements(Mesh *mesh, Vector *vec) {
     UIElement ui_element;
     memcpy(&ui_element, (uint8_t *)vec->data + i * vec->elem_size,
            vec->elem_size);
+    ui_element_apply_state_style(&ui_element);
     mesh_push_sprite(mesh, ui_element.sprite);
   }
 }
 
-void draw_world(World *world) {
+void layout_world(World *world) {
   world->ui_elements.size = 0;
   ui_push_world(&world->ui_elements, world);
+}
 
+void bake_world(World *world) {
   mesh_clear(&world->game_mesh);
   mesh_push_ui_elements(&world->game_mesh, &world->ui_elements);
-  upload_mesh(&world->game_gpu_mesh, &world->game_mesh);
 
-  mesh_clear(&world->hitbox_mesh);
-  mesh_push_ui_hitboxes(&world->hitbox_mesh, &world->ui_elements);
-  upload_mesh(&world->hitbox_gpu_mesh, &world->hitbox_mesh);
+  upload_mesh(&world->game_gpu_mesh, &world->game_mesh);
 }
 
 void render_world(World *world) {
@@ -165,5 +102,9 @@ void render_world(World *world) {
   shader_set_int(world->assets.main_shader, "spritesheet", 0);
 
   renderer_draw_mesh(&world->game_gpu_mesh, GL_TRIANGLES);
-  renderer_draw_mesh(&world->hitbox_gpu_mesh, GL_LINES);
+
+  if (world->controller.debug) {
+    debug_render_mouse(world);
+    debug_render_hit_hitbox(world);
+  }
 }

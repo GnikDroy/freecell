@@ -7,7 +7,7 @@
 #include "utils.h"
 
 World world_init(void) {
-  World world;
+  World world = {0};
   world.running = true;
   world.game = game_init();
   world.assets = assets_init();
@@ -33,9 +33,8 @@ World world_init(void) {
   world.game_mesh = mesh_init();
   world.game_gpu_mesh = gpu_mesh_init();
 
-  world.hitbox_mesh = mesh_init();
-  world.hitbox_gpu_mesh = gpu_mesh_init();
-
+  world.controller.layout_pending = true;
+  world.controller.bake_pending = true;
   return world;
 }
 
@@ -47,8 +46,4 @@ void world_free(World *world) {
 
   gpu_mesh_free(&world->game_gpu_mesh);
   mesh_free(&world->game_mesh);
-
-  gpu_mesh_free(&world->hitbox_gpu_mesh);
-  mesh_free(&world->hitbox_mesh);
-
 }

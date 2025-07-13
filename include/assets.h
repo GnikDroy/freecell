@@ -4,7 +4,7 @@
 #include "shader.h"
 #include "texture.h"
 
-typedef struct {
+typedef struct Assets {
   Image spritesheet;
   Shader main_shader;
   Texture spritesheet_texture;

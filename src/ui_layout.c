@@ -1,5 +1,10 @@
 #include "ui_layout.h"
+
 #include "constants.h"
+#include "ui_element.h"
+#include "utils.h"
+#include "world.h"
+#include <string.h>
 
 Rect compute_hitbox(Sprite *sprite) {
   Rect hitbox = {
@@ -40,6 +45,7 @@ void ui_push_freecells(Vector *vec, World *world) {
                 .card = card,
                 .selection_location = RESERVE_1 + i,
                 .card_index = i,
+                .state = CARD_UI_STATE_NORMAL,
             },
     };
 
@@ -75,6 +81,7 @@ void ui_push_foundation(Vector *vec, World *world) {
                 .card = card,
                 .selection_location = FOUNDATION_SPADES + i,
                 .card_index = i,
+                .state = CARD_UI_STATE_NORMAL,
             },
     };
 
@@ -106,6 +113,7 @@ void ui_push_cascade(Vector *vec, World *world, int cascade_index,
                 .card = card,
                 .selection_location = CASCADE_1 + cascade_index,
                 .card_index = j,
+                .state = CARD_UI_STATE_NORMAL,
             },
     };
 
@@ -132,4 +140,31 @@ void ui_push_world(Vector *vec, World *world) {
   ui_push_freecells(vec, world);
   ui_push_foundation(vec, world);
   ui_push_cascades(vec, world);
+}
+
+bool ui_get_topmost_hit(Vector *ui_elements, vec2s mouse, UIElement *topmost,
+                        size_t *index) {
+  if (ui_elements->size == 0) {
+    return false;
+  }
+
+  for (int i = (int)ui_elements->size - 1; i >= 0; i--) {
+    UIElement ui_element;
+    memcpy(&ui_element,
+           (uint8_t *)ui_elements->data + i * ui_elements->elem_size,
+           ui_elements->elem_size);
+
+    if (point_in_rect(mouse.x, mouse.y, ui_element.hitbox)) {
+      if (index != NULL) {
+        *index = i;
+      }
+
+      if (topmost != NULL) {
+        *topmost = ui_element;
+      }
+      return true;
+    }
+  }
+
+  return false;
 }

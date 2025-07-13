@@ -4,8 +4,8 @@
 
 #include <GLFW/glfw3.h>
 
+#include "color.h"
 #include "mesh.h"
-#include "sprite.h"
 
 typedef struct {
   char _; // dummy field to ensure this struct is not empty

@@ -1,6 +1,6 @@
 #pragma once
 
-typedef struct {
+typedef struct Color {
   float r, g, b, a;
 } Color;
 

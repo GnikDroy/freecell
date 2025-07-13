@@ -97,7 +97,7 @@ inline Suit get_suit(Card card) { return (Suit)((card - 1) / 13); }
 
 inline Rank get_rank(Card card) { return (Rank)((card - 1) % 13); }
 
-typedef struct {
+typedef struct Cascade {
   uint8_t size;
 
   // one cascade can only hold upto 19 cards.
@@ -126,7 +126,7 @@ enum {
   FOUNDATION_CLUBS,
 };
 
-typedef struct {
+typedef struct Move {
   SelectionLocation from;
   SelectionLocation to;
   uint8_t size;
@@ -141,13 +141,13 @@ enum {
   MOVE_ERROR,
 };
 
-typedef struct {
+typedef struct Freecell {
   Card reserve[4];
   Card foundation[4];
   Cascade cascade[8];
 } Freecell;
 
-typedef struct {
+typedef struct Game {
   Freecell freecell;
   size_t move_count;
   Vector history;

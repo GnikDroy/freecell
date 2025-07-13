@@ -75,6 +75,23 @@ function(stb_build)
 endfunction()
 stb_build()
 
+# Setup stb
+function(cglm_build)
+    FetchContent_Declare(
+        cglm
+        GIT_REPOSITORY https://github.com/recp/cglm
+        GIT_TAG        v0.9.6
+        GIT_SHALLOW 1
+        GIT_PROGRESS 1
+    )
+
+    set(CGLM_SHARED OFF CACHE INTERNAL "Shared build")
+    set(CGLM_STATIC ON CACHE INTERNAL "Static build")
+    set(CGLM_USE_C99 ON CACHE INTERNAL "") # C11 
+    FetchContent_MakeAvailable(cglm)
+endfunction()
+cglm_build()
+
 find_package(OpenGL REQUIRED)
 
 project(freecell C)
@@ -82,12 +99,12 @@ project(freecell C)
 # Main exe
 add_executable(
     freecell 
-    WIN32 
     src/main.c
 
     src/assets.c
     src/card_sprites.c
     src/constants.c
+    src/controller.c
     src/debug.c
     src/game.c
     src/image.c
@@ -97,6 +114,7 @@ add_executable(
     src/renderer.c
     src/shader.c
     src/texture.c
+    src/ui_element.c
     src/ui_layout.c
     src/utils.c
     src/vector.c
@@ -107,7 +125,7 @@ add_executable(
 )
 set_property(TARGET freecell PROPERTY MSVC_RUNTIME_LIBRARY MultiThreadedDebug)
 target_link_options(freecell PRIVATE -static)
-target_link_libraries(freecell OpenGL::GL stb::stb glfw glad User32.lib)
+target_link_libraries(freecell OpenGL::GL stb::stb cglm glfw glad User32.lib)
 target_include_directories(freecell PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
 # Tests
@@ -118,6 +136,7 @@ add_executable(
     src/assets.c
     src/card_sprites.c
     src/constants.c
+    src/controller.c
     src/debug.c
     src/image.c
     src/log.c
@@ -126,6 +145,7 @@ add_executable(
     src/renderer.c
     src/shader.c
     src/texture.c
+    src/ui_element.c
     src/ui_layout.c
     src/utils.c
     src/vector.c
@@ -135,7 +155,7 @@ add_executable(
     src/stb_image.c
 )
 
-target_link_libraries(tests OpenGL::GL stb::stb glfw glad User32.lib)
+target_link_libraries(tests OpenGL::GL stb::stb cglm glfw glad User32.lib)
 target_include_directories(tests PRIVATE ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src )
 
 target_link_options(tests PRIVATE)

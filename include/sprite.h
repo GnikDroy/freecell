@@ -2,7 +2,7 @@
 
 #include "color.h"
 
-typedef struct {
+typedef struct Sprite {
   float uv_top, uv_bottom, uv_left, uv_right;
   float x, y;
   float width, height;

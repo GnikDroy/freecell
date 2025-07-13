@@ -1,13 +1,16 @@
 #pragma once
 #include <stdint.h>
 
+#include <cglm/struct.h>
+
 #include "assets.h"
 #include "camera.h"
+#include "controller.h"
 #include "game.h"
 #include "mesh.h"
 #include "sprite.h"
 
-typedef struct {
+typedef struct World {
   bool running;
 
   Game game;
@@ -22,8 +25,7 @@ typedef struct {
   GPUMesh game_gpu_mesh;
   Mesh game_mesh;
 
-  GPUMesh hitbox_gpu_mesh;
-  Mesh hitbox_mesh;
+  Controller controller;
 } World;
 
 World world_init(void);
