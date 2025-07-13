@@ -11,8 +11,6 @@
 #include "sprite.h"
 
 typedef struct World {
-  bool running;
-
   Game game;
 
   Camera camera;

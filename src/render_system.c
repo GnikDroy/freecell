@@ -22,19 +22,19 @@ void mesh_push_sprite(Mesh *mesh, Sprite sprite) {
 
   vertices[0].x = x + halfW;
   vertices[0].y = y - halfH;
-  vertices[0].z = 0.0f;
+  vertices[0].z = sprite.z;
 
   vertices[1].x = x + halfW;
   vertices[1].y = y + halfH;
-  vertices[1].z = 0.0f;
+  vertices[1].z = sprite.z;
 
   vertices[2].x = x - halfW;
   vertices[2].y = y + halfH;
-  vertices[2].z = 0.0f;
+  vertices[2].z = sprite.z;
 
   vertices[3].x = x - halfW;
   vertices[3].y = y - halfH;
-  vertices[3].z = 0.0f;
+  vertices[3].z = sprite.z;
 
   for (size_t i = 0; i < sizeof(vertices) / sizeof(vertices[0]); i++) {
     vertices[i].r = sprite.color.r;
@@ -56,9 +56,9 @@ void mesh_push_sprite(Mesh *mesh, Sprite sprite) {
   vertices[3].v = sprite.uv_top;
 
   uint32_t base_index = (uint32_t)mesh->vertices.size;
-  uint32_t indices[6] = {
-      base_index + 0, base_index + 1, base_index + 3,
-      base_index + 1, base_index + 2, base_index + 3,
+  uint32_t indices[] = {
+      base_index + 3, base_index + 1, base_index + 0,
+      base_index + 3, base_index + 2, base_index + 1,
   };
 
   for (size_t i = 0; i < sizeof(vertices) / sizeof(vertices[0]); i++) {

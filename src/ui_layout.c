@@ -35,6 +35,7 @@ void ui_push_freecells(Vector *vec, World *world) {
 
     sprite.x = (sprite.width + GAP) * i + sprite.width / 2.f + MARGIN_X;
     sprite.y = sprite.height / 2.f + MARGIN_Y;
+    sprite.z = 0.0f;
 
     UIElement ui_element = {
         .type = UI_CARD,
@@ -71,6 +72,7 @@ void ui_push_foundation(Vector *vec, World *world) {
     sprite.x = (sprite.width + GAP) * i + sprite.width / 2.f + MARGIN_X;
     sprite.x = VIRTUAL_WIDTH - sprite.x;
     sprite.y = sprite.height / 2.f + MARGIN_Y;
+    sprite.z = 0.0f;
 
     UIElement ui_element = {
         .type = UI_CARD,
@@ -103,6 +105,7 @@ void ui_push_cascade(Vector *vec, World *world, int cascade_index,
     Sprite sprite = deck[card];
     sprite.x = x_offset;
     sprite.y = sprite.height / 2.f + MARGIN_Y + OVERLAP * j;
+    sprite.z = 0.0f;
 
     UIElement ui_element = {
         .type = UI_CARD,

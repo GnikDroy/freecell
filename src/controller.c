@@ -72,7 +72,7 @@ void controller_update(GLFWwindow *window, World *world, float dt) {
     controller->layout_pending = false;
   }
 
-  if (controller->bake_pending) {
+  if (controller->layout_pending || controller->bake_pending) {
     bake_world(world);
     controller->bake_pending = false;
   }
@@ -85,12 +85,61 @@ void controller_update(GLFWwindow *window, World *world, float dt) {
   // }
 }
 
-void controller_on_close(GLFWwindow *window) {
-  World *world = glfwGetWindowUserPointer(window);
-  world->running = false;
+void controller_start_drag(Vector *ui_elements, vec2s mouse,
+                           UIDragState *drag_state) {
+  UIElement topmost;
+  size_t index;
+
+  if (ui_get_topmost_hit(ui_elements, mouse, &topmost, &index)) {
+    // Only start dragging if the topmost element is a card
+    if (topmost.type != UI_CARD) {
+      return;
+    }
+
+    drag_state->dragging = true;
+    drag_state->ui_elements_index = index;
+
+    drag_state->drag_offset.x = mouse.x - topmost.sprite.x;
+    drag_state->drag_offset.y = mouse.y - topmost.sprite.y;
+
+    drag_state->original_position.x = topmost.sprite.x;
+    drag_state->original_position.y = topmost.sprite.y;
+  }
 }
 
-void controller_on_resize(GLFWwindow *window, int width, int height) {
+void controller_update_drag(Vector *ui_elements, vec2s mouse,
+                            UIDragState *drag_state) {
+  if (!drag_state->dragging)
+    return;
+
+  void *dragged_element = vec_get(ui_elements, drag_state->ui_elements_index);
+
+  UIElement elem;
+  memcpy(&elem, dragged_element, sizeof(UIElement));
+  elem.sprite.x = mouse.x - drag_state->drag_offset.x;
+  elem.sprite.y = mouse.y - drag_state->drag_offset.y;
+  elem.sprite.z = 10.0f;
+  elem.hitbox = compute_hitbox(&elem.sprite);
+  memcpy(dragged_element, &elem, sizeof(UIElement));
+}
+
+void controller_end_drag(Vector *ui_elements, UIDragState *drag_state) {
+  void *dragged_element = vec_get(ui_elements, drag_state->ui_elements_index);
+
+  UIElement elem;
+  memcpy(&elem, dragged_element, sizeof(UIElement));
+
+  elem.sprite.x = drag_state->original_position.x;
+  elem.sprite.y = drag_state->original_position.y;
+  elem.sprite.z = 0.0f;
+  elem.hitbox = compute_hitbox(&elem.sprite);
+
+  memcpy(dragged_element, &elem, sizeof(UIElement));
+  drag_state->dragging = false;
+}
+
+void controller_on_framebuffer_resize(GLFWwindow *window, int width,
+                                      int height) {
   (void)window;
   float aspectVirtual = (float)VIRTUAL_WIDTH / VIRTUAL_HEIGHT;
   float aspectWindow = (float)width / height;
@@ -135,6 +184,28 @@ void controller_on_cursor_position(GLFWwindow *window, double x, double y) {
 
   int width, height;
   window_get_size(window, &width, &height);
-  controller->mouse =
-      screen_to_world(x, y, width, height, &world->camera);
+  controller->mouse = screen_to_world(x, y, width, height, &world->camera);
+
+  if (controller->drag_state.dragging) {
+    controller_update_drag(&world->ui_elements, controller->mouse,
+                           &controller->drag_state);
+    controller->bake_pending = true;
+  }
+}
+
+void controller_on_mouse_click(GLFWwindow *window, int code, int state,
+                               int mods) {
+  (void)mods;
+
+  World *world = glfwGetWindowUserPointer(window);
+  Controller *controller = &world->controller;
+
+  if (code == GLFW_MOUSE_BUTTON_LEFT) {
+    if (state == GLFW_PRESS) {
+      controller_start_drag(&world->ui_elements, controller->mouse,
+                            &controller->drag_state);
+    } else if (state == GLFW_RELEASE) {
+      controller_end_drag(&world->ui_elements, &controller->drag_state);
+    }
+  }
 }

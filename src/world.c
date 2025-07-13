@@ -8,7 +8,6 @@
 
 World world_init(void) {
   World world = {0};
-  world.running = true;
   world.game = game_init();
   world.assets = assets_init();
 
@@ -22,7 +21,7 @@ World world_init(void) {
           },
   };
 
-  mat4_ortho(0.0f, (float)VIRTUAL_WIDTH, (float)VIRTUAL_HEIGHT, 0.0f, -1.0f,
+  mat4_ortho(0.0f, (float)VIRTUAL_WIDTH, (float)VIRTUAL_HEIGHT, 0.0f, -1000.0f,
              1.0f, camera.projection);
   world.camera = camera;
 

@@ -1,12 +1,13 @@
 #include "debug.h"
-#include "renderer.h"
-#include "ui_element.h"
 #include "ui_layout.h"
 #include "world.h"
-#include <string.h>
 
 #ifdef DEBUG
+#include <string.h>
+
 #include "log.h"
+#include "renderer.h"
+#include "ui_element.h"
 void APIENTRY openglDebugCallback(GLenum source, GLenum type, GLuint id,
                                   GLenum severity, GLsizei length,
                                   const GLchar *message,

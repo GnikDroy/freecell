@@ -4,7 +4,7 @@
 
 typedef struct Sprite {
   float uv_top, uv_bottom, uv_left, uv_right;
-  float x, y;
+  float x, y, z;
   float width, height;
   Color color;
 } Sprite;

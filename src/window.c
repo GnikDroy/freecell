@@ -9,6 +9,7 @@ void glfwErrCallback(int error_code, const char *msg) {
 GLFWwindow *window_init(WindowConfig config) {
   glfwInit();
   glfwWindowHint(GLFW_DOUBLEBUFFER, 1);
+  glfwWindowHint(GLFW_DEPTH_BITS, 24);
   GLFWwindow *window = glfwCreateWindow((int)config.width, (int)config.height,
                                         config.title, NULL, NULL);
   if (!window) {
@@ -21,6 +22,8 @@ GLFWwindow *window_init(WindowConfig config) {
     glfwSetWindowCloseCallback(window, config.on_close);
   if (config.on_window_resize)
     glfwSetWindowSizeCallback(window, config.on_window_resize);
+  if (config.on_framebuffer_resize)
+    glfwSetFramebufferSizeCallback(window, config.on_framebuffer_resize);
   if (config.on_key)
     glfwSetKeyCallback(window, config.on_key);
   if (config.on_mouse_click)

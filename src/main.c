@@ -3,6 +3,7 @@
 #include <time.h>
 
 #include "constants.h"
+#include "controller.h"
 #include "render_system.h"
 #include "renderer.h"
 #include "window.h"
@@ -17,9 +18,10 @@ void gameloop(GLFWwindow *window) {
   const Color clear_color = {.r = 0.2f, .g = 0.4f, .b = 0.2f, .a = 1.0f};
 
   double time = glfwGetTime();
-  while (world.running) {
+  while (!glfwWindowShouldClose(window)) {
     glfwSwapBuffers(window);
-    glfwPollEvents();
+    glfwWaitEvents();
+    // glfwPollEvents(); No real time elements currently
 
     double dt = glfwGetTime() - time;
 
@@ -47,10 +49,11 @@ int main(void) {
       .max_height = GLFW_DONT_CARE,
       .title = GAME_TITLE,
       .vsync = true,
-      .on_close = controller_on_close,
-      .on_window_resize = controller_on_resize,
+      .on_close = NULL,
+      .on_window_resize = NULL,
+      .on_framebuffer_resize = controller_on_framebuffer_resize,
       .on_key = controller_on_key,
-      .on_mouse_click = NULL,
+      .on_mouse_click = controller_on_mouse_click,
       .on_cursor_position = controller_on_cursor_position,
   });
 

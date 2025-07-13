@@ -19,6 +19,7 @@ typedef struct WindowConfig_t {
 
   void (*on_close)(GLFWwindow *);
   void (*on_window_resize)(GLFWwindow *, int x, int y);
+  void (*on_framebuffer_resize)(GLFWwindow *, int width, int height);
   void (*on_cursor_position)(GLFWwindow *, double x, double y);
   void (*on_mouse_click)(GLFWwindow *, int code, int state, int mods);
   void (*on_key)(GLFWwindow *, int key, int scancode, int action, int mods);
