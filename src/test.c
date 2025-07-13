@@ -1,43 +1,26 @@
-#include "game.c"
 #include <assert.h>
 #include <stdio.h>
+#include <string.h>
+
+#include "freecell.h"
 
 void print_test_result(const char *test_name, bool passed) {
   printf("%s: %s\n", test_name, passed ? "PASS" : "FAIL");
-}
-
-void test_shuffle_deck_changes_order(void) {
-  Deck deck1, deck2;
-  for (int i = 0; i < 52; i++) {
-    deck1[i] = i + 1;
-    deck2[i] = i + 1;
-  }
-  shuffle_deck(deck1);
-
-  bool order_changed = false;
-  for (int i = 0; i < 52; i++) {
-    if (deck1[i] != deck2[i]) {
-      order_changed = true;
-      break;
-    }
-  }
-  print_test_result("test_shuffle_deck_changes_order", order_changed);
-  assert(order_changed);
 }
 
 void test_freecell_push_and_pop_cascade(void) {
   Cascade c = {.size = 0};
   Card card = 5;
 
-  uint8_t size_after_push = freecell_push_cascade(&c, card);
+  uint8_t size_after_push = cascade_push(&c, card);
   assert(size_after_push == 1);
   assert(c.cards[0] == card);
 
-  Card popped = freecell_pop_cascade(&c);
+  Card popped = cascade_pop(&c);
   assert(popped == card);
   assert(c.size == 0);
 
-  popped = freecell_pop_cascade(&c);
+  popped = cascade_pop(&c);
   assert(popped == NONE);
 
   print_test_result("test_freecell_push_and_pop_cascade", true);
@@ -143,20 +126,6 @@ void test_freecell_move_to_cascade_single(void) {
   print_test_result("test_freecell_move_to_cascade_single", true);
 }
 
-void test_freecell_move(void) {
-  Game game = game_init();
-
-  Move move = {.from = CASCADE_1, .to = RESERVE_1, .size = 1};
-  MoveResult res = game_move(&game, move);
-  assert(res == MOVE_SUCCESS);
-  assert(game.move_count == 1);
-
-  game_undo(&game);
-  assert(game.move_count == 1);
-
-  print_test_result("test_freecell_move_and_undo", true);
-}
-
 void test_freecell_move_to_foundation_wrong_rank(void) {
   Freecell game = {0};
   Card ace_spades = ACE_SPADES;
@@ -192,12 +161,12 @@ void test_freecell_push_pop_multiple_cascade(void) {
   Card cards[] = {ACE_HEARTS, TWO_SPADES, THREE_DIAMONDS};
 
   for (int i = 0; i < 3; i++) {
-    uint8_t size_after_push = freecell_push_cascade(&c, cards[i]);
+    uint8_t size_after_push = cascade_push(&c, cards[i]);
     assert(size_after_push == i + 1);
   }
 
   for (int i = 2; i >= 0; i--) {
-    Card popped = freecell_pop_cascade(&c);
+    Card popped = cascade_pop(&c);
     assert(popped == cards[i]);
   }
 
@@ -259,15 +228,188 @@ void test_freecell_move_to_foundation_invalid_start(void) {
   print_test_result("test_freecell_move_to_foundation_invalid_start", true);
 }
 
+void test_freecell_valid_multi_card_cascade_move(void) {
+  Freecell game = {0};
+
+  Card cards[] = {KING_SPADES, QUEEN_HEARTS, JACK_CLUBS};
+  Cascade *from = &game.cascade[0];
+  from->size = 3;
+  for (int i = 0; i < 3; ++i)
+    from->cards[i] = cards[i];
+
+  Cascade *to = &game.cascade[1];
+  to->size = 0;
+
+  Move move = {
+      .from = CASCADE_1,
+      .to = CASCADE_2,
+      .size = 3,
+  };
+
+  MoveResult result = freecell_validate_to_cascade(&game, move);
+  assert(result == MOVE_SUCCESS);
+  freecell_move_to_cascade(&game, move);
+
+  assert(to->size == 3);
+  assert(memcmp(to->cards, cards, sizeof(cards)) == 0);
+
+  print_test_result("test_freecell_valid_multi_card_cascade_move", true);
+}
+
+void test_freecell_invalid_multi_card_wrong_color(void) {
+  Freecell game = {0};
+
+  Card cards[] = {KING_SPADES, QUEEN_CLUBS, JACK_SPADES};
+  Cascade *from = &game.cascade[0];
+  from->size = 3;
+  for (int i = 0; i < 3; ++i)
+    from->cards[i] = cards[i];
+
+  Move move = {
+      .from = CASCADE_1,
+      .to = CASCADE_2,
+      .size = 3,
+  };
+
+  MoveResult result = freecell_validate_to_cascade(&game, move);
+  assert(result == MOVE_ERROR_WRONG_SUIT);
+
+  print_test_result("test_freecell_invalid_multi_card_wrong_color", true);
+}
+
+void test_freecell_invalid_move_exceed_max_moves(void) {
+  Freecell game = {0};
+
+  for (int i = 0; i < 4; i++)
+    game.reserve[i] = ACE_SPADES;
+  for (int i = 0; i < 8; i++)
+    game.cascade[i].size = 1;
+
+  Cascade *from = &game.cascade[0];
+  from->size = 3;
+  from->cards[0] = KING_SPADES;
+  from->cards[1] = QUEEN_HEARTS;
+  from->cards[2] = JACK_CLUBS;
+
+  Move move = {
+      .from = CASCADE_1,
+      .to = CASCADE_2,
+      .size = 3,
+  };
+
+  MoveResult result = freecell_validate_to_cascade(&game, move);
+  assert(result == MOVE_ERROR_INSUFFICIENT_FREECELLS);
+
+  print_test_result("test_freecell_invalid_move_exceed_max_moves", true);
+}
+
+void test_freecell_reserve_to_cascade_wrong_suit(void) {
+  Freecell game = {0};
+
+  game.reserve[0] = THREE_SPADES;
+
+  Cascade *c = &game.cascade[0];
+  c->size = 1;
+  c->cards[0] = FOUR_CLUBS;
+
+  MoveResult result =
+      freecell_validate_to_cascade_single(&game, THREE_SPADES, CASCADE_1);
+  assert(result == MOVE_ERROR_WRONG_SUIT);
+
+  print_test_result("test_freecell_reserve_to_cascade_wrong_suit", true);
+}
+
+void test_freecell_game_over_check(void) {
+  Freecell game = {0};
+
+  game.foundation[SPADES] = KING_SPADES;
+  game.foundation[HEARTS] = KING_HEARTS;
+  game.foundation[DIAMONDS] = KING_DIAMONDS;
+  game.foundation[CLUBS] = KING_CLUBS;
+
+  assert(freecell_game_over(&game) == true);
+
+  print_test_result("test_freecell_game_over_check", true);
+}
+
+void test_freecell_game_not_over_due_to_reserve(void) {
+  Freecell game = {0};
+
+  game.foundation[SPADES] = KING_SPADES;
+  game.foundation[HEARTS] = KING_HEARTS;
+  game.foundation[DIAMONDS] = KING_DIAMONDS;
+  game.foundation[CLUBS] = KING_CLUBS;
+
+  game.reserve[0] = ACE_SPADES;
+
+  assert(!freecell_game_over(&game));
+
+  print_test_result("test_freecell_game_not_over_due_to_reserve", true);
+}
+
+void test_freecell_game_not_over_due_to_cascade(void) {
+  Freecell game = {0};
+
+  game.foundation[SPADES] = KING_SPADES;
+  game.foundation[HEARTS] = KING_HEARTS;
+  game.foundation[DIAMONDS] = KING_DIAMONDS;
+  game.foundation[CLUBS] = KING_CLUBS;
+
+  game.cascade[0].cards[0] = ACE_HEARTS;
+  game.cascade[0].size = 1;
+
+  assert(!freecell_game_over(&game));
+
+  print_test_result("test_freecell_game_not_over_due_to_cascade", true);
+}
+
+void test_freecell_game_not_over_due_to_foundation_missing(void) {
+  Freecell game = {0};
+
+  game.foundation[SPADES] = KING_SPADES;
+  game.foundation[HEARTS] = KING_HEARTS;
+  game.foundation[DIAMONDS] = KING_DIAMONDS;
+
+  assert(!freecell_game_over(&game));
+
+  print_test_result("test_freecell_game_not_over_due_to_foundation_missing", true);
+}
+
+void test_freecell_validate_move_invalid_size_zero(void) {
+  Freecell game = {0};
+  Move move = {
+      .from = CASCADE_1,
+      .to = CASCADE_2,
+      .size = 0,
+  };
+
+  MoveResult result = freecell_validate_move(&game, move);
+  assert(result == MOVE_ERROR);
+
+  print_test_result("test_freecell_validate_move_invalid_size_zero", true);
+}
+
+void test_freecell_validate_move_invalid_same_source_dest(void) {
+  Freecell game = {0};
+  Move move = {
+      .from = CASCADE_1,
+      .to = CASCADE_1,
+      .size = 1,
+  };
+
+  MoveResult result = freecell_validate_move(&game, move);
+  assert(result == MOVE_ERROR);
+
+  print_test_result("test_freecell_validate_move_invalid_same_source_dest", true);
+}
+
 int main(void) {
-  test_shuffle_deck_changes_order();
   test_freecell_push_and_pop_cascade();
   test_freecell_init_distribution();
   test_suits_differ_by_color();
   test_freecell_move_to_foundation();
   test_freecell_move_to_reserve();
   test_freecell_move_to_cascade_single();
-  test_freecell_move();
 
   test_freecell_move_to_foundation_wrong_rank();
   test_freecell_move_to_reserve_full_slot();
@@ -276,6 +418,18 @@ int main(void) {
   test_freecell_move_to_cascade_invalid_rank_gap();
   test_freecell_move_reserve_to_cascade();
   test_freecell_move_to_foundation_invalid_start();
+
+  test_freecell_valid_multi_card_cascade_move();
+  test_freecell_invalid_multi_card_wrong_color();
+  test_freecell_invalid_move_exceed_max_moves();
+  test_freecell_reserve_to_cascade_wrong_suit();
+  test_freecell_game_over_check();
+
+  test_freecell_game_not_over_due_to_reserve();
+  test_freecell_game_not_over_due_to_cascade();
+  test_freecell_game_not_over_due_to_foundation_missing();
+  test_freecell_validate_move_invalid_size_zero();
+  test_freecell_validate_move_invalid_same_source_dest();
 
   printf("All tests completed.\n");
   return 0;

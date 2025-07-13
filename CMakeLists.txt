@@ -106,6 +106,7 @@ add_executable(
     src/constants.c
     src/controller.c
     src/debug.c
+    src/freecell.c
     src/game.c
     src/image.c
     src/log.c
@@ -132,30 +133,10 @@ target_include_directories(freecell PRIVATE ${PROJECT_SOURCE_DIR}/include)
 add_executable(
     tests 
     src/test.c 
-
-    src/assets.c
-    src/card_sprites.c
-    src/constants.c
-    src/controller.c
-    src/debug.c
-    src/image.c
-    src/log.c
-    src/mesh.c
-    src/render_system.c
-    src/renderer.c
-    src/shader.c
-    src/texture.c
-    src/ui_element.c
-    src/ui_layout.c
-    src/utils.c
-    src/vector.c
-    src/window.c
-    src/world.c
-
-    src/stb_image.c
+    src/freecell.c
 )
 
-target_link_libraries(tests OpenGL::GL stb::stb cglm glfw glad User32.lib)
+target_link_libraries(tests User32.lib)
 target_include_directories(tests PRIVATE ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src )
 
 target_link_options(tests PRIVATE)
