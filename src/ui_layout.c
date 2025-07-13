@@ -67,7 +67,7 @@ void ui_push_foundation(Vector *vec, World *world) {
     Sprite sprite = deck[card];
     if (card == NONE) {
       sprite = deck[ACE_SPADES + 13 * i];
-      sprite.color.a = 0.5f;
+      sprite.color.a = 0.3f;
     }
     sprite.x = (sprite.width + GAP) * i + sprite.width / 2.f + MARGIN_X;
     sprite.x = VIRTUAL_WIDTH - sprite.x;
@@ -99,6 +99,33 @@ void ui_push_cascade(Vector *vec, World *world, int cascade_index,
 
   const int MARGIN_Y = deck[NONE].height * 2;
   const int OVERLAP = 20;
+
+  // If the cascade is empty, we add a UIElement with a placeholder card.
+  // So that cards can be placed here
+  if (cascade->size == 0) {
+    Card card = NONE;
+    Sprite sprite = deck[card];
+    sprite.x = x_offset;
+    sprite.y = sprite.height / 2.f + MARGIN_Y;
+    sprite.z = 0.0f;
+
+    sprite.color.a = 0.5f;
+
+    UIElement ui_element = {
+        .type = UI_CARD,
+        .sprite = sprite,
+        .hitbox = compute_hitbox(&sprite),
+        .meta.card =
+            {
+                .card = card,
+                .selection_location = CASCADE_1 + cascade_index,
+                .card_index = 0,
+                .state = CARD_UI_STATE_NORMAL,
+            },
+    };
+
+    vec_push_back(vec, &ui_element);
+  }
 
   for (int j = 0; j < cascade->size; j++) {
     Card card = cascade->cards[j];
