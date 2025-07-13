@@ -1,6 +1,7 @@
 #include <glad/glad.h>
 
 #include <GLFW/glfw3.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "constants.h"
@@ -216,6 +217,72 @@ void controller_on_key(GLFWwindow *window, int key, int scancode, int action,
     } else if (key == GLFW_KEY_N) {
       game_new(&world->game);
       controller->layout_pending = true;
+    } else if (key == GLFW_KEY_M) {
+      // complete the game for debug
+      Freecell *freecell = &world->game.freecell;
+
+      for (int i = 0; i < 8; i++) {
+        freecell->cascade[i].size = 0;
+      }
+      for (int i = 0; i < 4; i++) {
+        freecell->reserve[i] = NONE;
+      }
+      freecell->foundation[SPADES] = KING_SPADES;
+      freecell->foundation[HEARTS] = KING_HEARTS;
+      freecell->foundation[DIAMONDS] = KING_DIAMONDS;
+      freecell->foundation[CLUBS] = KING_CLUBS;
+      world->game.history.size = 0;
+      controller->layout_pending = true;
+    }
+  }
+}
+
+void controller_smart_move(World *world) {
+  Controller *controller = &world->controller;
+  vec2s mouse = controller->mouse;
+
+  UIElement topmost;
+  size_t index;
+  if (ui_get_topmost_hit(&world->ui_elements, mouse, &topmost, &index)) {
+    if (topmost.type == UI_CARD) {
+      Card card = topmost.meta.card.card;
+      SelectionLocation location = topmost.meta.card.selection_location;
+
+      if (card == NONE) {
+        return;
+      }
+
+      uint8_t size = 1;
+      if (selection_location_is_cascade(location)) {
+        size = world->game.freecell.cascade[location - CASCADE_1].size -
+               topmost.meta.card.card_index;
+      }
+
+      if (freecell_validate_to_foundation(&world->game.freecell, card) ==
+          MOVE_SUCCESS) {
+        Move move = {
+            .from = location,
+            .to = FOUNDATION_SPADES + get_suit(card),
+            .size = size,
+        };
+        game_move(&world->game, move);
+        controller->layout_pending = true;
+        return;
+      } else {
+        for (uint8_t i = 0; i < 4; i++) {
+          if (freecell_validate_to_reserve(&world->game.freecell, card,
+                                           RESERVE_1 + i) == MOVE_SUCCESS) {
+            Move move = {
+                .from = location,
+                .to = RESERVE_1 + i,
+                .size = size,
+            };
+            game_move(&world->game, move);
+            controller->layout_pending = true;
+            return;
+          }
+        }
+      }
     }
   }
 }
@@ -230,6 +297,10 @@ void controller_on_mouse_click(GLFWwindow *window, int code, int state,
       controller_start_drag(world);
     } else if (state == GLFW_RELEASE) {
       controller_end_drag(world);
+    }
+  } else if (code == GLFW_MOUSE_BUTTON_RIGHT) {
+    if (state == GLFW_PRESS) {
+      controller_smart_move(world);
     }
   }
 }

@@ -69,9 +69,9 @@ bool freecell_game_over(Freecell *freecell) {
   }
 
   return freecell->foundation[SPADES] =
-             ACE_SPADES && freecell->foundation[HEARTS] == ACE_HEARTS &&
-             freecell->foundation[DIAMONDS] == ACE_DIAMONDS &&
-             freecell->foundation[CLUBS] == ACE_CLUBS;
+             ACE_SPADES && freecell->foundation[HEARTS] == KING_HEARTS &&
+             freecell->foundation[DIAMONDS] == KING_DIAMONDS &&
+             freecell->foundation[CLUBS] == KING_CLUBS;
 }
 
 bool suits_differ_by_color(Suit suit1, Suit suit2) {
@@ -231,7 +231,7 @@ MoveResult freecell_validate_move(Freecell *freecell, Move move) {
     Cascade *cascade = &freecell->cascade[move.from - CASCADE_1];
     Card card = cascade->cards[cascade->size - move.size];
     return freecell_validate_to_foundation(freecell, card);
-  } else if (from_cascade && to_reserve) {
+  } else if (from_cascade && to_reserve && move.size == 1) {
     Cascade *cascade = &freecell->cascade[move.from - CASCADE_1];
     Card card = cascade->cards[cascade->size - move.size];
     return freecell_validate_to_reserve(freecell, card, move.to);
@@ -239,7 +239,7 @@ MoveResult freecell_validate_move(Freecell *freecell, Move move) {
     return freecell_validate_to_cascade(freecell, move);
   }
 
-  return MOVE_SUCCESS;
+  return MOVE_ERROR;
 }
 
 void freecell_move_to_foundation(Freecell *freecell, Card card) {
@@ -301,7 +301,7 @@ void freecell_move(Freecell *freecell, Move move) {
     Card card = freecell->reserve[move.from - RESERVE_1];
     freecell_move_to_cascade_single(freecell, card, move.to);
     freecell->reserve[move.from - RESERVE_1] = NONE;
-  } else if (from_cascade && to_foundation && move.size == 1) {
+  } else if (from_cascade && to_foundation) {
     Cascade *cascade = &freecell->cascade[move.from - CASCADE_1];
     Card card = cascade->cards[cascade->size - move.size];
     freecell_move_to_foundation(freecell, card);
