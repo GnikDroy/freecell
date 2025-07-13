@@ -1,4 +1,5 @@
 #pragma once
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "vector.h"
@@ -105,7 +106,6 @@ typedef struct Cascade {
   Card cards[19];
 } Cascade;
 
-
 typedef uint8_t SelectionLocation;
 enum {
   CASCADE_1,
@@ -125,6 +125,18 @@ enum {
   FOUNDATION_DIAMONDS,
   FOUNDATION_CLUBS,
 };
+
+inline bool selection_location_is_cascade(SelectionLocation location) {
+  return location >= CASCADE_1 && location <= CASCADE_8;
+}
+
+inline bool selection_location_is_reserve(SelectionLocation location) {
+  return location >= RESERVE_1 && location <= RESERVE_4;
+}
+
+inline bool selection_location_is_foundation(SelectionLocation location) {
+  return location >= FOUNDATION_SPADES && location <= FOUNDATION_CLUBS;
+}
 
 typedef struct Move {
   SelectionLocation from;
@@ -155,8 +167,12 @@ typedef struct Game {
 
 Game game_init(void);
 
+void game_free(Game *game);
+
+void game_new(Game *game);
+
+bool game_can_move_from(Game *game, SelectionLocation from, uint32_t card_index);
+
 MoveResult game_move(Game *game, Move move);
 
 void game_undo(Game *game);
-
-void game_free(Game *game);

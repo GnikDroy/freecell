@@ -1,4 +1,6 @@
 #include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -29,7 +31,7 @@ static Card freecell_pop_cascade(Cascade *cascade) {
   return popped;
 }
 
-Freecell freecell_init(void) {
+static Freecell freecell_init(void) {
   Freecell game = {0};
 
   // Get a random deck
@@ -123,7 +125,7 @@ static MoveResult freecell_move_to_cascade_single(Freecell *freecell, Card card,
   }
 }
 
-static MoveResult freecell_move_to_cascade(Freecell *freecell, Move move) {
+static uint8_t freecell_count_max_moves(Freecell *freecell) {
   uint8_t empty_cascades = 0;
   for (int i = 0; i < 8; i++) {
     if (freecell->cascade[i].size == 0) {
@@ -138,7 +140,12 @@ static MoveResult freecell_move_to_cascade(Freecell *freecell, Move move) {
     }
   }
 
-  int max_moves = (1 << empty_cascades) * (freecells + 1);
+  return (1 << empty_cascades) * (freecells + 1);
+}
+
+static MoveResult freecell_move_to_cascade(Freecell *freecell, Move move) {
+  int max_moves = freecell_count_max_moves(freecell);
+
   if (freecell->cascade[move.to].size == 0) {
     max_moves /= 2;
   }
@@ -191,16 +198,14 @@ static MoveResult freecell_move(Freecell *freecell, Move move) {
     return MOVE_ERROR;
   }
 
-  bool from_cascade = move.from >= CASCADE_1 && move.from <= CASCADE_8;
-  bool to_cascade = move.to >= CASCADE_1 && move.to <= CASCADE_8;
+  bool from_cascade = selection_location_is_cascade(move.from);
+  bool to_cascade = selection_location_is_cascade(move.to);
 
-  bool from_reserve = move.from >= RESERVE_1 && move.from <= RESERVE_4;
-  bool to_reserve = move.to >= RESERVE_1 && move.to <= RESERVE_4;
+  bool from_reserve = selection_location_is_reserve(move.from);
+  bool to_reserve = selection_location_is_reserve(move.to);
 
-  bool from_foundation =
-      move.from >= FOUNDATION_SPADES && move.from <= FOUNDATION_CLUBS;
-  bool to_foundation =
-      move.to >= FOUNDATION_SPADES && move.to <= FOUNDATION_CLUBS;
+  bool from_foundation = selection_location_is_foundation(move.from);
+  bool to_foundation = selection_location_is_foundation(move.to);
 
   MoveResult result = MOVE_SUCCESS;
 
@@ -268,13 +273,77 @@ Game game_init(void) {
   return game;
 }
 
+void game_free(Game *game) { vec_free(&game->history); }
+
+void game_new(Game *game) {
+  game->freecell = freecell_init();
+  game->move_count = 0;
+  game->history.size = 0;
+}
+
+bool game_can_move_from(Game *game, SelectionLocation from,
+                        uint32_t card_index) {
+  Freecell *freecell = &game->freecell;
+
+  if (selection_location_is_foundation(from)) {
+    return freecell->foundation[from - FOUNDATION_SPADES] != NONE;
+  } else if (selection_location_is_reserve(from)) {
+    return freecell->reserve[from - RESERVE_1] != NONE;
+  } else if (selection_location_is_cascade(from)) {
+    uint32_t cascade_idx = from - CASCADE_1;
+    Cascade *cascade = &freecell->cascade[cascade_idx];
+
+    if (cascade->size == 0) {
+      return false;
+    }
+
+    if (card_index == cascade->size - 1) {
+      return true;
+    }
+
+    // super moves
+    uint8_t cards_moved = cascade->size - card_index;
+    if (cards_moved > freecell_count_max_moves(freecell)) {
+      return false;
+    }
+
+    // every card below must be alternating color and one rank lower
+    Rank prev_rank = get_rank(cascade->cards[card_index]);
+    Suit prev_suit = get_suit(cascade->cards[card_index]);
+    for (uint8_t i = card_index + 1; i < cascade->size; i++) {
+      Card card = cascade->cards[i];
+      Rank rank = get_rank(card);
+      Suit suit = get_suit(card);
+      if (rank != prev_rank - 1 || !suits_differ_by_color(prev_suit, suit)) {
+        return false;
+      }
+      prev_rank = rank;
+      prev_suit = suit;
+    }
+
+    return true;
+  }
+
+  return false;
+}
+
 MoveResult game_move(Game *game, Move move) {
   MoveResult result = freecell_move(&game->freecell, move);
   if (result == MOVE_SUCCESS) {
+    printf("Move success %d to %d of size %d\n", move.from, move.to, move.size);
     game->move_count++;
     vec_push_back(&game->history, &move);
   }
   return result;
+}
+
+static Move move_get_reverse(Move move) {
+  Move reverse_move = {
+      .from = move.to,
+      .to = move.from,
+      .size = move.size,
+  };
+  return reverse_move;
 }
 
 void game_undo(Game *game) {
@@ -283,22 +352,18 @@ void game_undo(Game *game) {
   }
 
   Move last_move;
-  char *move = (char *)game->history.data +
-               (game->history.size - 1) * game->history.elem_size;
+  void *move = vec_get(&game->history, game->history.size - 1);
   memcpy(&last_move, move, sizeof(Move));
 
+  Move reverse_move = move_get_reverse(last_move);
+  MoveResult result = freecell_move(&game->freecell, reverse_move);
+
+  if (result != MOVE_SUCCESS) {
+    printf("Undo failed with error code: %d\n", result);
+    return;
+  }
+
   vec_pop_back(&game->history);
-
-  Move reverse_move = {
-      .from = last_move.to,
-      .to = last_move.from,
-      .size = last_move.size,
-  };
-
-  // We dont check return value because we assume the game state is valid
-  freecell_move(&game->freecell, reverse_move);
   game->move_count++; // Freecell rules allow undoing moves, so we increment the
                       // move count
 }
-
-void game_free(Game *game) { vec_free(&game->history); }
