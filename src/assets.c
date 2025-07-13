@@ -3,14 +3,12 @@
 #include "shader.h"
 #include "texture.h"
 
-const char MAIN_SPRITESHEET[] = {
-#embed "assets/spritesheet.png"
-};
+#include "card_sprites.h"
 
 Assets assets_init() {
   Assets assets;
   assets.spritesheet = image_load_from_memory((const uint8_t *)MAIN_SPRITESHEET,
-                                              sizeof(MAIN_SPRITESHEET), 4);
+                                              MAIN_SPRITESHEET_SIZE, 4);
   assets.spritesheet_texture = texture_init(&assets.spritesheet);
   assets.main_shader =
       shader_init(MAIN_VERTEX_SHADER_SOURCE, MAIN_FRAGMENT_SHADER_SOURCE);

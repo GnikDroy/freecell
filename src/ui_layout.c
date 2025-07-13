@@ -98,7 +98,7 @@ void ui_push_cascade(Vector *vec, World *world, int cascade_index,
   Sprite *deck = world->deck;
 
   const int MARGIN_Y = deck[NONE].height * 2;
-  const int OVERLAP = 20;
+  const int OVERLAP = floor(deck[NONE].height * 0.2);
 
   // If the cascade is empty, we add a UIElement with a placeholder card.
   // So that cards can be placed here
