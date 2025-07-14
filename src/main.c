@@ -2,12 +2,14 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "constants.h"
-#include "controller.h"
-#include "render_system.h"
-#include "renderer.h"
-#include "window.h"
-#include "world.h"
+#include "platform/window.h"
+
+#include "rendering/renderer.h"
+
+#include "game/constants.h"
+#include "game/controller.h"
+#include "game/render_system.h"
+#include "game/world.h"
 
 void gameloop(GLFWwindow* window) {
     World world = world_init();

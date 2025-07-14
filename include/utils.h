@@ -3,8 +3,8 @@
 
 #include <cglm/struct.h>
 
-#include "camera.h"
-#include "rect.h"
+#include "rendering/camera.h"
+#include "rendering/rect.h"
 
 bool point_in_rect(float px, float py, Rect rect);
 

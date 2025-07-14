@@ -116,28 +116,31 @@ add_executable(
     freecell 
     src/main.c
 
-    src/assets.c
-    src/card_sprites.c
-    src/constants.c
-    src/controller.c
-    src/debug.c
-    src/freecell.c
-    src/game.c
-    src/image.c
-    src/log.c
-    src/mesh.c
-    src/render_system.c
-    src/renderer.c
-    src/shader.c
-    src/texture.c
-    src/ui_element.c
-    src/ui_layout.c
-    src/utils.c
-    src/vector.c
-    src/window.c
-    src/world.c
+    src/game/assets.c
+    src/game/card_sprites.c
+    src/game/constants.c
+    src/game/controller.c
+    src/game/debug.c
+    src/game/render_system.c
+    src/game/ui_element.c
+    src/game/ui_layout.c
+    src/game/world.c
 
-    src/stb_image.c
+    src/core/freecell.c
+    src/core/game.c
+    src/core/vector.c
+    src/core/log.c
+    src/core/stb_image.c
+
+    src/rendering/mesh.c
+    src/rendering/image.c
+    src/rendering/renderer.c
+    src/rendering/shader.c
+    src/rendering/texture.c
+
+    src/platform/window.c
+
+    src/utils.c
 )
 set_property(TARGET freecell PROPERTY MSVC_RUNTIME_LIBRARY MultiThreadedDebug)
 target_link_options(freecell PRIVATE -static)
@@ -147,8 +150,8 @@ target_include_directories(freecell PRIVATE ${PROJECT_SOURCE_DIR}/include)
 # Tests
 add_executable(
     tests 
-    src/test.c 
-    src/freecell.c
+    src/test/test.c 
+    src/core/freecell.c
 )
 
 target_link_libraries(tests User32.lib)

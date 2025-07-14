@@ -1,6 +1,5 @@
 #include "utils.h"
-#include "constants.h"
-#include <string.h>
+#include "game/constants.h"
 
 bool point_in_rect(float px, float py, Rect rect) {
     float halfW = rect.width / 2.0f;
