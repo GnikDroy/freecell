@@ -401,10 +401,60 @@ void test_freecell_validate_move_invalid_same_source_dest(void) {
     print_test_result("test_freecell_validate_move_invalid_same_source_dest", true);
 }
 
+void test_cascade_is_stacked_properly(void) {
+    Cascade c = { .size = 4 };
+    c.cards[0] = EIGHT_SPADES; // Black
+    c.cards[1] = SEVEN_HEARTS; // Red
+    c.cards[2] = SIX_CLUBS; // Black
+    c.cards[3] = FIVE_DIAMONDS; // Red
+
+    assert(cascade_is_stacked_properly(&c, 0));
+    print_test_result("cascade_is_stacked_properly - valid", true);
+
+    c.cards[2] = SIX_SPADES; // Same color as previous (black), invalid
+    assert(!cascade_is_stacked_properly(&c, 0));
+    print_test_result("cascade_is_stacked_properly - invalid color", true);
+
+    c.cards[2] = FOUR_CLUBS; // Wrong rank (should be 6)
+    assert(!cascade_is_stacked_properly(&c, 0));
+    print_test_result("cascade_is_stacked_properly - invalid rank", true);
+}
+
+void test_freecell_is_trivially_solved_true(void) {
+    Freecell f = { 0 };
+
+    for (int i = 0; i < 8; i++) {
+        Cascade* c = &f.cascade[i];
+        c->size = 3;
+        c->cards[0] = SEVEN_SPADES;
+        c->cards[1] = SIX_HEARTS;
+        c->cards[2] = FIVE_CLUBS;
+    }
+
+    assert(freecell_is_trivially_solved(&f));
+    print_test_result("freecell_is_trivially_solved - valid stacks", true);
+}
+
+void test_freecell_is_trivially_solved_false(void) {
+    Freecell f = { 0 };
+
+    for (int i = 0; i < 8; i++) {
+        Cascade* c = &f.cascade[i];
+        c->size = 3;
+        c->cards[0] = SEVEN_SPADES;
+        c->cards[1] = SIX_CLUBS; // same color as previous (invalid)
+        c->cards[2] = FIVE_DIAMONDS;
+    }
+
+    assert(!freecell_is_trivially_solved(&f));
+    print_test_result("freecell_is_trivially_solved - invalid stacks", true);
+}
+
 int main(void) {
     test_freecell_push_and_pop_cascade();
-    test_freecell_init_distribution();
     test_suits_differ_by_color();
+    test_cascade_is_stacked_properly();
+    test_freecell_init_distribution();
     test_freecell_move_to_foundation();
     test_freecell_move_to_reserve();
     test_freecell_move_to_cascade_single();
@@ -422,6 +472,8 @@ int main(void) {
     test_freecell_invalid_move_exceed_max_moves();
     test_freecell_reserve_to_cascade_wrong_suit();
     test_freecell_game_over_check();
+    test_freecell_is_trivially_solved_true();
+    test_freecell_is_trivially_solved_false();
 
     test_freecell_game_not_over_due_to_reserve();
     test_freecell_game_not_over_due_to_cascade();

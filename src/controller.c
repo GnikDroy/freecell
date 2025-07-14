@@ -229,6 +229,20 @@ void controller_on_key(GLFWwindow* window, int key, int scancode, int action, in
             window_toggle_fullscreen(window);
         } else if (key == GLFW_KEY_D) {
             controller->debug = !controller->debug;
+        } else if (key == GLFW_KEY_C) {
+            // make all cascades full for debugging view
+            Freecell* freecell = &world->game.freecell;
+
+            const int MAX_CASCADE_SIZE = sizeof(freecell->cascade[0].cards) / sizeof(Card);
+            for (int j = 0; j < 8; j++) {
+                freecell->cascade[j].size = 0;
+                for (int i = 0; i < MAX_CASCADE_SIZE; i++) {
+                    cascade_push(&freecell->cascade[j], KING_CLUBS - i);
+                }
+            }
+
+            world->game.history.size = 0;
+            controller->layout_pending = true;
         }
     }
 }

@@ -162,9 +162,13 @@ uint8_t cascade_push(Cascade* cascade, Card card);
 
 Card cascade_pop(Cascade* cascade);
 
+bool cascade_is_stacked_properly(Cascade* cascade, size_t start_index);
+
 Freecell freecell_init(void);
 
 bool freecell_game_over(Freecell* freecell);
+
+bool freecell_is_trivially_solved(Freecell* freecell);
 
 uint8_t freecell_count_max_moves(Freecell* freecell);
 

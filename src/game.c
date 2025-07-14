@@ -1,6 +1,5 @@
 #include <stdbool.h>
 #include <stdint.h>
-#include <string.h>
 
 #include "game.h"
 
@@ -46,21 +45,8 @@ bool game_can_move_from(Game* game, SelectionLocation from, uint32_t card_index)
             return false;
         }
 
-        // every card below must be alternating color and one rank lower
-        Rank prev_rank = get_rank(cascade->cards[card_index]);
-        Suit prev_suit = get_suit(cascade->cards[card_index]);
-        for (uint8_t i = card_index + 1; i < cascade->size; i++) {
-            Card card = cascade->cards[i];
-            Rank rank = get_rank(card);
-            Suit suit = get_suit(card);
-            if (rank != prev_rank - 1 || !suits_differ_by_color(prev_suit, suit)) {
-                return false;
-            }
-            prev_rank = rank;
-            prev_suit = suit;
-        }
-
-        return true;
+        // cascade should be stacked properly to be moved
+        return cascade_is_stacked_properly(cascade, card_index);
     }
 
     return false;

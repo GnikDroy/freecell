@@ -23,7 +23,7 @@ void ui_push_freecells(Vector* vec, World* world) {
 
     const int MARGIN_Y = 30;
     const int MARGIN_X = 30;
-    const int GAP = 15;
+    const int GAP = 25;
 
     for (int i = 0; i < 4; i++) {
         Card card = freecell->reserve[i];
@@ -60,7 +60,7 @@ void ui_push_foundation(Vector* vec, World* world) {
 
     const int MARGIN_Y = 30;
     const int MARGIN_X = 30;
-    const int GAP = 15;
+    const int GAP = 25;
 
     for (int i = 0; i < 4; i++) {
         Card card = freecell->foundation[i];
@@ -154,7 +154,7 @@ void ui_push_cascades(Vector* vec, World* world) {
     Sprite* deck = world->deck;
 
     const int CASCADE_COUNT = 8;
-    const int GAP = 15;
+    const int GAP = 45;
 
     const float total_width = CASCADE_COUNT * deck[NONE].width + (CASCADE_COUNT - 1) * GAP;
     for (int i = 0; i < CASCADE_COUNT; i++) {

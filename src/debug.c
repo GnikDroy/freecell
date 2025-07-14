@@ -37,7 +37,7 @@ void debug_render_mouse(World* world) {
         .g = 0.0f,
         .b = 0.0f,
         .a = 1.0f,
-        .u = 0.0f,
+        .u = 0.2f,
         .v = 0.0f,
     };
 
@@ -85,7 +85,7 @@ static void mesh_push_hitbox(Mesh* mesh, Rect hitbox, Color color) {
         vertices[i].g = color.g;
         vertices[i].b = color.b;
         vertices[i].a = color.a;
-        vertices[i].u = 0.0f;
+        vertices[i].u = 0.2f;
         vertices[i].v = 0.0f;
     }
 
@@ -116,7 +116,7 @@ void debug_render_hit_hitbox(World* world) {
 
     vec2s mouse = world->controller.mouse;
 
-    Color color = (Color) { 10.0f, 0.0f, 0.0f, 10.0f };
+    Color color = (Color) { 100.0f, 0.0f, 0.0f, 10.0f };
 
     UIElement topmost_ui_element;
     if (ui_get_topmost_hit(&world->ui_elements, mouse, &topmost_ui_element, NULL)) {

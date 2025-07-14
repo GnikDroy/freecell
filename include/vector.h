@@ -1,6 +1,7 @@
 #pragma once
 #include <assert.h>
 #include <stdint.h>
+#include <string.h>
 
 #define vec_get_as(type, name, vec_ptr, index)                                                     \
     type name;                                                                                     \
