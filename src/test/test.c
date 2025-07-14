@@ -265,14 +265,12 @@ void test_freecell_valid_multi_card_cascade_move(void) {
     print_test_result("test_freecell_valid_multi_card_cascade_move", true);
 }
 
-void test_freecell_invalid_multi_card_wrong_color(void) {
+void test_freecell_invalid_multi_card_wrong_stacking(void) {
     Freecell game = { 0 };
 
     Card cards[] = { KING_SPADES, QUEEN_CLUBS, JACK_SPADES };
-    Cascade* from = &game.cascade[0];
-    from->size = 3;
     for (int i = 0; i < 3; ++i)
-        from->cards[i] = cards[i];
+        cascade_push(&game.cascade[0], cards[i]);
 
     Move move = {
         .from = CASCADE_1,
@@ -281,7 +279,7 @@ void test_freecell_invalid_multi_card_wrong_color(void) {
     };
 
     MoveResult result = freecell_validate_to_cascade(&game, move);
-    assert(result == MOVE_ERROR_WRONG_SUIT);
+    assert(result == MOVE_ERROR);
 
     print_test_result("test_freecell_invalid_multi_card_wrong_color", true);
 }
@@ -421,7 +419,7 @@ void test_cascade_is_stacked_properly(void) {
     assert(cascade_is_stacked_properly(&c, 0));
     print_test_result("cascade_is_stacked_properly - valid", true);
 
-    c.cards[2] = SIX_SPADES; // Same color as previous (black), invalid
+    c.cards[2] = SIX_HEARTS; // Same color as previous (red), invalid
     assert(!cascade_is_stacked_properly(&c, 0));
     print_test_result("cascade_is_stacked_properly - invalid color", true);
 
@@ -479,7 +477,7 @@ int main(void) {
     test_freecell_move_to_foundation_invalid_selection_location();
 
     test_freecell_valid_multi_card_cascade_move();
-    test_freecell_invalid_multi_card_wrong_color();
+    test_freecell_invalid_multi_card_wrong_stacking();
     test_freecell_invalid_move_exceed_max_moves();
     test_freecell_reserve_to_cascade_wrong_suit();
     test_freecell_game_over_check();

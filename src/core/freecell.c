@@ -91,12 +91,12 @@ bool freecell_game_over(Freecell* freecell) {
     }
 
     for (int i = 0; i < 8; i++) {
-        if (freecell->cascade[i].size > 0) {
+        if (freecell->cascade[i].size != 0) {
             return false;
         }
     }
 
-    return freecell->foundation[SPADES] == ACE_SPADES && freecell->foundation[HEARTS] == KING_HEARTS
+    return freecell->foundation[SPADES] == KING_SPADES && freecell->foundation[HEARTS] == KING_HEARTS
         && freecell->foundation[DIAMONDS] == KING_DIAMONDS
         && freecell->foundation[CLUBS] == KING_CLUBS;
 }
@@ -211,6 +211,10 @@ MoveResult freecell_validate_to_cascade(Freecell* freecell, Move move) {
     Cascade* to_cascade = &freecell->cascade[move.to];
 
     if (move.size > from_cascade->size) {
+        return MOVE_ERROR;
+    }
+
+    if (!cascade_is_stacked_properly(from_cascade, from_cascade->size - move.size)) {
         return MOVE_ERROR;
     }
 
