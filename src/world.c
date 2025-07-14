@@ -6,37 +6,37 @@
 #include "ui_element.h"
 
 World world_init(void) {
-  World world = {0};
-  world.game = game_init();
-  world.assets = assets_init();
+    World world = { 0 };
+    world.game = game_init();
+    world.assets = assets_init();
 
-  Camera camera = {
-      .view = GLM_MAT4_IDENTITY_INIT,
-  };
+    Camera camera = {
+        .view = GLM_MAT4_IDENTITY_INIT,
+    };
 
-  glm_ortho(0.0f, (float)VIRTUAL_WIDTH, (float)VIRTUAL_HEIGHT, 0.0f, -1000.0f,
-             1.0f, camera.projection);
+    glm_ortho(
+        0.0f, (float)VIRTUAL_WIDTH, (float)VIRTUAL_HEIGHT, 0.0f, -1000.0f, 1.0f, camera.projection);
 
-  world.camera = camera;
+    world.camera = camera;
 
-  generate_card_sprites(world.deck);
+    generate_card_sprites(world.deck);
 
-  world.ui_elements = vec_init(sizeof(UIElement));
+    world.ui_elements = vec_init(sizeof(UIElement));
 
-  world.game_mesh = mesh_init();
-  world.game_gpu_mesh = gpu_mesh_init();
+    world.game_mesh = mesh_init();
+    world.game_gpu_mesh = gpu_mesh_init();
 
-  world.controller.layout_pending = true;
-  world.controller.bake_pending = true;
-  return world;
+    world.controller.layout_pending = true;
+    world.controller.bake_pending = true;
+    return world;
 }
 
-void world_free(World *world) {
-  game_free(&world->game);
-  assets_free(&world->assets);
+void world_free(World* world) {
+    game_free(&world->game);
+    assets_free(&world->assets);
 
-  vec_free(&world->ui_elements);
+    vec_free(&world->ui_elements);
 
-  gpu_mesh_free(&world->game_gpu_mesh);
-  mesh_free(&world->game_mesh);
+    gpu_mesh_free(&world->game_gpu_mesh);
+    mesh_free(&world->game_mesh);
 }

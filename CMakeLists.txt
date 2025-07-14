@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
+project(freecell C)
+
 set(default_build_type "Release")
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
@@ -94,7 +96,6 @@ cglm_build()
 
 find_package(OpenGL REQUIRED)
 
-project(freecell C)
 
 # Main exe
 add_executable(

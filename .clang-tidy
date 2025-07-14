@@ -1,0 +1,13 @@
+---
+Checks: >
+  clang-diagnostic-*,
+  clang-analyzer-*,
+  bugprone-*,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-narrowing-conversions,
+  -bugprone-suspicious-memory-comparison,
+  performance-*,
+  -modernize-*  # disable all modernize checks (C++-centric)
+FormatStyle: file
+WarningsAsErrors: ''
+...

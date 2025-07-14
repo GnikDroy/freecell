@@ -1,27 +1,32 @@
 #pragma once
+#include <assert.h>
 #include <stdint.h>
 
+#define vec_get_as(type, name, vec_ptr, index)                                                     \
+    type name;                                                                                     \
+    memcpy(&(name), vec_get((vec_ptr), (index)), sizeof(type))
+
 typedef struct Vector {
-  void *data;
-  size_t capacity;
-  size_t size;
-  size_t elem_size;
+    void* data;
+    size_t capacity;
+    size_t size;
+    size_t elem_size;
 } Vector;
 
 Vector vec_init(size_t elem_size);
 
-void vec_free(Vector *vector);
+void vec_free(Vector* vector);
 
-Vector vec_ensure_capacity(Vector *vector, size_t capacity);
+Vector vec_ensure_capacity(Vector* vector, size_t capacity);
 
-Vector vec_push_back(Vector *vector, const void *const data);
+Vector vec_push_back(Vector* vector, const void* const data);
 
-Vector vec_push_front(Vector *vector, const void *const data);
+Vector vec_push_front(Vector* vector, const void* const data);
 
-void vec_pop_back(Vector *vector);
+void vec_pop_back(Vector* vector);
 
-void *vec_get(Vector *vector, size_t index);
+void* vec_get(Vector* vector, size_t index);
 
-void *vec_set(Vector *vector, size_t index, const void *const data);
+void* vec_set(Vector* vector, size_t index, const void* const data);
 
-void vec_delete(Vector *vector, size_t i);
+void vec_delete(Vector* vector, size_t i);

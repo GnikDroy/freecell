@@ -11,21 +11,21 @@
 #include "sprite.h"
 
 typedef struct World {
-  Game game;
+    Game game;
 
-  Camera camera;
-  Assets assets;
+    Camera camera;
+    Assets assets;
 
-  Sprite deck[53];
+    Sprite deck[53];
 
-  Vector ui_elements;
+    Vector ui_elements;
 
-  GPUMesh game_gpu_mesh;
-  Mesh game_mesh;
+    GPUMesh game_gpu_mesh;
+    Mesh game_mesh;
 
-  Controller controller;
+    Controller controller;
 } World;
 
 World world_init(void);
 
-void world_free(World *world);
+void world_free(World* world);
