@@ -50,12 +50,9 @@ vec2s screen_to_world(
 
     vec4 clip = { ndc_x, ndc_y, 0.0f, 1.0f };
 
-    mat4 proj, view;
-    memcpy(proj, cam->projection, sizeof(proj));
-    memcpy(view, cam->view, sizeof(view));
 
     mat4 vp, inv_vp;
-    glm_mat4_mul(proj, view, vp);
+    glm_mat4_mul(cam->projection, cam->view, vp);
     glm_mat4_inv(vp, inv_vp);
 
     vec4 world;

@@ -77,8 +77,7 @@ void mesh_push_sprite(Mesh* mesh, Sprite sprite) {
 
 void mesh_push_ui_elements(Mesh* mesh, Vector* vec) {
     for (size_t i = 0; i < vec->size; i++) {
-        UIElement ui_element;
-        memcpy(&ui_element, (uint8_t*)vec->data + i * vec->elem_size, vec->elem_size);
+        vec_get_as(UIElement, ui_element, vec, i);
         ui_element_apply_state_style(&ui_element);
         mesh_push_sprite(mesh, ui_element.sprite);
     }

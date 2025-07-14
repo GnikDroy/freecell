@@ -54,8 +54,7 @@ static void controller_update_ui_state(GLFWwindow* window, World* world) {
     ui_get_topmost_hit(&world->ui_elements, controller->mouse, NULL, &hit_index);
 
     for (size_t i = 0; i < world->ui_elements.size; ++i) {
-        UIElement element;
-        memcpy(&element, vec_get(&world->ui_elements, i), sizeof(UIElement));
+        vec_get_as(UIElement, element, &world->ui_elements, i);
 
         bool hovered = hit_index == i;
         bool pressed = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
@@ -156,9 +155,7 @@ void controller_end_drag(World* world) {
 
     // Get dragged ui element
     Vector* ui_elements = &world->ui_elements;
-    UIElement from;
-    void* dragged_element = vec_get(ui_elements, drag_state->ui_elements_index);
-    memcpy(&from, dragged_element, sizeof(UIElement));
+    vec_get_as(UIElement, from, ui_elements, drag_state->ui_elements_index);
 
     // Attempt to move to topmost element
     vec2s mouse = world->controller.mouse;
@@ -196,7 +193,7 @@ void controller_end_drag(World* world) {
     from.sprite.y = drag_state->original_position.y;
     from.sprite.z = 0.0f;
     from.hitbox = compute_hitbox(&from.sprite);
-    memcpy(dragged_element, &from, sizeof(UIElement));
+    vec_set(ui_elements, drag_state->ui_elements_index, &from);
 }
 
 void controller_on_key(GLFWwindow* window, int key, int scancode, int action, int mods) {
@@ -206,9 +203,7 @@ void controller_on_key(GLFWwindow* window, int key, int scancode, int action, in
     World* world = glfwGetWindowUserPointer(window);
     Controller* controller = &world->controller;
     if (action == GLFW_PRESS) {
-        if (key == GLFW_KEY_SPACE) {
-            controller->debug = !controller->debug;
-        } else if (key == GLFW_KEY_ESCAPE) {
+        if (key == GLFW_KEY_ESCAPE) {
             game_undo(&world->game);
             controller->layout_pending = true;
         } else if (key == GLFW_KEY_N) {
@@ -230,6 +225,10 @@ void controller_on_key(GLFWwindow* window, int key, int scancode, int action, in
             freecell->foundation[CLUBS] = KING_CLUBS;
             world->game.history.size = 0;
             controller->layout_pending = true;
+        } else if (key == GLFW_KEY_F) {
+            window_toggle_fullscreen(window);
+        } else if (key == GLFW_KEY_D) {
+            controller->debug = !controller->debug;
         }
     }
 }

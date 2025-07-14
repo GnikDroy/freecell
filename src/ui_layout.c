@@ -176,9 +176,7 @@ bool ui_get_topmost_hit(Vector* ui_elements, vec2s mouse, UIElement* topmost, si
     }
 
     for (int i = (int)ui_elements->size - 1; i >= 0; i--) {
-        UIElement ui_element;
-        memcpy(&ui_element, (uint8_t*)ui_elements->data + i * ui_elements->elem_size,
-            ui_elements->elem_size);
+        vec_get_as(UIElement, ui_element, ui_elements, i);
 
         if (point_in_rect(mouse.x, mouse.y, ui_element.hitbox)) {
             if (index != NULL) {

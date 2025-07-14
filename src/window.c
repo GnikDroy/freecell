@@ -1,9 +1,19 @@
 #include "window.h"
+#include "constants.h"
 #include "log.h"
 #include <stdlib.h>
 
 void glfwErrCallback(int error_code, const char* msg) {
     log_error("GLFW Error %d : %s", error_code, msg);
+}
+
+GLFWmonitor* get_primary_monitor() {
+    GLFWmonitor* primary_monitor = glfwGetPrimaryMonitor();
+    if (primary_monitor == NULL) {
+        log_error("Failed to get primary monitor.");
+        exit(EXIT_FAILURE);
+    }
+    return primary_monitor;
 }
 
 GLFWwindow* window_init(WindowConfig config) {
@@ -51,6 +61,26 @@ void window_free(GLFWwindow* window) {
 void window_get_size(GLFWwindow* window, int* width, int* height) {
     glfwGetWindowSize(window, width, height);
 }
+
+void window_toggle_fullscreen(GLFWwindow* window) {
+    GLFWmonitor* monitor = window_get_current_monitor(window);
+    if (monitor == NULL) {
+        monitor = get_primary_monitor();
+        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+        glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+        return;
+    } else {
+        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+        int screenWidth = mode->width;
+        int screenHeight = mode->height;
+
+        int xpos = (screenWidth - VIRTUAL_WIDTH) / 2;
+        int ypos = (screenHeight - VIRTUAL_HEIGHT) / 2;
+        glfwSetWindowMonitor(window, NULL, xpos, ypos, VIRTUAL_WIDTH, VIRTUAL_HEIGHT, 0);
+    }
+};
+
+GLFWmonitor* window_get_current_monitor(GLFWwindow* window) { return glfwGetWindowMonitor(window); }
 
 void window_get_cursor_position(GLFWwindow* window, double* x, double* y) {
     glfwGetCursorPos(window, x, y);

@@ -90,9 +90,7 @@ void game_undo(Game* game) {
         return;
     }
 
-    Move last_move;
-    void* move = vec_get(&game->history, game->history.size - 1);
-    memcpy(&last_move, move, sizeof(Move));
+    vec_get_as(Move, last_move, &game->history, game->history.size - 1);
 
     Move reverse_move = move_get_reverse(last_move);
     freecell_move(&game->freecell, reverse_move);

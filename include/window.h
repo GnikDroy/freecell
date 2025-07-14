@@ -7,6 +7,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+GLFWmonitor* get_primary_monitor();
+
 typedef struct WindowConfig_t {
     size_t width;
     size_t height;
@@ -30,5 +32,9 @@ GLFWwindow* window_init(WindowConfig config);
 void window_free(GLFWwindow* window);
 
 void window_get_size(GLFWwindow* window, int* width, int* height);
+
+void window_toggle_fullscreen(GLFWwindow* window);
+
+GLFWmonitor* window_get_current_monitor(GLFWwindow* window);
 
 void window_get_cursor_position(GLFWwindow* window, double* x, double* y);

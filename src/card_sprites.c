@@ -12,7 +12,7 @@ const int CARD_GAP_Y = 1;
 const int WIDTH = 1792;
 const int HEIGHT = 724;
 
-const float SCALE = 0.7f;
+const float SCALE = 0.8f;
 
 const char MAIN_SPRITESHEET[] = {
 #embed "assets/spritesheet.png"
