@@ -3,6 +3,7 @@
 #include "assets.h"
 #include "card_sprites.h"
 #include "constants.h"
+#include "log.h"
 #include "ui_element.h"
 
 World world_init(void) {
@@ -26,6 +27,13 @@ World world_init(void) {
     world.game_mesh = mesh_init();
     world.game_gpu_mesh = gpu_mesh_init();
 
+    ma_result result = ma_engine_init(NULL, &world.engine);
+
+    if (result != MA_SUCCESS) {
+        log_error("Failed to initialize audio engine: %s", ma_result_description(result));
+        exit(EXIT_FAILURE);
+    }
+
     world.controller.layout_pending = true;
     world.controller.bake_pending = true;
     return world;
@@ -39,4 +47,6 @@ void world_free(World* world) {
 
     gpu_mesh_free(&world->game_gpu_mesh);
     mesh_free(&world->game_mesh);
+
+    ma_engine_uninit(&world->engine);
 }

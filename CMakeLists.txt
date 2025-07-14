@@ -77,7 +77,7 @@ function(stb_build)
 endfunction()
 stb_build()
 
-# Setup stb
+# Setup cglm
 function(cglm_build)
     FetchContent_Declare(
         cglm
@@ -94,8 +94,20 @@ function(cglm_build)
 endfunction()
 cglm_build()
 
-find_package(OpenGL REQUIRED)
 
+# Setup miniaudio
+function(miniaudio_build)
+    FetchContent_Declare(
+      miniaudio
+      GIT_REPOSITORY https://github.com/mackron/miniaudio.git
+      GIT_TAG        0.11.22
+    )
+
+    FetchContent_MakeAvailable(miniaudio)
+endfunction()
+miniaudio_build()
+
+find_package(OpenGL REQUIRED)
 
 # Main exe
 add_executable(
@@ -127,7 +139,7 @@ add_executable(
 )
 set_property(TARGET freecell PROPERTY MSVC_RUNTIME_LIBRARY MultiThreadedDebug)
 target_link_options(freecell PRIVATE -static)
-target_link_libraries(freecell OpenGL::GL stb::stb cglm glfw glad User32.lib)
+target_link_libraries(freecell OpenGL::GL glad glfw cglm stb::stb miniaudio User32.lib)
 target_include_directories(freecell PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
 # Tests

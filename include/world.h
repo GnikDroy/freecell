@@ -2,6 +2,7 @@
 #include <stdint.h>
 
 #include <cglm/struct.h>
+#include <miniaudio.h>
 
 #include "assets.h"
 #include "camera.h"
@@ -22,6 +23,8 @@ typedef struct World {
 
     GPUMesh game_gpu_mesh;
     Mesh game_mesh;
+
+    ma_engine engine;
 
     Controller controller;
 } World;
