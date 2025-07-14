@@ -14,3 +14,7 @@ extern const char MAIN_FRAGMENT_SHADER_SOURCE[];
 extern const char BACKGROUND_VERTEX_SHADER_SOURCE[];
 
 extern const char BACKGROUND_FRAGMENT_SHADER_SOURCE[];
+
+extern const char CARD_MOVE_SOUND[];
+
+extern const size_t CARD_MOVE_SOUND_SIZE;

@@ -85,6 +85,11 @@ void controller_update(GLFWwindow* window, World* world, double dt) {
     }
 }
 
+static void controller_play_card_move_sound(World* world) {
+    ma_sound_stop(&world->card_move_sound);
+    ma_sound_start(&world->card_move_sound);
+}
+
 void controller_start_drag(World* world) {
     Vector* ui_elements = &world->ui_elements;
     UIDragState* drag_state = &world->controller.drag_state;
@@ -188,6 +193,7 @@ void controller_end_drag(World* world) {
             MoveResult result = game_move(&world->game, move);
 
             if (result == MOVE_SUCCESS) {
+                controller_play_card_move_sound(world);
                 world->controller.layout_pending = true;
                 return;
             }
@@ -210,8 +216,10 @@ void controller_on_key(GLFWwindow* window, int key, int scancode, int action, in
     Controller* controller = &world->controller;
     if (action == GLFW_PRESS) {
         if (key == GLFW_KEY_ESCAPE) {
-            game_undo(&world->game);
-            controller->layout_pending = true;
+            if (game_undo(&world->game) == MOVE_SUCCESS) {
+                controller_play_card_move_sound(world);
+                controller->layout_pending = true;
+            }
         } else if (key == GLFW_KEY_N) {
             game_new(&world->game);
             controller->layout_pending = true;

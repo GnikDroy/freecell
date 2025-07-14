@@ -26,6 +26,9 @@ typedef struct World {
 
     ma_engine engine;
 
+    ma_decoder card_move_decoder;
+    ma_sound card_move_sound;
+
     Controller controller;
 } World;
 

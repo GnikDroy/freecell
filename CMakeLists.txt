@@ -101,6 +101,8 @@ function(miniaudio_build)
       miniaudio
       GIT_REPOSITORY https://github.com/mackron/miniaudio.git
       GIT_TAG        0.11.22
+      GIT_SHALLOW 1
+      GIT_PROGRESS 1
     )
 
     FetchContent_MakeAvailable(miniaudio)

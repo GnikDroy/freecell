@@ -34,6 +34,24 @@ World world_init(void) {
         exit(EXIT_FAILURE);
     }
 
+    ma_decoder_config decoderConfig = ma_decoder_config_init(ma_format_f32, 0, 0);
+    result = ma_decoder_init_memory(
+        CARD_MOVE_SOUND, CARD_MOVE_SOUND_SIZE, &decoderConfig, &world.card_move_decoder);
+
+    if (result != MA_SUCCESS) {
+        log_error("Failed to initialize MP3 decoder: %s", ma_result_description(result));
+        exit(EXIT_FAILURE);
+    }
+
+    result = ma_sound_init_from_data_source(
+        &world.engine, &world.card_move_decoder, 0, NULL, &world.card_move_sound);
+
+    if (result != MA_SUCCESS) {
+        log_error("Failed to initialize sound from decoder: %s", ma_result_description(result));
+        ma_decoder_uninit(&world.card_move_decoder);
+        exit(EXIT_FAILURE);
+    }
+
     world.controller.layout_pending = true;
     world.controller.bake_pending = true;
     return world;
@@ -47,6 +65,9 @@ void world_free(World* world) {
 
     gpu_mesh_free(&world->game_gpu_mesh);
     mesh_free(&world->game_mesh);
+
+    ma_sound_uninit(&world->card_move_sound);
+    ma_decoder_uninit(&world->card_move_decoder);
 
     ma_engine_uninit(&world->engine);
 }

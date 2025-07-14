@@ -24,3 +24,9 @@ const char BACKGROUND_VERTEX_SHADER_SOURCE[] = {
 const char BACKGROUND_FRAGMENT_SHADER_SOURCE[] = {
 #embed "shaders/background_fs.glsl"
 };
+
+const char CARD_MOVE_SOUND[] = {
+#embed "assets/card_move.wav"
+};
+
+const size_t CARD_MOVE_SOUND_SIZE = sizeof(CARD_MOVE_SOUND);
