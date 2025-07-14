@@ -7,6 +7,7 @@
 typedef struct Assets {
   Image spritesheet;
   Shader main_shader;
+  Shader background_shader;
   Texture spritesheet_texture;
 } Assets;
 

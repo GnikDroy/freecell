@@ -4,7 +4,6 @@
 #include "card_sprites.h"
 #include "constants.h"
 #include "ui_element.h"
-#include "utils.h"
 
 World world_init(void) {
   World world = {0};
@@ -12,17 +11,12 @@ World world_init(void) {
   world.assets = assets_init();
 
   Camera camera = {
-      .view =
-          {
-              1.0f, 0.0f, 0.0f, 0.0f, // Column 0
-              0.0f, 1.0f, 0.0f, 0.0f, // Column 1
-              0.0f, 0.0f, 1.0f, 0.0f, // Column 2
-              0.0f, 0.0f, 0.0f, 1.0f  // Column 3
-          },
+      .view = GLM_MAT4_IDENTITY_INIT,
   };
 
-  mat4_ortho(0.0f, (float)VIRTUAL_WIDTH, (float)VIRTUAL_HEIGHT, 0.0f, -1000.0f,
+  glm_ortho(0.0f, (float)VIRTUAL_WIDTH, (float)VIRTUAL_HEIGHT, 0.0f, -1000.0f,
              1.0f, camera.projection);
+
   world.camera = camera;
 
   generate_card_sprites(world.deck);

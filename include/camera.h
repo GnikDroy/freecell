@@ -1,6 +1,8 @@
 #pragma once
 
+#include <cglm/cglm.h>
+
 typedef struct Camera {
-  float projection[16];
-  float view[16];
+  mat4 projection;
+  mat4 view;
 } Camera;

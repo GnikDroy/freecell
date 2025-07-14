@@ -10,3 +10,7 @@ extern const int VIRTUAL_HEIGHT;
 extern const char MAIN_VERTEX_SHADER_SOURCE[];
 
 extern const char MAIN_FRAGMENT_SHADER_SOURCE[];
+
+extern const char BACKGROUND_VERTEX_SHADER_SOURCE[];
+
+extern const char BACKGROUND_FRAGMENT_SHADER_SOURCE[];

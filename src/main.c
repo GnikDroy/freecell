@@ -9,70 +9,70 @@
 #include "window.h"
 #include "world.h"
 
-void gameloop(GLFWwindow *window) {
-  World world = world_init();
-  Renderer renderer = renderer_init();
+void gameloop(GLFWwindow* window) {
+    World world = world_init();
+    Renderer renderer = renderer_init();
 
-  glfwSetWindowUserPointer(window, &world);
+    glfwSetWindowUserPointer(window, &world);
 
-  const Color clear_color = {.r = 0.2f, .g = 0.4f, .b = 0.2f, .a = 1.0f};
+    const Color clear_color = { 0 };
 
-  double time = glfwGetTime();
-  while (!glfwWindowShouldClose(window)) {
-    glfwSwapBuffers(window);
-    glfwWaitEvents();
-    // glfwPollEvents(); No real time elements currently
+    double time = glfwGetTime();
+    while (!glfwWindowShouldClose(window)) {
+        glfwSwapBuffers(window);
+        glfwWaitEvents();
+        // glfwPollEvents(); No real time elements currently
 
-    double dt = glfwGetTime() - time;
+        double dt = glfwGetTime() - time;
 
-    controller_update(window, &world, dt);
+        controller_update(window, &world, dt);
 
-    renderer_clear(clear_color);
-    render_world(&world);
+        renderer_clear(clear_color);
+        render_world(&world);
 
-    time = glfwGetTime();
-  }
+        time = glfwGetTime();
+    }
 
-  renderer_free(&renderer);
-  world_free(&world);
+    renderer_free(&renderer);
+    world_free(&world);
 }
 
 int main(void) {
-  srand((uint32_t)time(NULL));
+    srand((uint32_t)time(NULL));
 
-  GLFWwindow *window = window_init((WindowConfig){
-      .width = VIRTUAL_WIDTH,
-      .height = VIRTUAL_HEIGHT,
-      .min_width = GAME_MIN_WIDTH,
-      .min_height = GAME_MIN_HEIGHT,
-      .max_width = GLFW_DONT_CARE,
-      .max_height = GLFW_DONT_CARE,
-      .title = GAME_TITLE,
-      .vsync = true,
-      .on_close = NULL,
-      .on_window_resize = NULL,
-      .on_framebuffer_resize = controller_on_framebuffer_resize,
-      .on_key = controller_on_key,
-      .on_mouse_click = controller_on_mouse_click,
-      .on_cursor_position = controller_on_cursor_position,
-  });
+    GLFWwindow* window = window_init((WindowConfig) {
+        .width = VIRTUAL_WIDTH,
+        .height = VIRTUAL_HEIGHT,
+        .min_width = GAME_MIN_WIDTH,
+        .min_height = GAME_MIN_HEIGHT,
+        .max_width = GLFW_DONT_CARE,
+        .max_height = GLFW_DONT_CARE,
+        .title = GAME_TITLE,
+        .vsync = true,
+        .on_close = NULL,
+        .on_window_resize = NULL,
+        .on_framebuffer_resize = controller_on_framebuffer_resize,
+        .on_key = controller_on_key,
+        .on_mouse_click = controller_on_mouse_click,
+        .on_cursor_position = controller_on_cursor_position,
+    });
 
-  gameloop(window);
+    gameloop(window);
 
-  window_free(window);
-  return 0;
+    window_free(window);
+    return 0;
 }
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-int APIENTRY wWinMain(_In_ HINSTANCE hinstance, _In_opt_ HINSTANCE opt,
-                      _In_ LPWSTR cmd, _In_ int i) {
-  (void)hinstance;
-  (void)opt;
-  (void)cmd;
-  (void)i;
-  return main();
+int APIENTRY wWinMain(
+    _In_ HINSTANCE hinstance, _In_opt_ HINSTANCE opt, _In_ LPWSTR cmd, _In_ int i) {
+    (void)hinstance;
+    (void)opt;
+    (void)cmd;
+    (void)i;
+    return main();
 }
 #endif

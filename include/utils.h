@@ -6,9 +6,6 @@
 #include "camera.h"
 #include "rect.h"
 
-void mat4_ortho(float left, float right, float bottom, float top, float near,
-                float far, float *out);
-
 bool point_in_rect(float px, float py, Rect rect);
 
 vec2s screen_to_world(double mouse_x, double mouse_y, int screen_width,
