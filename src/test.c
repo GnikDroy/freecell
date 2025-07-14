@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "freecell.h"
 
@@ -62,17 +63,17 @@ void test_freecell_move_to_foundation(void) {
     Card ace_spades = ACE_SPADES;
     Card two_spades = TWO_SPADES;
 
-    MoveResult res = freecell_validate_to_foundation(&game, ace_spades);
+    MoveResult res = freecell_validate_to_foundation(&game, ace_spades, FOUNDATION_SPADES);
     assert(res == MOVE_SUCCESS);
-    freecell_move_to_foundation(&game, ace_spades);
+    freecell_move_to_foundation(&game, ace_spades, FOUNDATION_SPADES);
     assert(game.foundation[SPADES] == ace_spades);
 
-    res = freecell_validate_to_foundation(&game, two_spades);
+    res = freecell_validate_to_foundation(&game, two_spades, FOUNDATION_SPADES);
     assert(res == MOVE_SUCCESS);
-    freecell_move_to_foundation(&game, two_spades);
+    freecell_move_to_foundation(&game, two_spades, FOUNDATION_SPADES);
     assert(game.foundation[SPADES] == two_spades);
 
-    res = freecell_validate_to_foundation(&game, two_spades);
+    res = freecell_validate_to_foundation(&game, two_spades, FOUNDATION_SPADES);
     assert(res == MOVE_ERROR);
 
     print_test_result("test_freecell_move_to_foundation", true);
@@ -130,11 +131,11 @@ void test_freecell_move_to_foundation_wrong_rank(void) {
     Card ace_spades = ACE_SPADES;
     Card three_spades = THREE_SPADES;
 
-    MoveResult res = freecell_validate_to_foundation(&game, ace_spades);
+    MoveResult res = freecell_validate_to_foundation(&game, ace_spades, FOUNDATION_SPADES);
     assert(res == MOVE_SUCCESS);
-    freecell_move_to_foundation(&game, ace_spades);
+    freecell_move_to_foundation(&game, ace_spades, FOUNDATION_SPADES);
 
-    res = freecell_validate_to_foundation(&game, three_spades);
+    res = freecell_validate_to_foundation(&game, three_spades, FOUNDATION_SPADES);
     assert(res == MOVE_ERROR);
 
     print_test_result("test_freecell_move_to_foundation_wrong_rank", true);
@@ -221,10 +222,19 @@ void test_freecell_move_to_foundation_invalid_start(void) {
     Freecell game = { 0 };
     Card two_spades = TWO_SPADES;
 
-    MoveResult res = freecell_validate_to_foundation(&game, two_spades);
+    MoveResult res = freecell_validate_to_foundation(&game, two_spades, FOUNDATION_SPADES);
     assert(res == MOVE_ERROR);
 
     print_test_result("test_freecell_move_to_foundation_invalid_start", true);
+}
+
+void test_freecell_move_to_foundation_invalid_selection_location(void) {
+    Freecell game = { 0 };
+
+    MoveResult res = freecell_validate_to_foundation(&game, ACE_SPADES, FOUNDATION_HEARTS);
+    assert(res == MOVE_ERROR);
+
+    print_test_result("test_freecell_move_to_foundation_invalid_selection_location", true);
 }
 
 void test_freecell_valid_multi_card_cascade_move(void) {
@@ -466,6 +476,7 @@ int main(void) {
     test_freecell_move_to_cascade_invalid_rank_gap();
     test_freecell_move_reserve_to_cascade();
     test_freecell_move_to_foundation_invalid_start();
+    test_freecell_move_to_foundation_invalid_selection_location();
 
     test_freecell_valid_multi_card_cascade_move();
     test_freecell_invalid_multi_card_wrong_color();

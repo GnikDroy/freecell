@@ -71,9 +71,9 @@ static Move move_get_reverse(Move move) {
     return reverse_move;
 }
 
-void game_undo(Game* game) {
+MoveResult game_undo(Game* game) {
     if (game->history.size == 0) {
-        return;
+        return MOVE_ERROR;
     }
 
     vec_get_as(Move, last_move, &game->history, game->history.size - 1);
@@ -84,4 +84,5 @@ void game_undo(Game* game) {
     vec_pop_back(&game->history);
     game->move_count += reverse_move.size; // Freecell rules allow undoing moves,
                                            // so we increment the move count
+    return MOVE_SUCCESS;
 }

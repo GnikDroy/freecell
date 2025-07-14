@@ -45,7 +45,7 @@ void ui_push_freecells(Vector* vec, World* world) {
             {
                 .card = card,
                 .selection_location = RESERVE_1 + i,
-                .card_index = i,
+                .card_index = 0,
                 .state = CARD_UI_STATE_NORMAL,
             },
     };
@@ -75,17 +75,17 @@ void ui_push_foundation(Vector* vec, World* world) {
         sprite.z = 0.0f;
 
         UIElement ui_element = {
-        .type = UI_CARD,
-        .sprite = sprite,
-        .hitbox = compute_hitbox(&sprite),
-        .meta.card =
-            {
-                .card = card,
-                .selection_location = FOUNDATION_SPADES + i,
-                .card_index = i,
-                .state = CARD_UI_STATE_NORMAL,
-            },
-    };
+            .type = UI_CARD,
+            .sprite = sprite,
+            .hitbox = compute_hitbox(&sprite),
+            .meta.card =
+                {
+                    .card = card,
+                    .selection_location = FOUNDATION_SPADES + i,
+                    .card_index = 0,
+                    .state = CARD_UI_STATE_NORMAL,
+                },
+        };
 
         vec_push_back(vec, &ui_element);
     }

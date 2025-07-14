@@ -21,4 +21,4 @@ bool game_can_move_from(Game* game, SelectionLocation from, uint32_t card_index)
 
 MoveResult game_move(Game* game, Move move);
 
-void game_undo(Game* game);
+MoveResult game_undo(Game* game);

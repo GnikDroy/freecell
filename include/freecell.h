@@ -172,7 +172,7 @@ bool freecell_is_trivially_solved(Freecell* freecell);
 
 uint8_t freecell_count_max_moves(Freecell* freecell);
 
-MoveResult freecell_validate_to_foundation(Freecell* freecell, Card card);
+MoveResult freecell_validate_to_foundation(Freecell* freecell, Card card, SelectionLocation dest);
 
 MoveResult freecell_validate_to_reserve(Freecell* freecell, Card card, SelectionLocation dest);
 
@@ -183,7 +183,7 @@ MoveResult freecell_validate_to_cascade(Freecell* freecell, Move move);
 
 MoveResult freecell_validate_move(Freecell* freecell, Move move);
 
-void freecell_move_to_foundation(Freecell* freecell, Card card);
+void freecell_move_to_foundation(Freecell* freecell, Card card, SelectionLocation dest);
 
 void freecell_move_to_reserve(Freecell* freecell, Card card, SelectionLocation dest);
 

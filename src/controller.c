@@ -173,6 +173,12 @@ void controller_end_drag(World* world) {
                     - from.meta.card.card_index;
             }
 
+            // if destination is ANY foundation,
+            // dest foundation will be autocorrected to the suit of the source
+            if (selection_location_is_foundation(dest_location)) {
+                dest_location = FOUNDATION_SPADES + get_suit(from.meta.card.card);
+            }
+
             Move move = {
                 .from = from_location,
                 .to = dest_location,
@@ -268,7 +274,10 @@ void controller_smart_move(World* world) {
                     - topmost.meta.card.card_index;
             }
 
-            if (freecell_validate_to_foundation(&world->game.freecell, card) == MOVE_SUCCESS) {
+            SelectionLocation foundation_destination = get_suit(card) + FOUNDATION_SPADES;
+
+            if (freecell_validate_to_foundation(&world->game.freecell, card, foundation_destination)
+                == MOVE_SUCCESS) {
                 Move move = {
                     .from = location,
                     .to = FOUNDATION_SPADES + get_suit(card),

@@ -138,9 +138,13 @@ uint8_t freecell_count_max_moves(Freecell* freecell) {
     return (1 << empty_cascades) * (freecells + 1);
 }
 
-MoveResult freecell_validate_to_foundation(Freecell* freecell, Card card) {
+MoveResult freecell_validate_to_foundation(Freecell* freecell, Card card, SelectionLocation dest) {
     Suit card_suit = get_suit(card);
     Rank card_rank = get_rank(card);
+
+    if (dest - FOUNDATION_SPADES != card_suit) {
+        return MOVE_ERROR;
+    }
 
     Card* foundation = &freecell->foundation[card_suit];
     if (*foundation == NONE && card_rank == ACE) {
@@ -258,7 +262,7 @@ MoveResult freecell_validate_move(Freecell* freecell, Move move) {
         return freecell_validate_to_cascade_single(freecell, card, move.to);
     } else if (from_reserve && to_foundation) {
         Card card = freecell->reserve[move.from - RESERVE_1];
-        return freecell_validate_to_foundation(freecell, card);
+        return freecell_validate_to_foundation(freecell, card, move.to);
     } else if (from_reserve && to_reserve) {
         Card card = freecell->reserve[move.from - RESERVE_1];
         return freecell_validate_to_reserve(freecell, card, move.to);
@@ -268,7 +272,7 @@ MoveResult freecell_validate_move(Freecell* freecell, Move move) {
     } else if (from_cascade && to_foundation && move.size == 1) {
         Cascade* cascade = &freecell->cascade[move.from - CASCADE_1];
         Card card = cascade->cards[cascade->size - move.size];
-        return freecell_validate_to_foundation(freecell, card);
+        return freecell_validate_to_foundation(freecell, card, move.to);
     } else if (from_cascade && to_reserve && move.size == 1) {
         Cascade* cascade = &freecell->cascade[move.from - CASCADE_1];
         Card card = cascade->cards[cascade->size - move.size];
@@ -280,7 +284,7 @@ MoveResult freecell_validate_move(Freecell* freecell, Move move) {
     return MOVE_ERROR;
 }
 
-void freecell_move_to_foundation(Freecell* freecell, Card card) {
+void freecell_move_to_foundation(Freecell* freecell, Card card, SelectionLocation dest) {
     Card* foundation = &freecell->foundation[get_suit(card)];
     *foundation = card;
 }
@@ -327,7 +331,7 @@ void freecell_move(Freecell* freecell, Move move) {
             = get_rank(card) == ACE ? NONE : (card - 1);
     } else if (from_reserve && to_foundation) {
         Card card = freecell->reserve[move.from - RESERVE_1];
-        freecell_move_to_foundation(freecell, card);
+        freecell_move_to_foundation(freecell, card, move.to);
         freecell->reserve[move.from - RESERVE_1] = NONE;
     } else if (from_reserve && to_reserve) {
         Card card = freecell->reserve[move.from - RESERVE_1];
@@ -340,7 +344,7 @@ void freecell_move(Freecell* freecell, Move move) {
     } else if (from_cascade && to_foundation) {
         Cascade* cascade = &freecell->cascade[move.from - CASCADE_1];
         Card card = cascade->cards[cascade->size - move.size];
-        freecell_move_to_foundation(freecell, card);
+        freecell_move_to_foundation(freecell, card, move.to);
         cascade_pop(cascade);
     } else if (from_cascade && to_reserve) {
         Cascade* cascade = &freecell->cascade[move.from - CASCADE_1];
