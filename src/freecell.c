@@ -96,7 +96,7 @@ bool freecell_game_over(Freecell* freecell) {
         }
     }
 
-    return freecell->foundation[SPADES] = ACE_SPADES && freecell->foundation[HEARTS] == KING_HEARTS
+    return freecell->foundation[SPADES] == ACE_SPADES && freecell->foundation[HEARTS] == KING_HEARTS
         && freecell->foundation[DIAMONDS] == KING_DIAMONDS
         && freecell->foundation[CLUBS] == KING_CLUBS;
 }
