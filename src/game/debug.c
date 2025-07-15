@@ -2,7 +2,7 @@
 #include "game/ui_layout.h"
 #include "game/world.h"
 
-#ifdef DEBUG
+#ifdef _DEBUG
 #include <string.h>
 
 #include "rendering/renderer.h"

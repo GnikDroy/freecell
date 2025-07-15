@@ -41,8 +41,8 @@ void renderer_draw_mesh(GPUMesh* mesh, GLenum primitive) {
     glBindVertexArray(0);
 }
 
-
-#ifdef DEBUG
+#ifdef _DEBUG
+#include "core/log.h"
 void APIENTRY openglDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
     GLsizei length, const GLchar* message, const void* userParam) {
     (void)length;
