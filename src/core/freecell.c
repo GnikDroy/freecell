@@ -1,16 +1,49 @@
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "core/game.h"
 
-static void shuffle_deck(Card deck[]) {
-    for (int i = 51; i > 0; i--) {
-        int j = rand() % (i + 1);
-        Card temp = deck[i];
-        deck[i] = deck[j];
-        deck[j] = temp;
+static int seed = 1;
+
+inline int microsoft_freecell_rand(void) {
+    uint32_t mask = (1U << 31) - 1;
+    seed = (seed * 214013 + 2531011) & mask;
+    return seed >> 16;
+}
+
+inline void microsoft_freecell_srand(uint32_t x) { seed = x; }
+
+inline void microsoft_freecell_shuffle(Card cards[]) {
+
+    // clang-format off
+    Card initial_deck[] = {
+          ACE_CLUBS,   ACE_DIAMONDS,   ACE_HEARTS,   ACE_SPADES,
+          TWO_CLUBS,   TWO_DIAMONDS,   TWO_HEARTS,   TWO_SPADES,
+        THREE_CLUBS, THREE_DIAMONDS, THREE_HEARTS, THREE_SPADES,
+         FOUR_CLUBS,  FOUR_DIAMONDS,  FOUR_HEARTS,  FOUR_SPADES,
+         FIVE_CLUBS,  FIVE_DIAMONDS,  FIVE_HEARTS,  FIVE_SPADES,
+          SIX_CLUBS,   SIX_DIAMONDS,   SIX_HEARTS,   SIX_SPADES,
+        SEVEN_CLUBS, SEVEN_DIAMONDS, SEVEN_HEARTS, SEVEN_SPADES,
+        EIGHT_CLUBS, EIGHT_DIAMONDS, EIGHT_HEARTS, EIGHT_SPADES,
+         NINE_CLUBS,  NINE_DIAMONDS,  NINE_HEARTS,  NINE_SPADES,
+          TEN_CLUBS,   TEN_DIAMONDS,   TEN_HEARTS,   TEN_SPADES,
+         JACK_CLUBS,  JACK_DIAMONDS,  JACK_HEARTS,  JACK_SPADES,
+        QUEEN_CLUBS, QUEEN_DIAMONDS, QUEEN_HEARTS, QUEEN_SPADES,
+         KING_CLUBS,  KING_DIAMONDS,  KING_HEARTS,  KING_SPADES,
+    };
+    // clang-format on
+
+    for (uint32_t i = 0; i < 52; i++)
+        cards[i] = initial_deck[51 - i];
+
+    for (uint32_t i = 0; i < 52; i++) {
+        uint32_t j = 51 - microsoft_freecell_rand() % (52 - i);
+
+        uint32_t tmp = cards[j];
+        cards[j] = cards[i];
+        cards[i] = tmp;
     }
 }
 
@@ -66,23 +99,24 @@ Freecell freecell_init(void) {
 
     // Get a random deck
     Card deck[52];
-    for (int i = 0; i < 52; i++)
-        deck[i] = i + 1;
-    shuffle_deck(deck);
 
-    // First 4 cascades will have 7 cards each
-    uint8_t deck_idx = 0;
-    for (int i = 0; i < 4; i++) {
-        memcpy(game.cascade[i].cards, deck + deck_idx, 7);
-        game.cascade[i].size = 7;
-        deck_idx += 7;
+    struct timespec now;
+    timespec_get(&now, TIME_UTC);
+    uint64_t seed = (uint64_t)now.tv_sec * 1000000000ULL + (uint64_t)now.tv_nsec;
+
+    microsoft_freecell_srand(seed % 10000000 + 1);
+    microsoft_freecell_shuffle(deck);
+
+    // Deal row by row first 6 rows
+    for (int i = 0; i < 6; i++) {
+        for (int j = 0; j < 8; j++) {
+            cascade_push(&game.cascade[j], deck[i * 8 + j]);
+        }
     }
 
-    // Remaining 4 cascades will have 6 cards each
-    for (int i = 4; i < 8; i++) {
-        memcpy(game.cascade[i].cards, deck + deck_idx, 6);
-        game.cascade[i].size = 6;
-        deck_idx += 6;
+    // Deal the last four cards
+    for (int i = 0; i < 4; i++) {
+        cascade_push(&game.cascade[i], deck[48 + i]);
     }
 
     return game;

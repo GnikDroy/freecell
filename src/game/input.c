@@ -28,6 +28,8 @@ void input_on_key(GLFWwindow* window, int key, int scancode, int action, int mod
             ia.type = INPUT_ACTION_TOGGLE_DEBUG;
         } else if (key == GLFW_KEY_C) {
             ia.type = INPUT_ACTION_FILL_CASCADES;
+        } else if (key == GLFW_KEY_Q) {
+            glfwSetWindowShouldClose(window, GLFW_TRUE);
         }
     }
     controller_handle_input(ia);

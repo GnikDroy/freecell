@@ -1,6 +1,4 @@
 #include <stdint.h>
-#include <stdlib.h>
-#include <time.h>
 
 #include "platform/window.h"
 
@@ -23,7 +21,7 @@ void gameloop(GLFWwindow* window) {
     while (!glfwWindowShouldClose(window)) {
         glfwSwapBuffers(window);
         glfwWaitEvents();
-        // glfwPollEvents(); No real time elements currently
+        // glfwPollEvents(); // No real time elements currently
 
         double dt = glfwGetTime() - time;
 
@@ -40,8 +38,6 @@ void gameloop(GLFWwindow* window) {
 }
 
 int main(void) {
-    srand((uint32_t)time(NULL));
-
     GLFWwindow* window = window_init((WindowConfig) {
         .width = VIRTUAL_WIDTH,
         .height = VIRTUAL_HEIGHT,

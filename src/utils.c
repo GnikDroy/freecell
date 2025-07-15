@@ -1,5 +1,13 @@
+#include <time.h>
+
 #include "utils.h"
 #include "game/constants.h"
+
+uint64_t time_millis() {
+    struct timespec now;
+    timespec_get(&now, TIME_UTC);
+    return (now.tv_sec * 1000) + (now.tv_nsec / 1000000);
+}
 
 bool point_in_rect(float px, float py, Rect rect) {
     float halfW = rect.width / 2.0f;
