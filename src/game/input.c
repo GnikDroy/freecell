@@ -45,7 +45,9 @@ void input_on_mouse_click(GLFWwindow* window, int code, int state, int mods) {
             ia.type = INPUT_ACTION_END_DRAG;
         }
     } else if (code == GLFW_MOUSE_BUTTON_RIGHT) {
-        ia.type = INPUT_ACTION_SMART_MOVE;
+        if (state == GLFW_RELEASE) {
+            ia.type = INPUT_ACTION_SMART_MOVE;
+        }
     }
 
     controller_handle_input(ia);

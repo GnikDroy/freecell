@@ -14,6 +14,11 @@ static void shuffle_deck(Card deck[]) {
     }
 }
 
+bool suits_differ_by_color(Suit suit1, Suit suit2) {
+    return ((suit1 == SPADES || suit1 == CLUBS) && (suit2 == HEARTS || suit2 == DIAMONDS))
+        || ((suit1 == HEARTS || suit1 == DIAMONDS) && (suit2 == SPADES || suit2 == CLUBS));
+}
+
 uint8_t cascade_push(Cascade* cascade, Card card) {
     cascade->cards[cascade->size++] = card;
     return cascade->size;
@@ -96,7 +101,8 @@ bool freecell_game_over(Freecell* freecell) {
         }
     }
 
-    return freecell->foundation[SPADES] == KING_SPADES && freecell->foundation[HEARTS] == KING_HEARTS
+    return freecell->foundation[SPADES] == KING_SPADES
+        && freecell->foundation[HEARTS] == KING_HEARTS
         && freecell->foundation[DIAMONDS] == KING_DIAMONDS
         && freecell->foundation[CLUBS] == KING_CLUBS;
 }
@@ -115,9 +121,12 @@ bool freecell_is_trivially_solved(Freecell* freecell) {
     return true;
 }
 
-bool suits_differ_by_color(Suit suit1, Suit suit2) {
-    return ((suit1 == SPADES || suit1 == CLUBS) && (suit2 == HEARTS || suit2 == DIAMONDS))
-        || ((suit1 == HEARTS || suit1 == DIAMONDS) && (suit2 == SPADES || suit2 == CLUBS));
+uint8_t freecell_count_cards_from_index(
+    const Freecell* freecell, SelectionLocation location, uint32_t card_index) {
+    if (selection_location_is_cascade(location)) {
+        return freecell->cascade[location - CASCADE_1].size - card_index;
+    }
+    return 1;
 }
 
 uint8_t freecell_count_max_moves(Freecell* freecell) {

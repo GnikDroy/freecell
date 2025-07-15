@@ -5,9 +5,8 @@
 #ifdef DEBUG
 #include <string.h>
 
-#include "log.h"
-#include "renderer.h"
-#include "ui_element.h"
+#include "rendering/renderer.h"
+#include "game/ui_element.h"
 
 void debug_render_mouse(World* world) {
     Mesh mesh = mesh_init();

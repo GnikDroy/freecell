@@ -1,5 +1,3 @@
-#include <string.h>
-
 #include "game/ui_layout.h"
 
 #include "game/constants.h"
@@ -17,6 +15,37 @@ Rect compute_hitbox(Sprite* sprite) {
     };
 
     return hitbox;
+}
+
+void ui_set_element_drag_properties(UIElement* ui_element, World* world) {
+    UIDragState* drag_state = &world->controller.drag_state;
+
+    // only card elements will have properties changed by drag
+    if (ui_element->type != UI_CARD) {
+        return;
+    }
+
+    // Not being dragged or not the correct card
+    if (!drag_state->dragging
+        || drag_state->card_location != ui_element->meta.card.selection_location
+        || drag_state->card_index > ui_element->meta.card.card_index)
+        return;
+
+    vec2s mouse = world->controller.mouse;
+
+
+    float offset_x = mouse.x - drag_state->drag_offset.x;
+    float offset_y = mouse.y - drag_state->drag_offset.y;
+
+    ui_element->sprite.x += offset_x;
+    ui_element->sprite.y += offset_y;
+    ui_element->sprite.z = 10.0f;
+
+    // empty hitbox so that no more hit detection on this
+    ui_element->hitbox.x = -INFINITY;
+    ui_element->hitbox.y = -INFINITY;
+    ui_element->hitbox.width = 0.0f;
+    ui_element->hitbox.height = 0.0f;
 }
 
 void ui_push_freecells(Vector* vec, World* world) {
@@ -40,18 +69,19 @@ void ui_push_freecells(Vector* vec, World* world) {
         sprite.z = 0.0f;
 
         UIElement ui_element = {
-        .type = UI_CARD,
-        .sprite = sprite,
-        .hitbox = compute_hitbox(&sprite),
-        .meta.card =
-            {
-                .card = card,
-                .selection_location = RESERVE_1 + i,
-                .card_index = 0,
-                .state = CARD_UI_STATE_NORMAL,
-            },
-    };
+            .type = UI_CARD,
+            .sprite = sprite,
+            .hitbox = compute_hitbox(&sprite),
+            .meta.card =
+                {
+                    .card = card,
+                    .selection_location = RESERVE_1 + i,
+                    .card_index = 0,
+                    .state = CARD_UI_STATE_NORMAL,
+                },
+        };
 
+        ui_set_element_drag_properties(&ui_element, world);
         vec_push_back(vec, &ui_element);
     }
 }
@@ -89,6 +119,7 @@ void ui_push_foundation(Vector* vec, World* world) {
                 },
         };
 
+        ui_set_element_drag_properties(&ui_element, world);
         vec_push_back(vec, &ui_element);
     }
 }
@@ -125,6 +156,7 @@ void ui_push_cascade(Vector* vec, World* world, int cascade_index, int x_offset)
             },
     };
 
+        ui_set_element_drag_properties(&ui_element, world);
         vec_push_back(vec, &ui_element);
     }
 
@@ -148,6 +180,7 @@ void ui_push_cascade(Vector* vec, World* world, int cascade_index, int x_offset)
             },
     };
 
+        ui_set_element_drag_properties(&ui_element, world);
         vec_push_back(vec, &ui_element);
     }
 }

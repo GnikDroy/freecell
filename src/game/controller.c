@@ -1,15 +1,9 @@
-#include <glad/glad.h>
-
-#include <GLFW/glfw3.h>
-#include <math.h>
-#include <stdint.h>
-#include <string.h>
-
 #include "game/controller.h"
 
 #include "core/game.h"
 
 #include "game/input_action.h"
+#include "game/ui_element.h"
 #include "platform/window.h"
 
 #include "game/constants.h"
@@ -19,8 +13,9 @@
 
 #include "utils.h"
 
-static UIElement compute_state(
+static UIElement controller_get_ui_state(
     World* world, UIElement* element, bool hovered, bool clicked, bool disabled) {
+
     UIElement new_element = *element;
     Game* game = &world->game;
 
@@ -55,6 +50,8 @@ static UIElement compute_state(
 static void controller_update_ui_state(GLFWwindow* window, World* world) {
     Controller* controller = &world->controller;
 
+    bool pressed = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
+
     size_t hit_index = -1;
     ui_get_topmost_hit(&world->ui_elements, controller->mouse, NULL, &hit_index);
 
@@ -62,31 +59,15 @@ static void controller_update_ui_state(GLFWwindow* window, World* world) {
         vec_get_as(UIElement, element, &world->ui_elements, i);
 
         bool hovered = hit_index == i;
-        bool pressed = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
         bool clicked = hovered && pressed;
         bool disabled = false;
-        UIElement expected_state = compute_state(world, &element, hovered, clicked, disabled);
+        UIElement expected_state
+            = controller_get_ui_state(world, &element, hovered, clicked, disabled);
 
         if (memcmp(&element, &expected_state, sizeof(UIElement)) != 0) {
             vec_set(&world->ui_elements, i, &expected_state);
             controller->bake_pending = true;
         }
-    }
-}
-
-void controller_update(GLFWwindow* window, World* world, double dt) {
-    (void)dt;
-    Controller* controller = &world->controller;
-    controller_update_ui_state(window, world);
-
-    if (controller->layout_pending) {
-        layout_world(world);
-        bake_world(world);
-        controller->layout_pending = false;
-        controller->bake_pending = false;
-    } else if (controller->bake_pending) {
-        bake_world(world);
-        controller->bake_pending = false;
     }
 }
 
@@ -105,113 +86,93 @@ static bool is_card_draggable(World* world, UIElement* elem) {
     return game_can_move_from(&world->game, loc, index);
 }
 
-void controller_start_drag(GLFWwindow* window, World* world) {
-    Vector* ui_elements = &world->ui_elements;
-    UIDragState* drag_state = &world->controller.drag_state;
-    vec2s mouse = world->controller.mouse;
+void controller_update(GLFWwindow* window, World* world, double dt) {
+    (void)dt;
+    Controller* controller = &world->controller;
+    controller_update_ui_state(window, world);
 
-    UIElement topmost;
-    size_t index;
-
-    if (ui_get_topmost_hit(ui_elements, mouse, &topmost, &index)) {
-        if (!is_card_draggable(world, &topmost)) {
-            return;
-        }
-
-        drag_state->dragging = true;
-        drag_state->ui_elements_index = index;
-
-        drag_state->drag_offset.x = mouse.x - topmost.sprite.x;
-        drag_state->drag_offset.y = mouse.y - topmost.sprite.y;
-
-        drag_state->original_position.x = topmost.sprite.x;
-        drag_state->original_position.y = topmost.sprite.y;
+    if (controller->layout_pending) {
+        layout_world(world);
+        bake_world(world);
+        controller->layout_pending = false;
+        controller->bake_pending = false;
+    } else if (controller->bake_pending) {
+        bake_world(world);
+        controller->bake_pending = false;
     }
 }
 
-void controller_update_drag(World* world) {
-    UIDragState* drag_state = &world->controller.drag_state;
+void controller_start_drag(GLFWwindow* window, World* world) {
     vec2s mouse = world->controller.mouse;
 
-    if (!drag_state->dragging)
-        return;
+    UIElement ui_element;
+    if (ui_get_topmost_hit(&world->ui_elements, mouse, &ui_element, NULL)) {
+        if (ui_element.type != UI_CARD || !is_card_draggable(world, &ui_element)) {
+            return;
+        }
 
-    Vector* ui_elements = &world->ui_elements;
-
-    vec_get_as(UIElement, elem, ui_elements, drag_state->ui_elements_index);
-
-    elem.sprite.x = mouse.x - drag_state->drag_offset.x;
-    elem.sprite.y = mouse.y - drag_state->drag_offset.y;
-    elem.sprite.z = 10.0f;
-
-    // empty hitbox so that no more hit detection on this
-    elem.hitbox.x = -INFINITY;
-    elem.hitbox.y = -INFINITY;
-    elem.hitbox.width = 0.0f;
-    elem.hitbox.height = 0.0f;
-
-    vec_set(ui_elements, drag_state->ui_elements_index, &elem);
+        UIDragState* drag_state = &world->controller.drag_state;
+        drag_state->dragging = true;
+        drag_state->drag_offset.x = mouse.x;
+        drag_state->drag_offset.y = mouse.y;
+        drag_state->card_location = ui_element.meta.card.selection_location;
+        drag_state->card_index = ui_element.meta.card.card_index;
+    }
 }
 
 void controller_end_drag(GLFWwindow*, World* world) {
     UIDragState* drag_state = &world->controller.drag_state;
 
-    if (!drag_state->dragging)
-        return;
-
-    drag_state->dragging = false;
-
-    // Queue bake for the world
-    world->controller.bake_pending = true;
-
-    // Get dragged ui element
+    // handle ui element drop
     Vector* ui_elements = &world->ui_elements;
-    vec_get_as(UIElement, from, ui_elements, drag_state->ui_elements_index);
-
-    // Attempt to move to topmost element
-    vec2s mouse = world->controller.mouse;
-
     UIElement dest;
-    if (ui_get_topmost_hit(ui_elements, mouse, &dest, NULL)) {
-        if (dest.type == UI_CARD) {
-            SelectionLocation from_location = from.meta.card.selection_location;
-            SelectionLocation dest_location = dest.meta.card.selection_location;
-
-            uint8_t size = 1;
-
-            if (selection_location_is_cascade(from_location)) {
-                size = world->game.freecell.cascade[from_location - CASCADE_1].size
-                    - from.meta.card.card_index;
-            }
-
-            // if destination is ANY foundation,
-            // dest foundation will be autocorrected to the suit of the source
-            if (selection_location_is_foundation(dest_location)) {
-                dest_location = FOUNDATION_SPADES + get_suit(from.meta.card.card);
-            }
-
-            Move move = {
-                .from = from_location,
-                .to = dest_location,
-                .size = size,
-            };
-
-            MoveResult result = game_move(&world->game, move);
-
-            if (result == MOVE_SUCCESS) {
-                controller_play_card_move_sound(world);
-                world->controller.layout_pending = true;
-                return;
-            }
-        }
+    if (drag_state->dragging
+        && ui_get_topmost_hit(ui_elements, world->controller.mouse, &dest, NULL)
+        && dest.type == UI_CARD) {
+        controller_handle_card_drop(
+            &dest, drag_state->card_location, drag_state->card_index, world);
     }
 
-    // Reset original position and hitbox
-    from.sprite.x = drag_state->original_position.x;
-    from.sprite.y = drag_state->original_position.y;
-    from.sprite.z = 0.0f;
-    from.hitbox = compute_hitbox(&from.sprite);
-    vec_set(ui_elements, drag_state->ui_elements_index, &from);
+    // Update drag state and queue layout update
+    drag_state->dragging = false;
+    drag_state->drag_offset.x = 0;
+    drag_state->drag_offset.y = 0;
+    drag_state->card_location = -1;
+    drag_state->card_index = 0;
+    world->controller.layout_pending = true;
+}
+
+bool controller_handle_card_drop(
+    UIElement* dest, SelectionLocation from_location, uint8_t card_index, World* world) {
+
+    if (dest->type != UI_CARD) {
+        return false;
+    }
+
+    SelectionLocation dest_location = dest->meta.card.selection_location;
+
+    // if destination is ANY foundation,
+    // dest foundation will be autocorrected to the suit of the source
+    if (selection_location_is_foundation(dest_location)) {
+        Card from_card = freecell_get_card(&world->game.freecell, from_location, card_index);
+        dest_location = FOUNDATION_SPADES + get_suit(from_card);
+    }
+
+    uint8_t size
+        = freecell_count_cards_from_index(&world->game.freecell, from_location, card_index);
+
+    MoveResult result = game_move(&world->game,
+        (Move) {
+            .from = from_location,
+            .to = dest_location,
+            .size = size,
+        });
+
+    if (result == MOVE_SUCCESS) {
+        controller_play_card_move_sound(world);
+    }
+
+    return result == MOVE_SUCCESS;
 }
 
 void controller_smart_move(GLFWwindow* window, World* world) {
@@ -229,37 +190,37 @@ void controller_smart_move(GLFWwindow* window, World* world) {
                 return;
             }
 
-            uint8_t size = 1;
-            if (selection_location_is_cascade(location)) {
-                size = world->game.freecell.cascade[location - CASCADE_1].size
-                    - topmost.meta.card.card_index;
-            }
+            uint8_t size = freecell_count_cards_from_index(
+                &world->game.freecell, location, topmost.meta.card.card_index);
 
+            // foundation destination is automatically corrected to the suit of the card
             SelectionLocation foundation_destination = get_suit(card) + FOUNDATION_SPADES;
 
+            // if can move to foundation, do it
             if (freecell_validate_to_foundation(&world->game.freecell, card, foundation_destination)
                 == MOVE_SUCCESS) {
-                Move move = {
-                    .from = location,
-                    .to = FOUNDATION_SPADES + get_suit(card),
-                    .size = size,
-                };
-                game_move(&world->game, move);
+                game_move(&world->game,
+                    (Move) {
+                        .from = location,
+                        .to = FOUNDATION_SPADES + get_suit(card),
+                        .size = size,
+                    });
                 controller->layout_pending = true;
                 return;
-            } else {
-                for (uint8_t i = 0; i < 4; i++) {
-                    if (freecell_validate_to_reserve(&world->game.freecell, card, RESERVE_1 + i)
-                        == MOVE_SUCCESS) {
-                        Move move = {
+            }
+
+            // if can move to any reserve, do it
+            for (uint8_t i = 0; i < 4; i++) {
+                if (freecell_validate_to_reserve(&world->game.freecell, card, RESERVE_1 + i)
+                    == MOVE_SUCCESS) {
+                    game_move(&world->game,
+                        (Move) {
                             .from = location,
                             .to = RESERVE_1 + i,
                             .size = size,
-                        };
-                        game_move(&world->game, move);
-                        controller->layout_pending = true;
-                        return;
-                    }
+                        });
+                    controller->layout_pending = true;
+                    return;
                 }
             }
         }
@@ -300,8 +261,7 @@ void controller_on_cursor_position(GLFWwindow* window, double x, double y) {
     controller->mouse = screen_to_world(x, y, width, height, &world->camera);
 
     if (controller->drag_state.dragging) {
-        controller_update_drag(world);
-        controller->bake_pending = true;
+        controller->layout_pending = true;
     }
 }
 

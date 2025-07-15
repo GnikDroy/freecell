@@ -1,18 +1,23 @@
 #pragma once
 
-#include "game/input_action.h"
 #include <stdbool.h>
+
+#include "core/game.h"
+#include "game/input_action.h"
 
 #include <cglm/struct.h>
 
 typedef struct World World;
 typedef struct GLFWwindow GLFWwindow;
+typedef struct UIElement UIElement;
 
 typedef struct UIDragState {
     bool dragging;
-    size_t ui_elements_index;
     vec2s drag_offset;
     vec2s original_position;
+
+    SelectionLocation card_location;
+    uint8_t card_index;
 } UIDragState;
 
 typedef struct Controller {
@@ -25,6 +30,13 @@ typedef struct Controller {
 } Controller;
 
 void controller_update(GLFWwindow* window, World* world, double dt);
+
+void controller_start_drag(GLFWwindow* window, World* world);
+
+void controller_end_drag(GLFWwindow*, World* world);
+
+bool controller_handle_card_drop(
+    UIElement* dest, SelectionLocation location, uint8_t card_index, World* world);
 
 void controller_handle_input(InputAction action);
 

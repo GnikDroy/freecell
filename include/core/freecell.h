@@ -170,6 +170,28 @@ bool freecell_game_over(Freecell* freecell);
 
 bool freecell_is_trivially_solved(Freecell* freecell);
 
+/** Counts the number of cards in a cascade starting from a given index.
+ *
+ * @param freecell The Freecell game state.
+ * @param location The selection location (cascade, reserve, or foundation).
+ * @param card_index The index of the card in the cascade.
+ *
+ * @return The number of cards in the cascade starting from the given index.
+ */
+uint8_t freecell_count_cards_from_index(
+    const Freecell* freecell, SelectionLocation location, uint32_t card_index);
+
+inline Card freecell_get_card(
+    const Freecell* freecell, SelectionLocation location, uint8_t card_index) {
+    if (selection_location_is_foundation(location)) {
+        return freecell->foundation[location - FOUNDATION_SPADES];
+    } else if (selection_location_is_reserve(location)) {
+        return freecell->reserve[location - RESERVE_1];
+    } else {
+        return freecell->cascade[location - CASCADE_1].cards[card_index];
+    }
+}
+
 uint8_t freecell_count_max_moves(Freecell* freecell);
 
 MoveResult freecell_validate_to_foundation(Freecell* freecell, Card card, SelectionLocation dest);
