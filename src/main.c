@@ -7,7 +7,7 @@
 #include "rendering/renderer.h"
 
 #include "game/constants.h"
-#include "game/controller.h"
+#include "game/input.h"
 #include "game/render_system.h"
 #include "game/world.h"
 
@@ -53,10 +53,10 @@ int main(void) {
         .vsync = true,
         .on_close = NULL,
         .on_window_resize = NULL,
-        .on_framebuffer_resize = controller_on_framebuffer_resize,
-        .on_key = controller_on_key,
-        .on_mouse_click = controller_on_mouse_click,
-        .on_cursor_position = controller_on_cursor_position,
+        .on_framebuffer_resize = input_on_framebuffer_resize,
+        .on_key = input_on_key,
+        .on_mouse_click = input_on_mouse_click,
+        .on_cursor_position = input_on_cursor_position,
     });
 
     gameloop(window);

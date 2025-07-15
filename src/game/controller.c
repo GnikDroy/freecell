@@ -5,19 +5,21 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "game/controller.h"
+
 #include "core/game.h"
 
+#include "game/input_action.h"
 #include "platform/window.h"
 
 #include "game/constants.h"
-#include "game/controller.h"
 #include "game/render_system.h"
 #include "game/ui_layout.h"
 #include "game/world.h"
 
 #include "utils.h"
 
-UIElement compute_state(
+static UIElement compute_state(
     World* world, UIElement* element, bool hovered, bool clicked, bool disabled) {
     UIElement new_element = *element;
     Game* game = &world->game;
@@ -93,7 +95,17 @@ static void controller_play_card_move_sound(World* world) {
     ma_sound_start(&world->card_move_sound);
 }
 
-void controller_start_drag(World* world) {
+static bool is_card_draggable(World* world, UIElement* elem) {
+    if (elem->type != UI_CARD)
+        return false;
+
+    SelectionLocation loc = elem->meta.card.selection_location;
+    uint32_t index = elem->meta.card.card_index;
+
+    return game_can_move_from(&world->game, loc, index);
+}
+
+void controller_start_drag(GLFWwindow* window, World* world) {
     Vector* ui_elements = &world->ui_elements;
     UIDragState* drag_state = &world->controller.drag_state;
     vec2s mouse = world->controller.mouse;
@@ -102,16 +114,7 @@ void controller_start_drag(World* world) {
     size_t index;
 
     if (ui_get_topmost_hit(ui_elements, mouse, &topmost, &index)) {
-        // Only start dragging if the topmost element is a card
-        if (topmost.type != UI_CARD) {
-            return;
-        }
-
-        SelectionLocation location = topmost.meta.card.selection_location;
-        uint32_t card_index = topmost.meta.card.card_index;
-
-        // Only start dragging if the movement is likely allowed
-        if (!game_can_move_from(&world->game, location, card_index)) {
+        if (!is_card_draggable(world, &topmost)) {
             return;
         }
 
@@ -150,7 +153,7 @@ void controller_update_drag(World* world) {
     vec_set(ui_elements, drag_state->ui_elements_index, &elem);
 }
 
-void controller_end_drag(World* world) {
+void controller_end_drag(GLFWwindow*, World* world) {
     UIDragState* drag_state = &world->controller.drag_state;
 
     if (!drag_state->dragging)
@@ -211,60 +214,7 @@ void controller_end_drag(World* world) {
     vec_set(ui_elements, drag_state->ui_elements_index, &from);
 }
 
-void controller_on_key(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    (void)scancode;
-    (void)mods;
-
-    World* world = glfwGetWindowUserPointer(window);
-    Controller* controller = &world->controller;
-    if (action == GLFW_PRESS) {
-        if (key == GLFW_KEY_ESCAPE) {
-            if (game_undo(&world->game) == MOVE_SUCCESS) {
-                controller_play_card_move_sound(world);
-                controller->layout_pending = true;
-            }
-        } else if (key == GLFW_KEY_N) {
-            game_new(&world->game);
-            controller->layout_pending = true;
-        } else if (key == GLFW_KEY_M) {
-            // complete the game for debug
-            Freecell* freecell = &world->game.freecell;
-
-            for (int i = 0; i < 8; i++) {
-                freecell->cascade[i].size = 0;
-            }
-            for (int i = 0; i < 4; i++) {
-                freecell->reserve[i] = NONE;
-            }
-            freecell->foundation[SPADES] = KING_SPADES;
-            freecell->foundation[HEARTS] = KING_HEARTS;
-            freecell->foundation[DIAMONDS] = KING_DIAMONDS;
-            freecell->foundation[CLUBS] = KING_CLUBS;
-            world->game.history.size = 0;
-            controller->layout_pending = true;
-        } else if (key == GLFW_KEY_F) {
-            window_toggle_fullscreen(window);
-        } else if (key == GLFW_KEY_D) {
-            controller->debug = !controller->debug;
-        } else if (key == GLFW_KEY_C) {
-            // make all cascades full for debugging view
-            Freecell* freecell = &world->game.freecell;
-
-            const int MAX_CASCADE_SIZE = sizeof(freecell->cascade[0].cards) / sizeof(Card);
-            for (int j = 0; j < 8; j++) {
-                freecell->cascade[j].size = 0;
-                for (int i = 0; i < MAX_CASCADE_SIZE; i++) {
-                    cascade_push(&freecell->cascade[j], KING_CLUBS - i);
-                }
-            }
-
-            world->game.history.size = 0;
-            controller->layout_pending = true;
-        }
-    }
-}
-
-void controller_smart_move(World* world) {
+void controller_smart_move(GLFWwindow* window, World* world) {
     Controller* controller = &world->controller;
     vec2s mouse = controller->mouse;
 
@@ -316,23 +266,6 @@ void controller_smart_move(World* world) {
     }
 }
 
-void controller_on_mouse_click(GLFWwindow* window, int code, int state, int mods) {
-    (void)mods;
-
-    World* world = glfwGetWindowUserPointer(window);
-    if (code == GLFW_MOUSE_BUTTON_LEFT) {
-        if (state == GLFW_PRESS) {
-            controller_start_drag(world);
-        } else if (state == GLFW_RELEASE) {
-            controller_end_drag(world);
-        }
-    } else if (code == GLFW_MOUSE_BUTTON_RIGHT) {
-        if (state == GLFW_PRESS) {
-            controller_smart_move(world);
-        }
-    }
-}
-
 void controller_on_framebuffer_resize(GLFWwindow* window, int width, int height) {
     (void)window;
     float aspectVirtual = (float)VIRTUAL_WIDTH / (float)VIRTUAL_HEIGHT;
@@ -369,5 +302,103 @@ void controller_on_cursor_position(GLFWwindow* window, double x, double y) {
     if (controller->drag_state.dragging) {
         controller_update_drag(world);
         controller->bake_pending = true;
+    }
+}
+
+void controller_undo(GLFWwindow* window, World* world) {
+    Controller* controller = &world->controller;
+
+    if (game_undo(&world->game) == MOVE_SUCCESS) {
+        controller_play_card_move_sound(world);
+        controller->layout_pending = true;
+    }
+}
+
+void controller_new_game(GLFWwindow* window, World* world) {
+    Controller* controller = &world->controller;
+
+    game_new(&world->game);
+    controller->layout_pending = true;
+}
+
+void controller_toggle_fullscreen(GLFWwindow* window, World* world) {
+    Controller* controller = &world->controller;
+
+    window_toggle_fullscreen(window);
+    controller->layout_pending = true;
+}
+
+void controller_toggle_debug(GLFWwindow* window, World* world) {
+    Controller* controller = &world->controller;
+
+    controller->debug = !controller->debug;
+    controller->layout_pending = true;
+}
+
+void controller_complete_game(GLFWwindow* window, World* world) {
+    Controller* controller = &world->controller;
+
+    // complete the game for debug
+    Freecell* freecell = &world->game.freecell;
+
+    for (int i = 0; i < 8; i++) {
+        freecell->cascade[i].size = 0;
+    }
+    for (int i = 0; i < 4; i++) {
+        freecell->reserve[i] = NONE;
+    }
+    freecell->foundation[SPADES] = KING_SPADES;
+    freecell->foundation[HEARTS] = KING_HEARTS;
+    freecell->foundation[DIAMONDS] = KING_DIAMONDS;
+    freecell->foundation[CLUBS] = KING_CLUBS;
+    world->game.history.size = 0;
+    controller->layout_pending = true;
+}
+
+void controller_fill_cascades(GLFWwindow* window, World* world) {
+    Controller* controller = &world->controller;
+
+    // make all cascades full for debugging view
+    Freecell* freecell = &world->game.freecell;
+
+    const int MAX_CASCADE_SIZE = sizeof(freecell->cascade[0].cards) / sizeof(Card);
+    for (int j = 0; j < 8; j++) {
+        freecell->cascade[j].size = 0;
+        for (int i = 0; i < MAX_CASCADE_SIZE; i++) {
+            cascade_push(&freecell->cascade[j], KING_CLUBS - i);
+        }
+    }
+
+    world->game.history.size = 0;
+    controller->layout_pending = true;
+}
+
+void controller_handle_input(InputAction ia) {
+    GLFWwindow* window = ia.window;
+    World* world = glfwGetWindowUserPointer(window);
+
+    if (ia.type == INPUT_ACTION_FRAMEBUFFER_RESIZE) {
+        controller_on_framebuffer_resize(
+            window, ia.data.framebuffer_resize.width, ia.data.framebuffer_resize.height);
+    } else if (ia.type == INPUT_ACTION_POINTER_MOVE) {
+        controller_on_cursor_position(window, ia.data.pointer_move.x, ia.data.pointer_move.y);
+    } else if (ia.type == INPUT_ACTION_START_DRAG) {
+        controller_start_drag(window, world);
+    } else if (ia.type == INPUT_ACTION_END_DRAG) {
+        controller_end_drag(window, world);
+    } else if (ia.type == INPUT_ACTION_SMART_MOVE) {
+        controller_smart_move(window, world);
+    } else if (ia.type == INPUT_ACTION_UNDO) {
+        controller_undo(window, world);
+    } else if (ia.type == INPUT_ACTION_NEW_GAME) {
+        controller_new_game(window, world);
+    } else if (ia.type == INPUT_ACTION_TOGGLE_FULLSCREEN) {
+        controller_toggle_fullscreen(window, world);
+    } else if (ia.type == INPUT_ACTION_TOGGLE_DEBUG) {
+        controller_toggle_debug(window, world);
+    } else if (ia.type == INPUT_ACTION_COMPLETE_GAME) {
+        controller_complete_game(window, world);
+    } else if (ia.type == INPUT_ACTION_FILL_CASCADES) {
+        controller_fill_cascades(window, world);
     }
 }

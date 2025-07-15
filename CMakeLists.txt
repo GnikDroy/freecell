@@ -121,6 +121,7 @@ add_executable(
     src/game/constants.c
     src/game/controller.c
     src/game/debug.c
+    src/game/input.c
     src/game/render_system.c
     src/game/ui_element.c
     src/game/ui_layout.c
