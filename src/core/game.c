@@ -52,6 +52,10 @@ bool game_can_move_from(Game* game, SelectionLocation from, uint32_t card_index)
     return false;
 }
 
+MoveResult game_validate_move(Game* game, Move move) {
+    return freecell_validate_move(&game->freecell, move);
+}
+
 MoveResult game_move(Game* game, Move move) {
     MoveResult result = freecell_validate_move(&game->freecell, move);
     if (result == MOVE_SUCCESS) {

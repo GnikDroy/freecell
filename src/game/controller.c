@@ -2,8 +2,11 @@
 
 #include "core/game.h"
 
+#include "core/vector.h"
+#include "game/animation.h"
 #include "game/input_action.h"
 #include "game/ui_element.h"
+#include "game/ui_state.h"
 #include "platform/window.h"
 
 #include "game/constants.h"
@@ -13,101 +16,122 @@
 
 #include "utils.h"
 
-static UIElement controller_get_ui_state(
-    World* world, UIElement* element, bool hovered, bool clicked, bool disabled) {
-
-    UIElement new_element = *element;
-    Game* game = &world->game;
-
-    if (element->type == UI_CARD) {
-        SelectionLocation location = element->meta.card.selection_location;
-        uint32_t card_index = element->meta.card.card_index;
-
-        bool can_move = game_can_move_from(game, location, card_index);
-
-        if (clicked && can_move) {
-            new_element.meta.card.state = CARD_UI_STATE_SELECTED;
-        } else if (hovered && can_move) {
-            new_element.meta.card.state = CARD_UI_STATE_HOVERED;
-        } else {
-            new_element.meta.card.state = CARD_UI_STATE_NORMAL;
-        }
-    } else if (element->type == UI_BUTTON) {
-        if (disabled) {
-            new_element.meta.button.state = BUTTON_UI_STATE_DISABLED;
-        } else if (clicked) {
-            new_element.meta.button.state = BUTTON_UI_STATE_SELECTED;
-        } else if (hovered) {
-            new_element.meta.button.state = BUTTON_UI_STATE_HOVERED;
-        } else {
-            new_element.meta.button.state = BUTTON_UI_STATE_NORMAL;
-        }
-    }
-
-    return new_element;
-}
-
-static void controller_update_ui_state(GLFWwindow* window, World* world) {
-    Controller* controller = &world->controller;
-
-    bool pressed = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
-
-    size_t hit_index = -1;
-    ui_get_topmost_hit(&world->ui_elements, controller->mouse, NULL, &hit_index);
-
-    for (size_t i = 0; i < world->ui_elements.size; ++i) {
-        vec_get_as(UIElement, element, &world->ui_elements, i);
-
-        bool hovered = hit_index == i;
-        bool clicked = hovered && pressed;
-        bool disabled = false;
-        UIElement expected_state
-            = controller_get_ui_state(world, &element, hovered, clicked, disabled);
-
-        if (memcmp(&element, &expected_state, sizeof(UIElement)) != 0) {
-            vec_set(&world->ui_elements, i, &expected_state);
-            controller->bake_pending = true;
-        }
-    }
-}
-
 static void controller_play_card_move_sound(World* world) {
     ma_sound_stop(&world->card_move_sound);
     ma_sound_start(&world->card_move_sound);
 }
 
-static bool is_card_draggable(World* world, UIElement* elem) {
-    if (elem->type != UI_CARD)
-        return false;
+static MoveResult controller_animated_move(World* world, Move move) {
+    Controller* controller = &world->controller;
+    AnimationSystem* animation_system = &world->animation_system;
 
-    SelectionLocation loc = elem->meta.card.selection_location;
-    uint32_t index = elem->meta.card.card_index;
+    MoveResult result = game_validate_move(&world->game, move);
+    if (result != MOVE_SUCCESS) {
+        return result;
+    }
 
-    return game_can_move_from(&world->game, loc, index);
+    uint8_t from_move_index
+        = freecell_get_index_from_size(&world->game.freecell, move.from, move.size);
+
+    UIElement from, to;
+    if (ui_find_in_layout(&world->ui_elements, move.from, from_move_index, &from, NULL)) {
+        // We don't need to support cascade animation for stacks
+        // This is because undo being instant is good UX imo
+        // Feature, not a bug ;)
+        uint8_t to_move_index = 0;
+        if (ui_find_in_layout(&world->ui_elements, move.to, 0, &to, NULL)) {
+            to.sprite.color.a = from.sprite.color.a;
+
+            vec_push_back(&animation_system->ui_animations,
+                &(UIElementAnimation) {
+                    .from = from,
+                    .to = to,
+                    .elapsed = 0.0f,
+                    .duration = 0.2f,
+                });
+        }
+    }
+
+    game_move(&world->game, move);
+    controller_play_card_move_sound(world);
+    return result;
 }
 
-void controller_update(GLFWwindow* window, World* world, double dt) {
+static void controller_autocomplete_game(World* world) {
+    if (freecell_game_over(&world->game.freecell)
+        || !freecell_is_trivially_solved(&world->game.freecell)) {
+        return;
+    }
+
+    if (world->animation_system.ui_animations.size > 0) {
+        return;
+    }
+
+    // find the smallest card in the cascade (or reserve)
+    Freecell* freecell = &world->game.freecell;
+
+    SelectionLocation smallest_location = FOUNDATION_SPADES;
+    Suit smallest_suit = SPADES + 1;
+    Rank smallest_rank = KING + 1;
+    for (int i = 0; i < 4; i++) {
+        if (freecell->reserve[i] != NONE) {
+            Card card = freecell->reserve[i];
+            Suit suit = get_suit(card);
+            Rank rank = get_rank(card);
+
+            // Suits are ranked in descending order in the enum
+            if (rank < smallest_rank || (rank == smallest_rank && suit > smallest_suit)) {
+                smallest_suit = suit;
+                smallest_rank = rank;
+                smallest_location = RESERVE_1 + i;
+            }
+        }
+    }
+
+    for (int i = 0; i < 8; i++) {
+        Cascade* cascade = &freecell->cascade[i];
+        size_t cascade_size = cascade->size;
+        if (cascade_size > 0) {
+            Card card = cascade->cards[cascade->size - 1];
+            Suit suit = get_suit(card);
+            Rank rank = get_rank(card);
+
+            // Suits are ranked in descending order in the enum
+            if (rank < smallest_rank || (rank == smallest_rank && suit > smallest_suit)) {
+                smallest_suit = suit;
+                smallest_rank = rank;
+                smallest_location = CASCADE_1 + i;
+            }
+        }
+    }
+
+    Card smallest_card = get_card(smallest_rank, smallest_suit);
+
+    // Now we construct the move to the foundation
+    Move move = {
+        .from = smallest_location,
+        .to = get_suit(smallest_card) + FOUNDATION_SPADES,
+        .size = 1,
+    };
+
+    controller_animated_move(world, move);
+}
+
+void controller_update(World* world, double dt) {
     (void)dt;
     Controller* controller = &world->controller;
-    controller_update_ui_state(window, world);
 
-    if (controller->layout_pending) {
-        layout_world(world);
-        bake_world(world);
-        controller->layout_pending = false;
-        controller->bake_pending = false;
-    } else if (controller->bake_pending) {
-        bake_world(world);
-        controller->bake_pending = false;
-    }
+    controller_autocomplete_game(world);
+    animation_system_update(&world->animation_system, dt);
+    render_world(world);
 }
 
-void controller_start_drag(GLFWwindow* window, World* world) {
+void controller_start_drag(World* world) {
     vec2s mouse = world->controller.mouse;
 
     UIElement ui_element;
     if (ui_get_topmost_hit(&world->ui_elements, mouse, &ui_element, NULL)) {
-        if (ui_element.type != UI_CARD || !is_card_draggable(world, &ui_element)) {
+        if (!ui_is_element_draggable(world, &ui_element) || ui_element.type != UI_CARD) {
             return;
         }
 
@@ -120,7 +144,7 @@ void controller_start_drag(GLFWwindow* window, World* world) {
     }
 }
 
-void controller_end_drag(GLFWwindow*, World* world) {
+void controller_end_drag(World* world) {
     UIDragState* drag_state = &world->controller.drag_state;
 
     // handle ui element drop
@@ -139,7 +163,6 @@ void controller_end_drag(GLFWwindow*, World* world) {
     drag_state->drag_offset.y = 0;
     drag_state->card_location = -1;
     drag_state->card_index = 0;
-    world->controller.layout_pending = true;
 }
 
 bool controller_handle_card_drop(
@@ -175,9 +198,11 @@ bool controller_handle_card_drop(
     return result == MOVE_SUCCESS;
 }
 
-void controller_smart_move(GLFWwindow* window, World* world) {
+void controller_smart_move(World* world) {
     Controller* controller = &world->controller;
     vec2s mouse = controller->mouse;
+
+    AnimationSystem* animation_system = &world->animation_system;
 
     UIElement topmost;
     size_t index;
@@ -199,13 +224,14 @@ void controller_smart_move(GLFWwindow* window, World* world) {
             // if can move to foundation, do it
             if (freecell_validate_to_foundation(&world->game.freecell, card, foundation_destination)
                 == MOVE_SUCCESS) {
-                game_move(&world->game,
+                SelectionLocation to_location = FOUNDATION_SPADES + get_suit(card);
+
+                controller_animated_move(world,
                     (Move) {
                         .from = location,
-                        .to = FOUNDATION_SPADES + get_suit(card),
+                        .to = to_location,
                         .size = size,
                     });
-                controller->layout_pending = true;
                 return;
             }
 
@@ -213,13 +239,12 @@ void controller_smart_move(GLFWwindow* window, World* world) {
             for (uint8_t i = 0; i < 4; i++) {
                 if (freecell_validate_to_reserve(&world->game.freecell, card, RESERVE_1 + i)
                     == MOVE_SUCCESS) {
-                    game_move(&world->game,
+                    controller_animated_move(world,
                         (Move) {
                             .from = location,
                             .to = RESERVE_1 + i,
                             .size = size,
                         });
-                    controller->layout_pending = true;
                     return;
                 }
             }
@@ -227,8 +252,7 @@ void controller_smart_move(GLFWwindow* window, World* world) {
     }
 }
 
-void controller_on_framebuffer_resize(GLFWwindow* window, int width, int height) {
-    (void)window;
+void controller_on_framebuffer_resize(World* world, int width, int height) {
     float aspectVirtual = (float)VIRTUAL_WIDTH / (float)VIRTUAL_HEIGHT;
     float aspectWindow = (float)width / (float)height;
 
@@ -249,73 +273,77 @@ void controller_on_framebuffer_resize(GLFWwindow* window, int width, int height)
     glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
 }
 
-void controller_on_cursor_position(GLFWwindow* window, double x, double y) {
-    World* world = glfwGetWindowUserPointer(window);
+void controller_on_cursor_position(World* world, double x, double y) {
     Controller* controller = &world->controller;
 
     controller->mouse_screen.x = (float)x;
     controller->mouse_screen.y = (float)y;
 
     int width, height;
-    window_get_size(window, &width, &height);
+    window_get_size(world->window, &width, &height);
     controller->mouse = screen_to_world(x, y, width, height, &world->camera);
-
-    if (controller->drag_state.dragging) {
-        controller->layout_pending = true;
-    }
 }
 
-void controller_undo(GLFWwindow* window, World* world) {
+void controller_undo(World* world) {
     Controller* controller = &world->controller;
 
-    if (game_undo(&world->game) == MOVE_SUCCESS) {
+    if (!freecell_game_over(&world->game.freecell) && game_undo(&world->game) == MOVE_SUCCESS) {
         controller_play_card_move_sound(world);
-        controller->layout_pending = true;
     }
 }
 
-void controller_new_game(GLFWwindow* window, World* world) {
+void controller_new_game(World* world) {
     Controller* controller = &world->controller;
 
     game_new(&world->game);
-    controller->layout_pending = true;
 }
 
-void controller_toggle_fullscreen(GLFWwindow* window, World* world) {
+void controller_toggle_fullscreen(World* world) {
     Controller* controller = &world->controller;
 
-    window_toggle_fullscreen(window);
-    controller->layout_pending = true;
+    window_toggle_fullscreen(world->window);
 }
 
-void controller_toggle_debug(GLFWwindow* window, World* world) {
+static void controller_toggle_debug(World* world) {
     Controller* controller = &world->controller;
 
     controller->debug = !controller->debug;
-    controller->layout_pending = true;
 }
 
-void controller_complete_game(GLFWwindow* window, World* world) {
+static void controller_autocompleteable_game(World* world) {
     Controller* controller = &world->controller;
 
-    // complete the game for debug
+    // autocompleteable game for debug
     Freecell* freecell = &world->game.freecell;
+
+    freecell->foundation[SPADES] = NONE;
+    freecell->foundation[HEARTS] = NONE;
+    freecell->foundation[DIAMONDS] = NONE;
+    freecell->foundation[CLUBS] = NONE;
 
     for (int i = 0; i < 8; i++) {
         freecell->cascade[i].size = 0;
     }
-    for (int i = 0; i < 4; i++) {
-        freecell->reserve[i] = NONE;
+
+    for (int i = 0; i < 12; i++) {
+        Card card_a = get_card(QUEEN - i, i % 2 == 0 ? SPADES : DIAMONDS);
+        Card card_b = get_card(QUEEN - i, i % 2 != 0 ? SPADES : DIAMONDS);
+        Card card_c = get_card(QUEEN - i, i % 2 == 0 ? CLUBS : HEARTS);
+        Card card_d = get_card(QUEEN - i, i % 2 != 0 ? CLUBS : HEARTS);
+        cascade_push(&freecell->cascade[3], card_a);
+        cascade_push(&freecell->cascade[4], card_b);
+        cascade_push(&freecell->cascade[5], card_c);
+        cascade_push(&freecell->cascade[6], card_d);
     }
-    freecell->foundation[SPADES] = KING_SPADES;
-    freecell->foundation[HEARTS] = KING_HEARTS;
-    freecell->foundation[DIAMONDS] = KING_DIAMONDS;
-    freecell->foundation[CLUBS] = KING_CLUBS;
+
+    for (int i = 0; i < 4; i++) {
+        freecell->reserve[i] = get_card(KING, SPADES + i);
+    }
+
     world->game.history.size = 0;
-    controller->layout_pending = true;
 }
 
-void controller_fill_cascades(GLFWwindow* window, World* world) {
+static void controller_fill_cascades(World* world) {
     Controller* controller = &world->controller;
 
     // make all cascades full for debugging view
@@ -330,7 +358,6 @@ void controller_fill_cascades(GLFWwindow* window, World* world) {
     }
 
     world->game.history.size = 0;
-    controller->layout_pending = true;
 }
 
 void controller_handle_input(InputAction ia) {
@@ -339,26 +366,26 @@ void controller_handle_input(InputAction ia) {
 
     if (ia.type == INPUT_ACTION_FRAMEBUFFER_RESIZE) {
         controller_on_framebuffer_resize(
-            window, ia.data.framebuffer_resize.width, ia.data.framebuffer_resize.height);
+            world, ia.data.framebuffer_resize.width, ia.data.framebuffer_resize.height);
     } else if (ia.type == INPUT_ACTION_POINTER_MOVE) {
-        controller_on_cursor_position(window, ia.data.pointer_move.x, ia.data.pointer_move.y);
+        controller_on_cursor_position(world, ia.data.pointer_move.x, ia.data.pointer_move.y);
     } else if (ia.type == INPUT_ACTION_START_DRAG) {
-        controller_start_drag(window, world);
+        controller_start_drag(world);
     } else if (ia.type == INPUT_ACTION_END_DRAG) {
-        controller_end_drag(window, world);
+        controller_end_drag(world);
     } else if (ia.type == INPUT_ACTION_SMART_MOVE) {
-        controller_smart_move(window, world);
+        controller_smart_move(world);
     } else if (ia.type == INPUT_ACTION_UNDO) {
-        controller_undo(window, world);
+        controller_undo(world);
     } else if (ia.type == INPUT_ACTION_NEW_GAME) {
-        controller_new_game(window, world);
+        controller_new_game(world);
     } else if (ia.type == INPUT_ACTION_TOGGLE_FULLSCREEN) {
-        controller_toggle_fullscreen(window, world);
+        controller_toggle_fullscreen(world);
     } else if (ia.type == INPUT_ACTION_TOGGLE_DEBUG) {
-        controller_toggle_debug(window, world);
-    } else if (ia.type == INPUT_ACTION_COMPLETE_GAME) {
-        controller_complete_game(window, world);
+        controller_toggle_debug(world);
+    } else if (ia.type == INPUT_ACTION_AUTOCOMPLETEABLE_GAME) {
+        controller_autocompleteable_game(world);
     } else if (ia.type == INPUT_ACTION_FILL_CASCADES) {
-        controller_fill_cascades(window, world);
+        controller_fill_cascades(world);
     }
 }

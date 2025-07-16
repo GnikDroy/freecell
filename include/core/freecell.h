@@ -95,6 +95,8 @@ inline Suit get_suit(Card card) { return (Suit)((card - 1) / 13); }
 
 inline Rank get_rank(Card card) { return (Rank)((card - 1) % 13); }
 
+inline Card get_card(Rank rank, Suit suit) { return (Card)(1 + suit * 13 + rank); }
+
 typedef struct Cascade {
     uint8_t size;
 
@@ -164,6 +166,8 @@ Card cascade_pop(Cascade* cascade);
 
 bool cascade_is_stacked_properly(Cascade* cascade, size_t start_index);
 
+bool cascade_is_descending_and_alternating(Cascade* cascade, size_t start_index);
+
 Freecell freecell_init(void);
 
 bool freecell_game_over(Freecell* freecell);
@@ -180,6 +184,18 @@ bool freecell_is_trivially_solved(Freecell* freecell);
  */
 uint8_t freecell_count_cards_from_index(
     const Freecell* freecell, SelectionLocation location, uint32_t card_index);
+
+/** Gets the index of the first card in a cascade based on the number of cards being moved.
+ * If location is not a cascade, it returns 0.
+ *
+ * @param freecell The Freecell game state.
+ * @param location The selection location (cascade, reserve, or foundation).
+ * @param size The number of cards being moved.
+ *
+ * @return The index of the first card in the cascade for the given size.
+ */
+uint8_t freecell_get_index_from_size(
+    const Freecell* freecell, SelectionLocation location, uint8_t size);
 
 inline Card freecell_get_card(
     const Freecell* freecell, SelectionLocation location, uint8_t card_index) {

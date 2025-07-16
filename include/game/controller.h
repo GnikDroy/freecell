@@ -23,35 +23,27 @@ typedef struct UIDragState {
 typedef struct Controller {
     vec2s mouse;
     vec2s mouse_screen;
-    bool bake_pending;
-    bool layout_pending;
     bool debug;
     UIDragState drag_state;
 } Controller;
 
-void controller_update(GLFWwindow* window, World* world, double dt);
-
-void controller_start_drag(GLFWwindow* window, World* world);
-
-void controller_end_drag(GLFWwindow*, World* world);
+void controller_update(World* world, double dt);
 
 bool controller_handle_card_drop(
     UIElement* dest, SelectionLocation location, uint8_t card_index, World* world);
 
+void controller_undo(World* world);
+
+void controller_new_game(World* world);
+
 void controller_handle_input(InputAction action);
 
-void controller_on_framebuffer_resize(GLFWwindow* window, int width, int height);
+void controller_start_drag(World* window);
 
-void controller_on_cursor_position(GLFWwindow* window, double x, double y);
+void controller_end_drag(World* window);
 
-void controller_undo(GLFWwindow* window, World* world);
+void controller_toggle_fullscreen(World* world);
 
-void controller_new_game(GLFWwindow* window, World* world);
+void controller_on_framebuffer_resize(World* world, int width, int height);
 
-void controller_toggle_fullscreen(GLFWwindow* window, World* world);
-
-void controller_toggle_debug(GLFWwindow* window, World* world);
-
-void controller_complete_game(GLFWwindow* window, World* world);
-
-void controller_fill_cascades(GLFWwindow* window, World* world);
+void controller_on_cursor_position(World* world, double x, double y);

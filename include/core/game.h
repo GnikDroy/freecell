@@ -19,6 +19,8 @@ void game_new(Game* game);
 
 bool game_can_move_from(Game* game, SelectionLocation from, uint32_t card_index);
 
+MoveResult game_validate_move(Game* game, Move move);
+
 MoveResult game_move(Game* game, Move move);
 
 MoveResult game_undo(Game* game);

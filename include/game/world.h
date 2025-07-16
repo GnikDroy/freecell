@@ -6,15 +6,16 @@
 
 #include "core/game.h"
 
+#include "game/animation.h"
 #include "rendering/camera.h"
-#include "rendering/sprite.h"
 #include "rendering/mesh.h"
+#include "rendering/sprite.h"
 
-#include "game/controller.h"
 #include "game/assets.h"
-
+#include "game/controller.h"
 
 typedef struct World {
+    GLFWwindow* window;
     Game game;
 
     Camera camera;
@@ -33,8 +34,9 @@ typedef struct World {
     ma_sound card_move_sound;
 
     Controller controller;
+    AnimationSystem animation_system;
 } World;
 
-World world_init(void);
+World world_init(GLFWwindow* window);
 
 void world_free(World* world);

@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -94,6 +95,35 @@ bool cascade_is_stacked_properly(Cascade* cascade, size_t start_index) {
     return true;
 }
 
+bool cascade_is_descending_and_alternating(Cascade* cascade, size_t start_index) {
+    if (cascade->size == 0) {
+        return true;
+    }
+
+    if (start_index >= cascade->size) {
+        return false;
+    }
+
+    Rank prev_rank = get_rank(cascade->cards[start_index]);
+    Suit prev_suit = get_suit(cascade->cards[start_index]);
+
+    for (size_t i = start_index + 1; i < cascade->size; i++) {
+        Card card = cascade->cards[i];
+        Rank rank = get_rank(card);
+        Suit suit = get_suit(card);
+
+        if (rank > prev_rank || !suits_differ_by_color(prev_suit, suit)) {
+            return false;
+        }
+
+        prev_rank = rank;
+        prev_suit = suit;
+    }
+
+    return true;
+}
+
+
 Freecell freecell_init(void) {
     Freecell game = { 0 };
 
@@ -147,7 +177,7 @@ bool freecell_is_trivially_solved(Freecell* freecell) {
     }
 
     for (uint8_t i = 0; i < 8; i++) {
-        if (!cascade_is_stacked_properly(&freecell->cascade[i], 0)) {
+        if (!cascade_is_descending_and_alternating(&freecell->cascade[i], 0)) {
             return false;
         }
     }
@@ -161,6 +191,15 @@ uint8_t freecell_count_cards_from_index(
         return freecell->cascade[location - CASCADE_1].size - card_index;
     }
     return 1;
+}
+
+uint8_t freecell_get_index_from_size(
+    const Freecell* freecell, SelectionLocation location, uint8_t size) {
+    if (selection_location_is_cascade(location)) {
+        return freecell->cascade[location - CASCADE_1].size - size;
+    } else {
+        return 0;
+    }
 }
 
 uint8_t freecell_count_max_moves(Freecell* freecell) {

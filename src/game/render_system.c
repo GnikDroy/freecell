@@ -5,15 +5,17 @@
 
 #include "core/vector.h"
 
+#include "game/animation.h"
+#include "game/ui_state.h"
 #include "rendering/mesh.h"
 #include "rendering/renderer.h"
 #include "rendering/shader.h"
 
-#include "game/world.h"
 #include "game/constants.h"
 #include "game/debug.h"
 #include "game/ui_element.h"
 #include "game/ui_layout.h"
+#include "game/world.h"
 
 void mesh_push_sprite(Mesh* mesh, Sprite sprite) {
     Vertex vertices[4] = { 0 };
@@ -78,26 +80,6 @@ void mesh_push_sprite(Mesh* mesh, Sprite sprite) {
     }
 }
 
-void mesh_push_ui_elements(Mesh* mesh, Vector* vec) {
-    for (size_t i = 0; i < vec->size; i++) {
-        vec_get_as(UIElement, ui_element, vec, i);
-        ui_element_apply_state_style(&ui_element);
-        mesh_push_sprite(mesh, ui_element.sprite);
-    }
-}
-
-void layout_world(World* world) {
-    world->ui_elements.size = 0;
-    ui_push_world(&world->ui_elements, world);
-}
-
-void bake_world(World* world) {
-    mesh_clear(&world->game_mesh);
-    mesh_push_ui_elements(&world->game_mesh, &world->ui_elements);
-
-    upload_mesh(&world->game_gpu_mesh, &world->game_mesh);
-}
-
 void render_background(World* world) {
     Mesh mesh = mesh_init();
 
@@ -156,11 +138,68 @@ void render_background(World* world) {
     gpu_mesh_free(&gpu_mesh);
 }
 
+void mesh_push_ui_element(Mesh* mesh, UIElement* ui_element) {
+    mesh_push_sprite(mesh, ui_element->sprite);
+}
+
+bool is_ui_element_animated(AnimationSystem* anim_sys, UIElement* element) {
+    for (size_t i = 0; i < anim_sys->ui_animations.size; i++) {
+        vec_get_as(UIElementAnimation, anim, &anim_sys->ui_animations, i);
+        if (anim.to.type == element->type && element->type == UI_CARD) {
+            if (anim.to.meta.card.selection_location == element->meta.card.selection_location
+                && anim.to.meta.card.card_index == element->meta.card.card_index) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+void mesh_push_ui_elements(Mesh* mesh, Vector* ui_elements, AnimationSystem* anim_sys) {
+    for (size_t i = 0; i < ui_elements->size; i++) {
+        vec_get_as(UIElement, element, ui_elements, i);
+        if (!is_ui_element_animated(anim_sys, &element)) {
+            mesh_push_ui_element(mesh, &element);
+        }
+    }
+}
+
+static void ui_push_animation(World* world) {
+    // animate ui elements
+    AnimationSystem* animation_system = &world->animation_system;
+    for (int i = 0; i < animation_system->ui_animations.size; i++) {
+        vec_get_as(UIElementAnimation, animation, &animation_system->ui_animations, i);
+        UIElement ui_element = animation_system_get_next_frame(animation_system, &animation);
+        vec_push_back(&world->ui_elements, &animation.to);
+        vec_push_back(&world->ui_elements, &ui_element);
+    }
+}
+
 void render_world(World* world) {
+    const Color clear_color = { 0 };
+    renderer_clear(clear_color);
+
     renderer_bind_texture(0, GL_TEXTURE_2D, world->assets.spritesheet_texture);
 
+    // renders the background
     render_background(world);
 
+    // layout the world
+    world->ui_elements.size = 0;
+    ui_push_world(&world->ui_elements, world);
+
+    // update ui elements state
+    ui_update_element_states(world);
+
+    // push animation ui_elements
+    ui_push_animation(world);
+
+    // create game mesh and upload to gpu
+    mesh_clear(&world->game_mesh);
+    mesh_push_ui_elements(&world->game_mesh, &world->ui_elements, &world->animation_system);
+    upload_mesh(&world->game_gpu_mesh, &world->game_mesh);
+
+    // set shaders draw the mesh
     renderer_set_shader(world->assets.main_shader);
     shader_set_mat4(world->assets.main_shader, "view", (const float*)world->camera.view);
     shader_set_mat4(

@@ -7,8 +7,9 @@
 #include "game/constants.h"
 #include "game/ui_element.h"
 
-World world_init(void) {
+World world_init(GLFWwindow* window) {
     World world = { 0 };
+    world.window = window;
     world.game = game_init();
     world.assets = assets_init();
 
@@ -53,8 +54,8 @@ World world_init(void) {
         exit(EXIT_FAILURE);
     }
 
-    world.controller.layout_pending = true;
-    world.controller.bake_pending = true;
+    world.animation_system = animation_system_init();
+
     return world;
 }
 
@@ -71,4 +72,6 @@ void world_free(World* world) {
     ma_decoder_uninit(&world->card_move_decoder);
 
     ma_engine_uninit(&world->engine);
+
+    animation_system_free(&world->animation_system);
 }

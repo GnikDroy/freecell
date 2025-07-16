@@ -89,3 +89,7 @@ GLFWmonitor* window_get_current_monitor(GLFWwindow* window) { return glfwGetWind
 void window_get_cursor_position(GLFWwindow* window, double* x, double* y) {
     glfwGetCursorPos(window, x, y);
 }
+
+int window_get_mouse_button_state(GLFWwindow* window, int button){
+    return glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+}

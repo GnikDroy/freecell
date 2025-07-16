@@ -21,7 +21,7 @@ void input_on_key(GLFWwindow* window, int key, int scancode, int action, int mod
         } else if (key == GLFW_KEY_N) {
             ia.type = INPUT_ACTION_NEW_GAME;
         } else if (key == GLFW_KEY_M) {
-            ia.type = INPUT_ACTION_COMPLETE_GAME;
+            ia.type = INPUT_ACTION_AUTOCOMPLETEABLE_GAME;
         } else if (key == GLFW_KEY_F) {
             ia.type = INPUT_ACTION_TOGGLE_FULLSCREEN;
         } else if (key == GLFW_KEY_D) {

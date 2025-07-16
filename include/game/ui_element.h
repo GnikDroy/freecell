@@ -12,6 +12,7 @@ typedef enum CardUIState {
 
 typedef enum UIType {
     UI_CARD,
+    UI_CARD_PLACEHOLDER,
     UI_BUTTON,
 } UIType;
 
@@ -43,5 +44,3 @@ typedef struct UIElement {
         ButtonUIMeta button;
     } meta;
 } UIElement;
-
-void ui_element_apply_state_style(UIElement* ui_element);

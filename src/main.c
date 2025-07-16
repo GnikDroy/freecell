@@ -10,25 +10,20 @@
 #include "game/world.h"
 
 void gameloop(GLFWwindow* window) {
-    World world = world_init();
+    World world = world_init(window);
     Renderer renderer = renderer_init();
 
     glfwSetWindowUserPointer(window, &world);
 
-    const Color clear_color = { 0 };
-
     double time = glfwGetTime();
     while (!glfwWindowShouldClose(window)) {
         glfwSwapBuffers(window);
-        glfwWaitEvents();
-        // glfwPollEvents(); // No real time elements currently
+        // glfwWaitEvents();
+        glfwPollEvents(); // Animations are real time
 
         double dt = glfwGetTime() - time;
 
-        controller_update(window, &world, dt);
-
-        renderer_clear(clear_color);
-        render_world(&world);
+        controller_update(&world, dt);
 
         time = glfwGetTime();
     }

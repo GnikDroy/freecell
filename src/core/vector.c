@@ -61,7 +61,7 @@ void* vec_set(Vector* vector, size_t index, const void* const data) {
 }
 
 void vec_delete(Vector* vector, size_t i) {
-    if (i > vector->size - 1) {
+    if (i >= vector->size) {
         return;
     }
     if (i != vector->size - 1) {
