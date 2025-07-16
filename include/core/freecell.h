@@ -183,7 +183,10 @@ bool freecell_is_trivially_solved(Freecell* freecell);
  * @return The number of cards in the cascade starting from the given index.
  */
 uint8_t freecell_count_cards_from_index(
-    const Freecell* freecell, SelectionLocation location, uint32_t card_index);
+    const Freecell* freecell,
+    SelectionLocation location,
+    uint32_t card_index
+);
 
 /** Gets the index of the first card in a cascade based on the number of cards being moved.
  * If location is not a cascade, it returns 0.
@@ -195,10 +198,16 @@ uint8_t freecell_count_cards_from_index(
  * @return The index of the first card in the cascade for the given size.
  */
 uint8_t freecell_get_index_from_size(
-    const Freecell* freecell, SelectionLocation location, uint8_t size);
+    const Freecell* freecell,
+    SelectionLocation location,
+    uint8_t size
+);
 
 inline Card freecell_get_card(
-    const Freecell* freecell, SelectionLocation location, uint8_t card_index) {
+    const Freecell* freecell,
+    SelectionLocation location,
+    uint8_t card_index
+) {
     if (selection_location_is_foundation(location)) {
         return freecell->foundation[location - FOUNDATION_SPADES];
     } else if (selection_location_is_reserve(location)) {
@@ -215,7 +224,10 @@ MoveResult freecell_validate_to_foundation(Freecell* freecell, Card card, Select
 MoveResult freecell_validate_to_reserve(Freecell* freecell, Card card, SelectionLocation dest);
 
 MoveResult freecell_validate_to_cascade_single(
-    Freecell* freecell, Card card, SelectionLocation dest);
+    Freecell* freecell,
+    Card card,
+    SelectionLocation dest
+);
 
 MoveResult freecell_validate_to_cascade(Freecell* freecell, Move move);
 

@@ -5,8 +5,8 @@
 
 #include <GLFW/glfw3.h>
 
-#include "game/input_action.h"
 #include "game/controller.h"
+#include "game/input_action.h"
 
 void input_on_key(GLFWwindow* window, int key, int scancode, int action, int mods) {
     (void)scancode;

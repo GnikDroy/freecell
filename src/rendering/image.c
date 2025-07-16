@@ -11,7 +11,13 @@ Image image_load_from_memory(const uint8_t* data, size_t size, int desired_chann
     Image image;
     stbi_set_flip_vertically_on_load(true);
     image.data = stbi_load_from_memory(
-        data, (int)size, &image.width, &image.height, &image.channels, desired_channels);
+        data,
+        (int)size,
+        &image.width,
+        &image.height,
+        &image.channels,
+        desired_channels
+    );
     return image;
 }
 

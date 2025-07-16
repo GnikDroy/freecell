@@ -8,18 +8,6 @@
 #include "game/world.h"
 
 #include "utils.h"
-#include <stdlib.h>
-
-Rect compute_hitbox(Sprite* sprite) {
-    Rect hitbox = {
-        .height = sprite->height,
-        .width = sprite->width,
-        .x = sprite->x,
-        .y = sprite->y,
-    };
-
-    return hitbox;
-}
 
 static Rect empty_hitbox(void) {
     Rect hitbox = { 0 };
@@ -30,8 +18,13 @@ static Rect empty_hitbox(void) {
     return hitbox;
 }
 
-bool ui_find_in_layout(Vector* ui_elements, SelectionLocation location, uint32_t card_index,
-    UIElement* dest, size_t* dest_idx) {
+bool ui_find_in_layout(
+    Vector* ui_elements,
+    SelectionLocation location,
+    uint32_t card_index,
+    UIElement* dest,
+    size_t* dest_idx
+) {
     for (size_t i = 0; i < ui_elements->size; i++) {
         vec_get_as(UIElement, element, ui_elements, i);
         if (element.type == UI_CARD && element.meta.card.selection_location == location

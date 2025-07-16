@@ -6,7 +6,6 @@
 
 #include "game/constants.h"
 
-
 void glfwErrCallback(int error_code, const char* msg) {
     log_error("GLFW Error %d : %s", error_code, msg);
 }
@@ -31,7 +30,12 @@ GLFWwindow* window_init(WindowConfig config) {
     }
     glfwSetErrorCallback(glfwErrCallback);
     glfwSetWindowSizeLimits(
-        window, config.min_width, config.min_height, config.max_width, config.max_height);
+        window,
+        config.min_width,
+        config.min_height,
+        config.max_width,
+        config.max_height
+    );
     if (config.on_close)
         glfwSetWindowCloseCallback(window, config.on_close);
     if (config.on_window_resize)
@@ -90,6 +94,6 @@ void window_get_cursor_position(GLFWwindow* window, double* x, double* y) {
     glfwGetCursorPos(window, x, y);
 }
 
-int window_get_mouse_button_state(GLFWwindow* window, int button){
+int window_get_mouse_button_state(GLFWwindow* window, int button) {
     return glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
 }

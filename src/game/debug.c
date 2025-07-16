@@ -5,8 +5,8 @@
 #ifdef _DEBUG
 #include <string.h>
 
-#include "rendering/renderer.h"
 #include "game/ui_element.h"
+#include "rendering/renderer.h"
 
 void debug_render_mouse(World* world) {
     Mesh mesh = mesh_init();
@@ -74,14 +74,8 @@ static void mesh_push_hitbox(Mesh* mesh, Rect hitbox, Color color) {
 
     uint32_t base_index = (uint32_t)mesh->vertices.size;
     uint32_t indices[8] = {
-        base_index + 0,
-        base_index + 1,
-        base_index + 1,
-        base_index + 2,
-        base_index + 2,
-        base_index + 3,
-        base_index + 3,
-        base_index + 0,
+        base_index + 0, base_index + 1, base_index + 1, base_index + 2,
+        base_index + 2, base_index + 3, base_index + 3, base_index + 0,
     };
 
     for (size_t i = 0; i < sizeof(vertices) / sizeof(vertices[0]); i++) {

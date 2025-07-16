@@ -40,13 +40,15 @@ static MoveResult controller_animated_move(World* world, Move move, float durati
         if (ui_find_in_layout(&world->ui_elements, move.to, 0, &to, NULL)) {
             to.sprite.color.a = from.sprite.color.a;
 
-            vec_push_back(&animation_system->ui_animations,
+            vec_push_back(
+                &animation_system->ui_animations,
                 &(UIElementAnimation) {
                     .from = from,
                     .to = to,
                     .elapsed = 0.0f,
                     .duration = duration,
-                });
+                }
+            );
         }
     }
 
@@ -152,7 +154,11 @@ void controller_end_drag(World* world) {
         && ui_get_topmost_hit(ui_elements, world->controller.mouse, &dest, NULL)
         && dest.type == UI_CARD) {
         controller_handle_card_drop(
-            &dest, drag_state->card_location, drag_state->card_index, world);
+            &dest,
+            drag_state->card_location,
+            drag_state->card_index,
+            world
+        );
     }
 
     // Update drag state and queue layout update
@@ -164,7 +170,11 @@ void controller_end_drag(World* world) {
 }
 
 bool controller_handle_card_drop(
-    UIElement* dest, SelectionLocation from_location, uint8_t card_index, World* world) {
+    UIElement* dest,
+    SelectionLocation from_location,
+    uint8_t card_index,
+    World* world
+) {
 
     if (freecell_game_over(&world->game.freecell)) {
         return false;
@@ -186,12 +196,14 @@ bool controller_handle_card_drop(
     uint8_t size
         = freecell_count_cards_from_index(&world->game.freecell, from_location, card_index);
 
-    MoveResult result = game_move(&world->game,
+    MoveResult result = game_move(
+        &world->game,
         (Move) {
             .from = from_location,
             .to = dest_location,
             .size = size,
-        });
+        }
+    );
 
     if (result == MOVE_SUCCESS) {
         controller_play_card_move_sound(world);
@@ -218,7 +230,10 @@ void controller_smart_move(World* world) {
             }
 
             uint8_t size = freecell_count_cards_from_index(
-                &world->game.freecell, location, topmost.meta.card.card_index);
+                &world->game.freecell,
+                location,
+                topmost.meta.card.card_index
+            );
 
             // foundation destination is automatically corrected to the suit of the card
             SelectionLocation foundation_destination = get_suit(card) + FOUNDATION_SPADES;
@@ -228,13 +243,15 @@ void controller_smart_move(World* world) {
                 == MOVE_SUCCESS) {
                 SelectionLocation to_location = FOUNDATION_SPADES + get_suit(card);
 
-                controller_animated_move(world,
+                controller_animated_move(
+                    world,
                     (Move) {
                         .from = location,
                         .to = to_location,
                         .size = size,
                     },
-                    0.3f);
+                    0.3f
+                );
                 return;
             }
 
@@ -242,13 +259,15 @@ void controller_smart_move(World* world) {
             for (uint8_t i = 0; i < 4; i++) {
                 if (freecell_validate_to_reserve(&world->game.freecell, card, RESERVE_1 + i)
                     == MOVE_SUCCESS) {
-                    controller_animated_move(world,
+                    controller_animated_move(
+                        world,
                         (Move) {
                             .from = location,
                             .to = RESERVE_1 + i,
                             .size = size,
                         },
-                        0.3f);
+                        0.3f
+                    );
                     return;
                 }
             }
@@ -370,7 +389,10 @@ void controller_handle_input(InputAction ia) {
 
     if (ia.type == INPUT_ACTION_FRAMEBUFFER_RESIZE) {
         controller_on_framebuffer_resize(
-            world, ia.data.framebuffer_resize.width, ia.data.framebuffer_resize.height);
+            world,
+            ia.data.framebuffer_resize.width,
+            ia.data.framebuffer_resize.height
+        );
     } else if (ia.type == INPUT_ACTION_POINTER_MOVE) {
         controller_on_cursor_position(world, ia.data.pointer_move.x, ia.data.pointer_move.y);
     } else if (ia.type == INPUT_ACTION_START_DRAG) {

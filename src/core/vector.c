@@ -42,7 +42,10 @@ Vector vec_push_back(Vector* vector, const void* const data) {
 Vector vec_push_front(Vector* vector, const void* const data) {
     vec_ensure_capacity(vector, vector->size + 1);
     memmove(
-        (uint8_t*)vector->data + vector->elem_size, vector->data, vector->elem_size * vector->size);
+        (uint8_t*)vector->data + vector->elem_size,
+        vector->data,
+        vector->elem_size * vector->size
+    );
     memcpy(vector->data, data, vector->elem_size);
     vector->size += 1;
     return *vector;
@@ -65,9 +68,11 @@ void vec_delete(Vector* vector, size_t i) {
         return;
     }
     if (i != vector->size - 1) {
-        memmove((uint8_t*)vector->data + i * vector->elem_size,
+        memmove(
+            (uint8_t*)vector->data + i * vector->elem_size,
             (uint8_t*)vector->data + (i + 1) * vector->elem_size,
-            (vector->size - i) * vector->elem_size);
+            (vector->size - i) * vector->elem_size
+        );
     }
     vector->size -= 1;
 }

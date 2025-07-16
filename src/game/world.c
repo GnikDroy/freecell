@@ -18,7 +18,14 @@ World world_init(GLFWwindow* window) {
     };
 
     glm_ortho(
-        0.0f, (float)VIRTUAL_WIDTH, (float)VIRTUAL_HEIGHT, 0.0f, -1000.0f, 1.0f, camera.projection);
+        0.0f,
+        (float)VIRTUAL_WIDTH,
+        (float)VIRTUAL_HEIGHT,
+        0.0f,
+        -1000.0f,
+        1.0f,
+        camera.projection
+    );
 
     world.camera = camera;
 
@@ -38,7 +45,11 @@ World world_init(GLFWwindow* window) {
 
     ma_decoder_config decoderConfig = ma_decoder_config_init(ma_format_f32, 0, 0);
     result = ma_decoder_init_memory(
-        CARD_MOVE_SOUND, CARD_MOVE_SOUND_SIZE, &decoderConfig, &world.card_move_decoder);
+        CARD_MOVE_SOUND,
+        CARD_MOVE_SOUND_SIZE,
+        &decoderConfig,
+        &world.card_move_decoder
+    );
 
     if (result != MA_SUCCESS) {
         log_error("Failed to initialize MP3 decoder: %s", ma_result_description(result));
@@ -46,7 +57,12 @@ World world_init(GLFWwindow* window) {
     }
 
     result = ma_sound_init_from_data_source(
-        &world.engine, &world.card_move_decoder, 0, NULL, &world.card_move_sound);
+        &world.engine,
+        &world.card_move_decoder,
+        0,
+        NULL,
+        &world.card_move_sound
+    );
 
     if (result != MA_SUCCESS) {
         log_error("Failed to initialize sound from decoder: %s", ma_result_description(result));

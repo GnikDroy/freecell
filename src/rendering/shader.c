@@ -4,7 +4,6 @@
 
 #include "core/log.h"
 
-
 uint32_t shader_init(const char* vertex_shader_source, const char* fragment_shader_source) {
     uint32_t vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &vertex_shader_source, NULL);

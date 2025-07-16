@@ -60,8 +60,8 @@ int main(void) {
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-int APIENTRY wWinMain(
-    _In_ HINSTANCE hinstance, _In_opt_ HINSTANCE opt, _In_ LPWSTR cmd, _In_ int i) {
+int APIENTRY
+wWinMain(_In_ HINSTANCE hinstance, _In_opt_ HINSTANCE opt, _In_ LPWSTR cmd, _In_ int i) {
     (void)hinstance;
     (void)opt;
     (void)cmd;

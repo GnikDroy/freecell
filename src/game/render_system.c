@@ -63,12 +63,8 @@ void mesh_push_sprite(Mesh* mesh, Sprite sprite) {
 
     uint32_t base_index = (uint32_t)mesh->vertices.size;
     uint32_t indices[] = {
-        base_index + 3,
-        base_index + 1,
-        base_index + 0,
-        base_index + 3,
-        base_index + 2,
-        base_index + 1,
+        base_index + 3, base_index + 1, base_index + 0,
+        base_index + 3, base_index + 2, base_index + 1,
     };
 
     for (size_t i = 0; i < sizeof(vertices) / sizeof(vertices[0]); i++) {
@@ -83,36 +79,30 @@ void mesh_push_sprite(Mesh* mesh, Sprite sprite) {
 void render_background(World* world) {
     Mesh mesh = mesh_init();
 
+    // clang-format off
     Vertex vertices[4] = {
-        { .x = 0, .y = 0, .z = 0, .r = 1, .g = 1, .b = 1, .a = 1, .u = 0, .v = 0 }, // Top-left
-        { .x = 0,
-            .y = VIRTUAL_HEIGHT,
-            .z = 0,
-            .r = 1,
-            .g = 1,
-            .b = 1,
-            .a = 1,
-            .u = 0,
-            .v = 1 }, // Bottom-left
-        { .x = VIRTUAL_WIDTH,
-            .y = VIRTUAL_HEIGHT,
-            .z = 0,
-            .r = 1,
-            .g = 1,
-            .b = 1,
-            .a = 1,
-            .u = 1,
-            .v = 1 }, // Bottom-right
-        { .x = VIRTUAL_WIDTH,
-            .y = 0,
-            .z = 0,
-            .r = 1,
-            .g = 1,
-            .b = 1,
-            .a = 1,
-            .u = 1,
-            .v = 0 }, // Top-right
+        {
+            .x = 0, .y = 0, .z = 0,
+            .r = 1, .g = 1, .b = 1, .a = 1,
+            .u = 0, .v = 0
+        }, // Top-left
+        {
+            .x = 0, .y = VIRTUAL_HEIGHT, .z = 0,
+            .r = 1, .g = 1, .b = 1, .a = 1,
+            .u = 0, .v = 1
+        }, // Bottom-left
+        {
+            .x = VIRTUAL_WIDTH, .y = VIRTUAL_HEIGHT, .z = 0,
+            .r = 1, .g = 1, .b = 1, .a = 1,
+            .u = 1, .v = 1
+        }, // Bottom-right
+        {
+            .x = VIRTUAL_WIDTH, .y = 0, .z = 0,
+            .r = 1, .g = 1, .b = 1, .a = 1,
+            .u = 1, .v = 0
+        }, // Top-right
     };
+    // clang-format on
 
     for (int i = 0; i < 4; i++) {
         vec_push_back(&mesh.vertices, vertices + i);
@@ -131,7 +121,10 @@ void render_background(World* world) {
     renderer_set_shader(world->assets.background_shader);
     shader_set_mat4(world->assets.background_shader, "view", (const float*)world->camera.view);
     shader_set_mat4(
-        world->assets.background_shader, "projection", (const float*)world->camera.projection);
+        world->assets.background_shader,
+        "projection",
+        (const float*)world->camera.projection
+    );
 
     renderer_draw_mesh(&gpu_mesh, GL_TRIANGLES);
 
@@ -203,7 +196,10 @@ void render_world(World* world) {
     renderer_set_shader(world->assets.main_shader);
     shader_set_mat4(world->assets.main_shader, "view", (const float*)world->camera.view);
     shader_set_mat4(
-        world->assets.main_shader, "projection", (const float*)world->camera.projection);
+        world->assets.main_shader,
+        "projection",
+        (const float*)world->camera.projection
+    );
     shader_set_int(world->assets.main_shader, "spritesheet", 0);
 
     renderer_draw_mesh(&world->game_gpu_mesh, GL_TRIANGLES);

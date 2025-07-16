@@ -179,7 +179,10 @@ bool freecell_is_trivially_solved(Freecell* freecell) {
 }
 
 uint8_t freecell_count_cards_from_index(
-    const Freecell* freecell, SelectionLocation location, uint32_t card_index) {
+    const Freecell* freecell,
+    SelectionLocation location,
+    uint32_t card_index
+) {
     if (selection_location_is_cascade(location)) {
         return freecell->cascade[location - CASCADE_1].size - card_index;
     }
@@ -187,7 +190,10 @@ uint8_t freecell_count_cards_from_index(
 }
 
 uint8_t freecell_get_index_from_size(
-    const Freecell* freecell, SelectionLocation location, uint8_t size) {
+    const Freecell* freecell,
+    SelectionLocation location,
+    uint8_t size
+) {
     if (selection_location_is_cascade(location)) {
         return freecell->cascade[location - CASCADE_1].size - size;
     } else {
@@ -247,7 +253,10 @@ MoveResult freecell_validate_to_reserve(Freecell* freecell, Card card, Selection
 }
 
 MoveResult freecell_validate_to_cascade_single(
-    Freecell* freecell, Card card, SelectionLocation dest) {
+    Freecell* freecell,
+    Card card,
+    SelectionLocation dest
+) {
     Cascade* cascade = &freecell->cascade[dest - CASCADE_1];
 
     if (cascade->size == 0) {
@@ -381,8 +390,11 @@ void freecell_move_to_cascade(Freecell* freecell, Move move) {
     Cascade* from_cascade = &freecell->cascade[move.from];
     Cascade* to_cascade = &freecell->cascade[move.to];
 
-    memcpy(to_cascade->cards + to_cascade->size,
-        from_cascade->cards + from_cascade->size - move.size, move.size);
+    memcpy(
+        to_cascade->cards + to_cascade->size,
+        from_cascade->cards + from_cascade->size - move.size,
+        move.size
+    );
     from_cascade->size -= move.size;
     to_cascade->size += move.size;
 }

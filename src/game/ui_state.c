@@ -24,7 +24,11 @@ static void ui_element_apply_style(UIElement* ui_element) {
 }
 
 static CardUIState ui_card_state_transition(
-    CardUIState current, bool hovered, bool clicked, bool can_move) {
+    CardUIState current,
+    bool hovered,
+    bool clicked,
+    bool can_move
+) {
     if (clicked && can_move) {
         return CARD_UI_STATE_SELECTED;
     } else if (hovered && can_move) {
@@ -34,7 +38,11 @@ static CardUIState ui_card_state_transition(
 }
 
 static ButtonUIState ui_button_state_transition(
-    ButtonUIState current, bool hovered, bool clicked, bool disabled) {
+    ButtonUIState current,
+    bool hovered,
+    bool clicked,
+    bool disabled
+) {
     if (disabled) {
         return BUTTON_UI_STATE_DISABLED;
     } else if (clicked) {
@@ -87,9 +95,16 @@ void ui_set_element_drag_properties(UIElement* ui_element, World* world) {
 }
 
 UIElement ui_get_new_state(
-    World* world, UIElement* element, bool hovered, bool clicked, bool disabled) {
+    World* world,
+    UIElement* element,
+    bool hovered,
+    bool clicked,
+    bool disabled
+) {
     UIElement new_element = *element;
     Game* game = &world->game;
+
+    ui_set_element_drag_properties(&new_element, world);
 
     if (element->type == UI_CARD) {
         SelectionLocation location = element->meta.card.selection_location;
@@ -104,7 +119,6 @@ UIElement ui_get_new_state(
     }
 
     ui_element_apply_style(&new_element);
-    ui_set_element_drag_properties(&new_element, world);
     return new_element;
 }
 

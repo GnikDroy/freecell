@@ -1,6 +1,7 @@
 #include <time.h>
 
 #include "utils.h"
+
 #include "game/constants.h"
 
 uint64_t time_millis() {
@@ -18,7 +19,12 @@ bool point_in_rect(float px, float py, Rect rect) {
 }
 
 vec2s screen_to_world(
-    double mouse_x, double mouse_y, int screen_width, int screen_height, Camera* cam) {
+    double mouse_x,
+    double mouse_y,
+    int screen_width,
+    int screen_height,
+    Camera* cam
+) {
     // First, compute the letterboxed viewport
     float aspect_virtual = (float)VIRTUAL_WIDTH / VIRTUAL_HEIGHT;
     float aspect_window = (float)screen_width / screen_height;
@@ -56,7 +62,6 @@ vec2s screen_to_world(
     float ndc_y = 1.0f - (2.0f * adjusted_y) / viewport_height;
 
     vec4 clip = { ndc_x, ndc_y, 0.0f, 1.0f };
-
 
     mat4 vp, inv_vp;
     glm_mat4_mul(cam->projection, cam->view, vp);

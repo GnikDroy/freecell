@@ -63,12 +63,20 @@ void gpu_mesh_free(GPUMesh* mesh) {
 void upload_mesh(GPUMesh* gpu_mesh, Mesh* mesh) {
     glBindVertexArray(gpu_mesh->VAO);
     glBindBuffer(GL_ARRAY_BUFFER, gpu_mesh->VBO);
-    glBufferData(GL_ARRAY_BUFFER, mesh->vertices.size * mesh->vertices.elem_size,
-        mesh->vertices.data, GL_STATIC_DRAW);
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        mesh->vertices.size * mesh->vertices.elem_size,
+        mesh->vertices.data,
+        GL_STATIC_DRAW
+    );
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gpu_mesh->EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->indices.size * mesh->indices.elem_size,
-        mesh->indices.data, GL_STATIC_DRAW);
+    glBufferData(
+        GL_ELEMENT_ARRAY_BUFFER,
+        mesh->indices.size * mesh->indices.elem_size,
+        mesh->indices.data,
+        GL_STATIC_DRAW
+    );
     glBindVertexArray(0);
     gpu_mesh->index_count = mesh->indices.size;
 }
