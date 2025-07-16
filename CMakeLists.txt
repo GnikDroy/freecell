@@ -7,7 +7,7 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
     set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
             STRING "Choose the type of build." FORCE)
-    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release")
+        set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
 # Only do these if this is the main project, and not if it is included through add_subdirectory
@@ -104,8 +104,8 @@ function(miniaudio_build)
       GIT_SHALLOW 1
       GIT_PROGRESS 1
     )
-
     FetchContent_MakeAvailable(miniaudio)
+    target_compile_definitions(miniaudio PRIVATE MA_NO_ENCODING MA_NO_FLAC MA_NO_MP3 MA_NO_GENERATION)
 endfunction()
 miniaudio_build()
 
