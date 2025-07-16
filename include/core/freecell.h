@@ -166,7 +166,7 @@ Card cascade_pop(Cascade* cascade);
 
 bool cascade_is_stacked_properly(Cascade* cascade, size_t start_index);
 
-bool cascade_is_descending_and_alternating(Cascade* cascade, size_t start_index);
+bool cascade_is_descending(Cascade* cascade, size_t start_index);
 
 Freecell freecell_init(void);
 

@@ -21,7 +21,7 @@ static void controller_play_card_move_sound(World* world) {
     ma_sound_start(&world->card_move_sound);
 }
 
-static MoveResult controller_animated_move(World* world, Move move) {
+static MoveResult controller_animated_move(World* world, Move move, float duration) {
     Controller* controller = &world->controller;
     AnimationSystem* animation_system = &world->animation_system;
 
@@ -36,8 +36,6 @@ static MoveResult controller_animated_move(World* world, Move move) {
     UIElement from, to;
     if (ui_find_in_layout(&world->ui_elements, move.from, from_move_index, &from, NULL)) {
         // We don't need to support cascade animation for stacks
-        // This is because undo being instant is good UX imo
-        // Feature, not a bug ;)
         uint8_t to_move_index = 0;
         if (ui_find_in_layout(&world->ui_elements, move.to, 0, &to, NULL)) {
             to.sprite.color.a = from.sprite.color.a;
@@ -47,7 +45,7 @@ static MoveResult controller_animated_move(World* world, Move move) {
                     .from = from,
                     .to = to,
                     .elapsed = 0.0f,
-                    .duration = 0.2f,
+                    .duration = duration,
                 });
         }
     }
@@ -70,9 +68,9 @@ static void controller_autocomplete_game(World* world) {
     // find the smallest card in the cascade (or reserve)
     Freecell* freecell = &world->game.freecell;
 
-    SelectionLocation smallest_location = FOUNDATION_SPADES;
-    Suit smallest_suit = SPADES + 1;
-    Rank smallest_rank = KING + 1;
+    SelectionLocation smallest_location = (uint8_t)-1;
+    Suit smallest_suit = (uint8_t)-1;
+    Rank smallest_rank = (uint8_t)-1;
     for (int i = 0; i < 4; i++) {
         if (freecell->reserve[i] != NONE) {
             Card card = freecell->reserve[i];
@@ -114,7 +112,7 @@ static void controller_autocomplete_game(World* world) {
         .size = 1,
     };
 
-    controller_animated_move(world, move);
+    controller_animated_move(world, move, 0.35f);
 }
 
 void controller_update(World* world, double dt) {
@@ -167,6 +165,10 @@ void controller_end_drag(World* world) {
 
 bool controller_handle_card_drop(
     UIElement* dest, SelectionLocation from_location, uint8_t card_index, World* world) {
+
+    if (freecell_game_over(&world->game.freecell)) {
+        return false;
+    }
 
     if (dest->type != UI_CARD) {
         return false;
@@ -231,7 +233,8 @@ void controller_smart_move(World* world) {
                         .from = location,
                         .to = to_location,
                         .size = size,
-                    });
+                    },
+                    0.3f);
                 return;
             }
 
@@ -244,7 +247,8 @@ void controller_smart_move(World* world) {
                             .from = location,
                             .to = RESERVE_1 + i,
                             .size = size,
-                        });
+                        },
+                        0.3f);
                     return;
                 }
             }
