@@ -8,6 +8,7 @@ typedef enum CardUIState {
     CARD_UI_STATE_NORMAL,
     CARD_UI_STATE_HOVERED,
     CARD_UI_STATE_SELECTED,
+    CARD_UI_STATE_DROP_TARGET,
 } CardUIState;
 
 typedef enum UIType {

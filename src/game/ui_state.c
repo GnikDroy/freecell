@@ -20,6 +20,14 @@ static void ui_element_apply_style(UIElement* ui_element) {
             ui_element->sprite.color.r = 0.8f;
             ui_element->sprite.color.g = 0.8f;
             ui_element->sprite.color.b = 0.8f;
+        } else if (ui_element->meta.card.state == CARD_UI_STATE_DROP_TARGET) {
+            ui_element->sprite.color.r = 0.9f;
+            ui_element->sprite.color.g = 1.0f;
+            ui_element->sprite.color.b = 0.9f;
+        } else {
+            ui_element->sprite.color.r = 1.0f;
+            ui_element->sprite.color.g = 1.0f;
+            ui_element->sprite.color.b = 1.0f;
         }
     }
 }
@@ -28,12 +36,21 @@ static CardUIState ui_card_state_transition(
     CardUIState current,
     bool hovered,
     bool clicked,
-    bool can_move
+    bool can_move_from,
+    bool can_move_to,
+    bool is_dragged,
+    bool is_target
 ) {
-    if (clicked && can_move) {
+    if (is_dragged) {
         return CARD_UI_STATE_SELECTED;
-    } else if (hovered && can_move) {
+    } else if (is_target && can_move_to && !hovered) {
+        return CARD_UI_STATE_DROP_TARGET;
+    } else if (is_target && can_move_to && hovered) {
         return CARD_UI_STATE_HOVERED;
+    } else if (!is_target && hovered && can_move_from && !is_dragged) {
+        return CARD_UI_STATE_HOVERED;
+    } else if (clicked && can_move_to) {
+        return CARD_UI_STATE_SELECTED;
     }
     return CARD_UI_STATE_NORMAL;
 }
@@ -65,7 +82,7 @@ bool ui_is_element_draggable(World* world, UIElement* elem) {
     return game_can_move_from(&world->game, loc, index);
 }
 
-bool ui_set_element_drag_properties(UIElement* ui_element, World* world) {
+bool ui_set_dragged_element_properties(UIElement* ui_element, World* world) {
     UIDragState* drag_state = &world->controller.drag_state;
 
     // only card elements will have properties changed by drag
@@ -97,6 +114,33 @@ bool ui_set_element_drag_properties(UIElement* ui_element, World* world) {
     return true;
 }
 
+static bool can_card_be_moved_from(Game* game, SelectionLocation location, uint8_t card_index) {
+    return game_can_move_from(game, location, card_index);
+}
+
+static bool can_card_be_moved_to(
+    Game* game,
+    UIDragState* drag_state,
+    SelectionLocation location,
+    uint32_t card_index
+) {
+    if (!drag_state->dragging) {
+        return false;
+    }
+
+    Move move = {
+        .from = drag_state->card_location,
+        .to = location,
+        .size = freecell_count_cards_from_index(
+            &game->freecell,
+            drag_state->card_location,
+            drag_state->card_index
+        ),
+    };
+
+    return game_validate_move(game, move) == MOVE_SUCCESS;
+}
+
 UIElement ui_get_new_state(
     World* world,
     UIElement* element,
@@ -106,42 +150,37 @@ UIElement ui_get_new_state(
 ) {
     UIElement new_element = *element;
     Game* game = &world->game;
+    UIDragState* drag_state = &world->controller.drag_state;
 
-    if (ui_set_element_drag_properties(&new_element, world)) {
-        hovered = false;
-        clicked = true;
-    }
+    bool is_dragged = ui_set_dragged_element_properties(&new_element, world);
 
     if (element->type == UI_CARD) {
         SelectionLocation location = element->meta.card.selection_location;
         uint32_t card_index = element->meta.card.card_index;
 
-        bool can_move = game_can_move_from(game, location, card_index);
-
-        if (world->controller.drag_state.dragging) {
-            UIDragState* drag_state = &world->controller.drag_state;
-            SelectionLocation from_location = drag_state->card_location;
-            uint32_t from_index = drag_state->card_index;
-
-            if (from_location != location) {
-                can_move = game_validate_move(
-                               game,
-                               (Move) {
-                                   .from = from_location,
-                                   .to = location,
-                                   .size = freecell_count_cards_from_index(
-                                       &game->freecell,
-                                       from_location,
-                                       from_index
-                                   ),
-                               }
-                           )
-                    == MOVE_SUCCESS;
-            }
+        bool is_top_card = true;
+        if (selection_location_is_cascade(location)) {
+            Cascade* cascade = &game->freecell.cascade[location - CASCADE_1];
+            is_top_card = cascade->size > 0 && card_index == cascade->size - 1;
         }
 
-        new_element.meta.card.state
-            = ui_card_state_transition(element->meta.card.state, hovered, clicked, can_move);
+        bool is_target
+            = is_top_card && drag_state->dragging && drag_state->card_location != location;
+
+        bool can_move_to
+            = is_top_card && can_card_be_moved_to(game, drag_state, location, card_index);
+        bool can_move_from = can_card_be_moved_from(game, location, card_index);
+
+        new_element.meta.card.state = ui_card_state_transition(
+            element->meta.card.state,
+            hovered,
+            clicked,
+            can_move_from,
+            can_move_to,
+            is_dragged,
+            is_target
+        );
+
     } else if (element->type == UI_BUTTON) {
         new_element.meta.button.state
             = ui_button_state_transition(element->meta.button.state, hovered, clicked, disabled);
