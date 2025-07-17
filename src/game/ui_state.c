@@ -4,6 +4,7 @@
 
 #include "game/ui_state.h"
 
+#include "core/game.h"
 #include "game/ui_element.h"
 #include "game/ui_layout.h"
 #include "game/world.h"
@@ -116,6 +117,29 @@ UIElement ui_get_new_state(
         uint32_t card_index = element->meta.card.card_index;
 
         bool can_move = game_can_move_from(game, location, card_index);
+
+        if (world->controller.drag_state.dragging) {
+            UIDragState* drag_state = &world->controller.drag_state;
+            SelectionLocation from_location = drag_state->card_location;
+            uint32_t from_index = drag_state->card_index;
+
+            if (from_location != location) {
+                can_move = game_validate_move(
+                               game,
+                               (Move) {
+                                   .from = from_location,
+                                   .to = location,
+                                   .size = freecell_count_cards_from_index(
+                                       &game->freecell,
+                                       from_location,
+                                       from_index
+                                   ),
+                               }
+                           )
+                    == MOVE_SUCCESS;
+            }
+        }
+
         new_element.meta.card.state
             = ui_card_state_transition(element->meta.card.state, hovered, clicked, can_move);
     } else if (element->type == UI_BUTTON) {
