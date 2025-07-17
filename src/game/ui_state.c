@@ -64,19 +64,19 @@ bool ui_is_element_draggable(World* world, UIElement* elem) {
     return game_can_move_from(&world->game, loc, index);
 }
 
-void ui_set_element_drag_properties(UIElement* ui_element, World* world) {
+bool ui_set_element_drag_properties(UIElement* ui_element, World* world) {
     UIDragState* drag_state = &world->controller.drag_state;
 
     // only card elements will have properties changed by drag
     if (ui_element->type != UI_CARD) {
-        return;
+        return false;
     }
 
     // Not being dragged or not the correct card
     if (!drag_state->dragging
         || drag_state->card_location != ui_element->meta.card.selection_location
         || drag_state->card_index > ui_element->meta.card.card_index)
-        return;
+        return false;
 
     vec2s mouse = world->controller.mouse;
 
@@ -92,6 +92,8 @@ void ui_set_element_drag_properties(UIElement* ui_element, World* world) {
     ui_element->hitbox.y = -INFINITY;
     ui_element->hitbox.width = 0.0f;
     ui_element->hitbox.height = 0.0f;
+
+    return true;
 }
 
 UIElement ui_get_new_state(
@@ -104,7 +106,10 @@ UIElement ui_get_new_state(
     UIElement new_element = *element;
     Game* game = &world->game;
 
-    ui_set_element_drag_properties(&new_element, world);
+    if (ui_set_element_drag_properties(&new_element, world)) {
+        hovered = false;
+        clicked = true;
+    }
 
     if (element->type == UI_CARD) {
         SelectionLocation location = element->meta.card.selection_location;
