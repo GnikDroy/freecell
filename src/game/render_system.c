@@ -168,6 +168,29 @@ static void ui_push_animation(World* world) {
     }
 }
 
+static void mesh_push_text(World* world, const char* text, vec2s pos, Color color) {
+    float offset_x = 0;
+    float offset_y = 0;
+
+    for (size_t i = 0; i < strlen(text); i++) {
+        char c = text[i];
+        if ((c > ' ' && c <= '~')) {
+            Sprite sprite = world->characters[c - ' '];
+            sprite.color = color;
+            sprite.x = offset_x + pos.x;
+            sprite.y = offset_y + pos.y;
+
+            mesh_push_sprite(&world->game_mesh, sprite);
+            offset_x += world->characters[c - ' '].width / 2.0f;
+        } else if (c == '\n') {
+            offset_x = 0;
+            offset_y += world->characters[0].height * 0.8; // Move to next line
+        } else if (c == ' ') {
+            offset_x += world->characters[0].width / 2.0f; // Space character
+        }
+    }
+}
+
 void render_world(World* world) {
     const Color clear_color = { 0 };
     renderer_clear(clear_color);
@@ -190,6 +213,17 @@ void render_world(World* world) {
     // create game mesh and upload to gpu
     mesh_clear(&world->game_mesh);
     mesh_push_ui_elements(&world->game_mesh, &world->ui_elements, &world->animation_system);
+    mesh_push_text(
+        world,
+        "The quick brown fox jumps over the lazy dog!\n"
+        "Score: 1230.\n"
+        "Game OVER for you Mr. Player!\n"
+        "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]"
+        "^_`abcdefghijklmnopqrstuvwxyz{|}~\n"
+        "variable_names",
+        (vec2s) { 20.0f, 20.0f },
+        (Color) { 1.0f, 1.0f, 1.0f, 1.0f }
+    );
     upload_mesh(&world->game_gpu_mesh, &world->game_mesh);
 
     // set shaders draw the mesh

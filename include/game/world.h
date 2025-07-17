@@ -22,6 +22,7 @@ typedef struct World {
     Assets assets;
 
     Sprite deck[53];
+    Sprite characters['~' - ' ' + 1];
 
     Vector ui_elements;
 

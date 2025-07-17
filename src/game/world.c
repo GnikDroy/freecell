@@ -30,6 +30,7 @@ World world_init(GLFWwindow* window) {
     world.camera = camera;
 
     generate_card_sprites(world.deck);
+    generate_character_sprites(world.characters);
 
     world.ui_elements = vec_init(sizeof(UIElement));
 
