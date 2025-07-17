@@ -117,13 +117,13 @@ add_executable(
     src/main.c
 
     src/game/assets.c
-    src/game/card_sprites.c
     src/game/constants.c
     src/game/controller.c
     src/game/debug.c
     src/game/input.c
     src/game/render_system.c
     src/game/ui_layout.c
+    src/game/ui_sprites.c
     src/game/ui_state.c
     src/game/world.c
 

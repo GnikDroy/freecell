@@ -3,8 +3,8 @@
 #include "core/log.h"
 
 #include "game/assets.h"
-#include "game/card_sprites.h"
 #include "game/constants.h"
+#include "game/ui_sprites.h"
 #include "game/ui_element.h"
 
 World world_init(GLFWwindow* window) {

@@ -3,7 +3,7 @@
 #include "rendering/shader.h"
 #include "rendering/texture.h"
 
-#include "game/card_sprites.h"
+#include "game/ui_sprites.h"
 #include "game/constants.h"
 
 Assets assets_init() {
