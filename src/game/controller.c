@@ -348,20 +348,24 @@ static void controller_autocompleteable_game(World* world) {
         freecell->cascade[i].size = 0;
     }
 
+
     for (int i = 0; i < 12; i++) {
         Card card_a = get_card(QUEEN - i, i % 2 == 0 ? SPADES : DIAMONDS);
         Card card_b = get_card(QUEEN - i, i % 2 != 0 ? SPADES : DIAMONDS);
-        Card card_c = get_card(QUEEN - i, i % 2 == 0 ? CLUBS : HEARTS);
-        Card card_d = get_card(QUEEN - i, i % 2 != 0 ? CLUBS : HEARTS);
+        Card card_c = get_card(QUEEN - i, CLUBS);
+        Card card_d = get_card(QUEEN - i, HEARTS);
         cascade_push(&freecell->cascade[3], card_a);
         cascade_push(&freecell->cascade[4], card_b);
         cascade_push(&freecell->cascade[5], card_c);
         cascade_push(&freecell->cascade[6], card_d);
     }
 
-    for (int i = 0; i < 4; i++) {
-        freecell->reserve[i] = get_card(KING, SPADES + i);
-    }
+    cascade_push(&freecell->cascade[0], KING_CLUBS);
+    cascade_push(&freecell->cascade[0], KING_SPADES);
+    freecell->reserve[0] = KING_DIAMONDS;
+    freecell->reserve[1] = KING_HEARTS;
+    freecell->reserve[2] = NONE;
+    freecell->reserve[3] = NONE;
 
     world->game.history.size = 0;
 }
