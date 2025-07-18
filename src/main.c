@@ -26,7 +26,10 @@ void gameloop(GLFWwindow* window) {
         controller_update(&world, dt);
 
         time = glfwGetTime();
+
+        aclear(); // Clear the arena allocator for the next frame
     }
+    afree(); // Free the arena allocator at the end
 
     renderer_free(&renderer);
     world_free(&world);

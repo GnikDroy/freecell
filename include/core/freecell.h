@@ -109,6 +109,7 @@ typedef struct Freecell {
     Card reserve[4];
     Card foundation[4];
     Cascade cascade[8];
+    uint32_t seed;
 } Freecell;
 
 typedef uint8_t SelectionLocation;
@@ -168,7 +169,7 @@ bool cascade_is_stacked_properly(Cascade* cascade, size_t start_index);
 
 bool cascade_is_descending(Cascade* cascade, size_t start_index);
 
-Freecell freecell_init(void);
+Freecell freecell_init(uint32_t seed);
 
 bool freecell_game_over(Freecell* freecell);
 

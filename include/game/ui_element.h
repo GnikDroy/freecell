@@ -1,4 +1,5 @@
 #pragma once
+#include "core/aalloc.h"
 #include "core/game.h"
 
 #include "rendering/rect.h"
@@ -14,6 +15,7 @@ typedef enum CardUIState {
 typedef enum UIType {
     UI_CARD,
     UI_CARD_PLACEHOLDER,
+    UI_TEXT,
     UI_BUTTON,
 } UIType;
 
@@ -36,6 +38,13 @@ typedef struct ButtonUIMeta {
     ButtonUIState state;
 } ButtonUIMeta;
 
+typedef struct TextUIMeta {
+    APtr text;
+    float font_scaling;
+    float line_height_scaling;
+    float character_spacing_scaling;
+} TextUIMeta;
+
 typedef struct UIElement {
     UIType type;
     Sprite sprite;
@@ -43,5 +52,6 @@ typedef struct UIElement {
     union {
         CardUIMeta card;
         ButtonUIMeta button;
+        TextUIMeta text;
     } meta;
 } UIElement;

@@ -9,8 +9,10 @@ typedef struct AnimationSystem AnimationSystem;
 
 void mesh_push_sprite(Mesh* mesh, Sprite sprite);
 
-void mesh_push_ui_element(Mesh* mesh, UIElement* ui_element);
+void mesh_push_text(Mesh* mesh, World* world, UIElement* ui_element);
 
-void mesh_push_ui_elements(Mesh* mesh, Vector* vec, AnimationSystem* anim_sys);
+void mesh_push_ui_element(Mesh* mesh, World* world, UIElement* ui_element);
+
+void mesh_push_ui_elements(Mesh* mesh, World* world, Vector* vec);
 
 void render_world(World* world);

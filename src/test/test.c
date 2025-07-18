@@ -27,7 +27,7 @@ void test_freecell_push_and_pop_cascade(void) {
 }
 
 void test_freecell_init_distribution(void) {
-    Freecell game = freecell_init();
+    Freecell game = freecell_init(1);
 
     bool pass = true;
     for (int i = 0; i < 4; i++) {
@@ -450,7 +450,7 @@ void test_freecell_is_trivially_solved_false(void) {
         Cascade* c = &f.cascade[i];
         c->size = 3;
         c->cards[0] = SEVEN_SPADES;
-        c->cards[1] = SIX_CLUBS; // same color as previous (invalid)
+        c->cards[1] = EIGHT_CLUBS; // Higher card on top
         c->cards[2] = FIVE_DIAMONDS;
     }
 

@@ -1,13 +1,28 @@
 #include <stdbool.h>
 #include <stdint.h>
+#include <time.h>
 
 #include "core/game.h"
 
+static uint32_t get_initial_seed(void) {
+    struct timespec now;
+    timespec_get(&now, TIME_UTC);
+    uint64_t seed = (uint32_t)(now.tv_sec ^ (now.tv_nsec << 21));
+    seed ^= (seed >> 33);
+    seed *= 0xff51afd7ed558ccdULL;
+    seed ^= (seed >> 33);
+    seed *= 0xc4ceb9fe1a85ec53ULL;
+    seed ^= (seed >> 33);
+    seed = seed % 10000000 + 1;
+    return seed;
+}
+
 Game game_init(void) {
     Game game = {
-        .freecell = freecell_init(),
+        .freecell = freecell_init(get_initial_seed()),
         .move_count = 0,
         .history = vec_init(sizeof(Move)),
+        .clock = 0,
     };
     return game;
 }
@@ -15,7 +30,8 @@ Game game_init(void) {
 void game_free(Game* game) { vec_free(&game->history); }
 
 void game_new(Game* game) {
-    game->freecell = freecell_init();
+    game->freecell = freecell_init(get_initial_seed());
+    game->clock = 0;
     game->move_count = 0;
     game->history.size = 0;
 }

@@ -1,5 +1,6 @@
 #include "game/ui_layout.h"
 
+#include "core/aalloc.h"
 #include "core/game.h"
 #include "core/vector.h"
 #include "game/constants.h"
@@ -237,10 +238,121 @@ void ui_push_cascades(Vector* vec, World* world) {
     }
 }
 
+static APtr format_elapsed_time(double seconds) {
+    int hrs = (int)(seconds / 3600);
+    int mins = (int)((seconds - hrs * 3600) / 60);
+    int secs = (int)(seconds) % 60;
+
+    int needed = snprintf(NULL, 0, "%02d:%02d:%02d", hrs, mins, secs);
+    APtr buf = aalloc(needed + 1);
+    snprintf(aptr(buf), needed + 1, "%02d:%02d:%02d", hrs, mins, secs);
+    return buf;
+}
+
+static APtr format_seed(uint32_t seed) {
+    int needed = snprintf(NULL, 0, "#%u", seed);
+    APtr buf = aalloc(needed + 1);
+    snprintf(aptr(buf), needed + 1, "#%u", seed);
+    return buf;
+}
+
+static void ui_text_compute_text_size(
+    World* world,
+    const char* text,
+    float font_scaling,
+    float line_height_scaling,
+    float character_spacing_scaling,
+    float* width,
+    float* height
+) {
+    // assumes font width and height are the same for all characters
+    // this is true for the fonts used in this game
+    float font_size = world->characters[0].height * font_scaling;
+
+    float char_spacing = font_size / 2.0f * character_spacing_scaling;
+    float line_height = font_size * line_height_scaling;
+
+    float offset_x = 0;
+    float offset_y = 0;
+
+    float max_width = 0;
+    float max_height = 0;
+
+    size_t string_len = strlen(text);
+    for (size_t i = 0; i < string_len; i++) {
+        char c = text[i];
+        max_width = max(max_width, offset_x);
+        if (c >= ' ' && c <= '~') {
+            offset_x += char_spacing;
+        } else if (c == '\n') {
+            offset_x = 0;
+            offset_y += line_height;
+        } else if (c == '\t') {
+            // one tab should be equal to 4 spaces :P
+            offset_x += char_spacing * 4;
+        }
+        max_height = max(max_height, offset_y + font_size);
+    }
+
+    if (width)
+        *width = max_width;
+    if (height)
+        *height = max_height;
+}
+
+void ui_push_text(Vector* vec, World* world) {
+    vec_push_back(vec, &(UIElement) {
+        .type = UI_TEXT,
+        .sprite = (Sprite) {
+            .x = 40.0f,
+            .y = VIRTUAL_HEIGHT - 40.0f,
+            .color = (Color) {
+                .r = 1.0f,
+                .g = 1.0f,
+                .b  = 1.0f,
+                .a = 1.0f,
+            }
+        }, 
+        .hitbox = empty_hitbox(),
+        .meta.text = {
+            .text = format_elapsed_time(world->game.clock),
+            .font_scaling = 1.3f,
+            .line_height_scaling = 1.0f,
+            .character_spacing_scaling = 1.0f,
+        },
+    });
+
+    APtr seed = format_seed(world->game.freecell.seed);
+    float width, height;
+    ui_text_compute_text_size(world, aptr(seed), 1.3f, 1.0f, 1.0f, &width, &height);
+
+    vec_push_back(vec, &(UIElement) {
+        .type = UI_TEXT,
+        .sprite = (Sprite) {
+            .x = VIRTUAL_WIDTH - 40.0f - width,
+            .y = VIRTUAL_HEIGHT - 40.0f,
+            .color = (Color) {
+                .r = 1.0f,
+                .g = 1.0f,
+                .b  = 1.0f,
+                .a = 1.0f,
+            }
+        }, 
+        .hitbox = empty_hitbox(),
+        .meta.text = {
+            .text = format_seed(world->game.freecell.seed),
+            .font_scaling = 1.3f,
+            .line_height_scaling = 1.0f,
+            .character_spacing_scaling = 1.0f,
+        },
+    });
+}
+
 void ui_push_world(Vector* vec, World* world) {
     ui_push_freecells(vec, world);
     ui_push_foundation(vec, world);
     ui_push_cascades(vec, world);
+    ui_push_text(vec, world);
 }
 
 bool ui_get_topmost_hit(Vector* ui_elements, vec2s mouse, UIElement* topmost, size_t* index) {

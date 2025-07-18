@@ -127,6 +127,7 @@ add_executable(
     src/game/ui_state.c
     src/game/world.c
 
+    src/core/aalloc.c
     src/core/freecell.c
     src/core/game.c
     src/core/vector.c

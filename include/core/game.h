@@ -9,6 +9,7 @@ typedef struct Game {
     Freecell freecell;
     size_t move_count;
     Vector history;
+    double clock;
 } Game;
 
 Game game_init(void);

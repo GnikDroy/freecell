@@ -131,8 +131,12 @@ void render_background(World* world) {
     gpu_mesh_free(&gpu_mesh);
 }
 
-void mesh_push_ui_element(Mesh* mesh, UIElement* ui_element) {
-    mesh_push_sprite(mesh, ui_element->sprite);
+void mesh_push_ui_element(Mesh* mesh, World* world, UIElement* ui_element) {
+    if (ui_element->type == UI_TEXT) {
+        mesh_push_text(mesh, world, ui_element);
+    } else {
+        mesh_push_sprite(mesh, ui_element->sprite);
+    }
 }
 
 bool is_ui_element_animated(AnimationSystem* anim_sys, UIElement* element) {
@@ -148,11 +152,12 @@ bool is_ui_element_animated(AnimationSystem* anim_sys, UIElement* element) {
     return false;
 }
 
-void mesh_push_ui_elements(Mesh* mesh, Vector* ui_elements, AnimationSystem* anim_sys) {
+void mesh_push_ui_elements(Mesh* mesh, World* world, Vector* ui_elements) {
+    AnimationSystem* anim_sys = &world->animation_system;
     for (size_t i = 0; i < ui_elements->size; i++) {
         vec_get_as(UIElement, element, ui_elements, i);
         if (!is_ui_element_animated(anim_sys, &element)) {
-            mesh_push_ui_element(mesh, &element);
+            mesh_push_ui_element(mesh, world, &element);
         }
     }
 }
@@ -168,25 +173,42 @@ static void ui_push_animation(World* world) {
     }
 }
 
-static void mesh_push_text(World* world, const char* text, vec2s pos, Color color) {
+void mesh_push_text(Mesh* mesh, World* world, UIElement* ui_element) {
+    float x = ui_element->sprite.x;
+    float y = ui_element->sprite.y;
+    const char* text = aptr(ui_element->meta.text.text);
+
     float offset_x = 0;
     float offset_y = 0;
 
-    for (size_t i = 0; i < strlen(text); i++) {
-        char c = text[i];
-        if ((c > ' ' && c <= '~')) {
-            Sprite sprite = world->characters[c - ' '];
-            sprite.color = color;
-            sprite.x = offset_x + pos.x;
-            sprite.y = offset_y + pos.y;
+    // assumes font width and height are the same for all characters
+    // this is true for the fonts used in this game
+    float font_size = world->characters[0].height * ui_element->meta.text.font_scaling;
 
+    float char_spacing = font_size / 2.0f * ui_element->meta.text.character_spacing_scaling;
+    float line_height = font_size * ui_element->meta.text.line_height_scaling;
+
+    size_t string_len = strlen(text);
+    for (size_t i = 0; i < string_len; i++) {
+        char c = text[i];
+        if (c >= '!' && c <= '~') {
+            Sprite sprite = world->characters[c - ' '];
+            sprite.color = ui_element->sprite.color;
+            sprite.x = offset_x + x;
+            sprite.y = offset_y + y;
+            sprite.z = ui_element->sprite.z;
+            sprite.width = font_size;
+            sprite.height = font_size;
             mesh_push_sprite(&world->game_mesh, sprite);
-            offset_x += world->characters[c - ' '].width / 2.0f;
+            offset_x += char_spacing;
         } else if (c == '\n') {
             offset_x = 0;
-            offset_y += world->characters[0].height * 0.8; // Move to next line
+            offset_y += line_height;
         } else if (c == ' ') {
-            offset_x += world->characters[0].width / 2.0f; // Space character
+            offset_x += char_spacing;
+        } else if (c == '\t') {
+            // one tab should be equal to 4 spaces :P
+            offset_x += char_spacing * 4;
         }
     }
 }
@@ -212,18 +234,7 @@ void render_world(World* world) {
 
     // create game mesh and upload to gpu
     mesh_clear(&world->game_mesh);
-    mesh_push_ui_elements(&world->game_mesh, &world->ui_elements, &world->animation_system);
-    mesh_push_text(
-        world,
-        "The quick brown fox jumps over the lazy dog!\n"
-        "Score: 1230.\n"
-        "Game OVER for you Mr. Player!\n"
-        "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]"
-        "^_`abcdefghijklmnopqrstuvwxyz{|}~\n"
-        "variable_names",
-        (vec2s) { 20.0f, 20.0f },
-        (Color) { 1.0f, 1.0f, 1.0f, 1.0f }
-    );
+    mesh_push_ui_elements(&world->game_mesh, world, &world->ui_elements);
     upload_mesh(&world->game_gpu_mesh, &world->game_mesh);
 
     // set shaders draw the mesh

@@ -117,17 +117,13 @@ bool cascade_is_descending(Cascade* cascade, size_t start_index) {
     return true;
 }
 
-Freecell freecell_init(void) {
+Freecell freecell_init(uint32_t seed) {
     Freecell game = { 0 };
+    game.seed = seed;
 
     // Get a random deck
     Card deck[52];
-
-    struct timespec now;
-    timespec_get(&now, TIME_UTC);
-    uint64_t seed = (uint64_t)now.tv_sec * 1000000000ULL + (uint64_t)now.tv_nsec;
-
-    microsoft_freecell_srand(seed % 10000000 + 1);
+    microsoft_freecell_srand(seed);
     microsoft_freecell_shuffle(deck);
 
     // Deal row by row first 6 rows

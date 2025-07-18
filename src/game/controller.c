@@ -1,5 +1,6 @@
 #include "game/controller.h"
 
+#include "core/aalloc.h"
 #include "core/game.h"
 
 #include "core/vector.h"
@@ -118,8 +119,10 @@ static void controller_autocomplete_game(World* world) {
 }
 
 void controller_update(World* world, double dt) {
-    (void)dt;
     Controller* controller = &world->controller;
+    if (!freecell_game_over(&world->game.freecell)) {
+        world->game.clock += dt;
+    }
 
     controller_autocomplete_game(world);
     animation_system_update(&world->animation_system, dt);
@@ -347,7 +350,6 @@ static void controller_autocompleteable_game(World* world) {
     for (int i = 0; i < 8; i++) {
         freecell->cascade[i].size = 0;
     }
-
 
     for (int i = 0; i < 12; i++) {
         Card card_a = get_card(QUEEN - i, i % 2 == 0 ? SPADES : DIAMONDS);
