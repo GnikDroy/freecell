@@ -29,14 +29,14 @@ World world_init(GLFWwindow* window) {
 
     world.camera = camera;
 
-    generate_card_sprites(world.deck);
-    generate_character_sprites(world.characters);
+    populate_sprites(&world);
 
     world.ui_elements = vec_init(sizeof(UIElement));
 
     world.game_mesh = mesh_init();
     world.game_gpu_mesh = gpu_mesh_init();
 
+    world.sound_enabled = true;
     ma_result result = ma_engine_init(NULL, &world.engine);
 
     if (result != MA_SUCCESS) {

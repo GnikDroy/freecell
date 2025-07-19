@@ -23,12 +23,19 @@ typedef struct World {
 
     Sprite deck[53];
     Sprite characters['~' - ' ' + 1];
+    Sprite icon_clock;
+    Sprite icon_game;
+
+    Sprite button_undo;
+    Sprite button_new_game;
+    Sprite button_sound;
 
     Vector ui_elements;
 
     GPUMesh game_gpu_mesh;
     Mesh game_mesh;
 
+    bool sound_enabled;
     ma_engine engine;
 
     ma_decoder card_move_decoder;

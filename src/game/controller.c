@@ -18,8 +18,10 @@
 #include "utils.h"
 
 static void controller_play_card_move_sound(World* world) {
-    ma_sound_stop(&world->card_move_sound);
-    ma_sound_start(&world->card_move_sound);
+    if (world->sound_enabled) {
+        ma_sound_stop(&world->card_move_sound);
+        ma_sound_start(&world->card_move_sound);
+    }
 }
 
 static MoveResult controller_animated_move(World* world, Move move, float duration) {
@@ -127,6 +129,27 @@ void controller_update(World* world, double dt) {
     controller_autocomplete_game(world);
     animation_system_update(&world->animation_system, dt);
     render_world(world);
+}
+
+void controller_click(World* world) {
+    vec2s mouse = world->controller.mouse;
+
+    UIElement ui_element;
+    size_t index;
+    if (ui_get_topmost_hit(&world->ui_elements, mouse, &ui_element, &index)) {
+        if (ui_element.type == UI_BUTTON) {
+            // handle button click
+            const char* id = aptr(ui_element.meta.button.id);
+
+            if (strcmp(id, "new") == 0) {
+                controller_new_game(world);
+            } else if (strcmp(id, "undo") == 0) {
+                controller_undo(world);
+            } else if (strcmp(id, "sound") == 0) {
+                world->sound_enabled = !world->sound_enabled;
+            }
+        }
+    }
 }
 
 void controller_start_drag(World* world) {
@@ -401,6 +424,8 @@ void controller_handle_input(InputAction ia) {
         );
     } else if (ia.type == INPUT_ACTION_POINTER_MOVE) {
         controller_on_cursor_position(world, ia.data.pointer_move.x, ia.data.pointer_move.y);
+    } else if (ia.type == INPUT_ACTION_CLICK) {
+        controller_click(world);
     } else if (ia.type == INPUT_ACTION_START_DRAG) {
         controller_start_drag(world);
     } else if (ia.type == INPUT_ACTION_END_DRAG) {

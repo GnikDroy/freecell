@@ -34,7 +34,7 @@ typedef enum ButtonUIState {
 } ButtonUIState;
 
 typedef struct ButtonUIMeta {
-    int id;
+    APtr id;
     ButtonUIState state;
 } ButtonUIMeta;
 

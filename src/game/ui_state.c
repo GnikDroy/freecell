@@ -13,21 +13,39 @@
 static void ui_element_apply_style(UIElement* ui_element) {
     if (ui_element->type == UI_CARD) {
         if (ui_element->meta.card.state == CARD_UI_STATE_SELECTED) {
-            ui_element->sprite.color.r = 0.6f;
-            ui_element->sprite.color.g = 0.6f;
-            ui_element->sprite.color.b = 0.6f;
+            ui_element->sprite.color.r *= 0.6f;
+            ui_element->sprite.color.g *= 0.6f;
+            ui_element->sprite.color.b *= 0.6f;
         } else if (ui_element->meta.card.state == CARD_UI_STATE_HOVERED) {
-            ui_element->sprite.color.r = 0.8f;
-            ui_element->sprite.color.g = 0.8f;
-            ui_element->sprite.color.b = 0.8f;
+            ui_element->sprite.color.r *= 0.8f;
+            ui_element->sprite.color.g *= 0.8f;
+            ui_element->sprite.color.b *= 0.8f;
         } else if (ui_element->meta.card.state == CARD_UI_STATE_DROP_TARGET) {
-            ui_element->sprite.color.r = 0.9f;
-            ui_element->sprite.color.g = 1.0f;
-            ui_element->sprite.color.b = 0.9f;
+            ui_element->sprite.color.r *= 0.9f;
+            ui_element->sprite.color.g *= 1.0f;
+            ui_element->sprite.color.b *= 0.9f;
         } else {
-            ui_element->sprite.color.r = 1.0f;
-            ui_element->sprite.color.g = 1.0f;
-            ui_element->sprite.color.b = 1.0f;
+            ui_element->sprite.color.r *= 1.0f;
+            ui_element->sprite.color.g *= 1.0f;
+            ui_element->sprite.color.b *= 1.0f;
+        }
+    } else if (ui_element->type == UI_BUTTON) {
+        if (ui_element->meta.button.state == BUTTON_UI_STATE_SELECTED) {
+            ui_element->sprite.color.r *= 0.6f;
+            ui_element->sprite.color.g *= 0.6f;
+            ui_element->sprite.color.b *= 0.6f;
+        } else if (ui_element->meta.button.state == BUTTON_UI_STATE_HOVERED) {
+            ui_element->sprite.color.r *= 0.8f;
+            ui_element->sprite.color.g *= 0.8f;
+            ui_element->sprite.color.b *= 0.8f;
+        } else if (ui_element->meta.button.state == BUTTON_UI_STATE_DISABLED) {
+            ui_element->sprite.color.r *= 0.5f;
+            ui_element->sprite.color.g *= 0.5f;
+            ui_element->sprite.color.b *= 0.5f;
+        } else {
+            ui_element->sprite.color.r *= 1.0f;
+            ui_element->sprite.color.g *= 1.0f;
+            ui_element->sprite.color.b *= 1.0f;
         }
     }
 }
@@ -182,6 +200,12 @@ UIElement ui_get_new_state(
         );
 
     } else if (element->type == UI_BUTTON) {
+        const char* id = aptr(element->meta.button.id);
+        // Undo button is disabled if no moves left
+        if (world->game.history.size == 0 && strcmp(id, "undo") == 0) {
+            disabled = true;
+        }
+
         new_element.meta.button.state
             = ui_button_state_transition(element->meta.button.state, hovered, clicked, disabled);
     }

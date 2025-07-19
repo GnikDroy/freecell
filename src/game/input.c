@@ -8,6 +8,10 @@
 #include "game/controller.h"
 #include "game/input_action.h"
 
+const float CLICK_THRESHOLD = 5.0f;
+static double mouse_press_x = 0.0;
+static double mouse_press_y = 0.0;
+
 void input_on_key(GLFWwindow* window, int key, int scancode, int action, int mods) {
     (void)scancode;
     (void)mods;
@@ -42,8 +46,21 @@ void input_on_mouse_click(GLFWwindow* window, int code, int state, int mods) {
 
     if (code == GLFW_MOUSE_BUTTON_LEFT) {
         if (state == GLFW_PRESS) {
+            glfwGetCursorPos(window, &mouse_press_x, &mouse_press_y);
             ia.type = INPUT_ACTION_START_DRAG;
         } else {
+            double x, y;
+            glfwGetCursorPos(window, &x, &y);
+            double dx = x - mouse_press_x;
+            double dy = y - mouse_press_y;
+            double dist_sq = dx * dx + dy * dy;
+
+            // Handle click if the distance is within the threshold
+            if (dist_sq < CLICK_THRESHOLD * CLICK_THRESHOLD) {
+                InputAction press_action = { .window = window, .type = INPUT_ACTION_CLICK };
+                controller_handle_input(press_action);
+            }
+
             ia.type = INPUT_ACTION_END_DRAG;
         }
     } else if (code == GLFW_MOUSE_BUTTON_RIGHT) {

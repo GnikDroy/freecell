@@ -114,6 +114,7 @@ find_package(OpenGL REQUIRED)
 # Main exe
 add_executable(
     freecell 
+    WIN32
     src/main.c
 
     src/game/assets.c

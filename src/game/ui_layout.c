@@ -44,7 +44,7 @@ bool ui_find_in_layout(
     return false;
 }
 
-void ui_push_freecells(Vector* vec, World* world) {
+static void ui_push_freecells(Vector* vec, World* world) {
     Sprite* deck = world->deck;
     Freecell* freecell = &world->game.freecell;
 
@@ -99,7 +99,7 @@ void ui_push_freecells(Vector* vec, World* world) {
     }
 }
 
-void ui_push_foundation(Vector* vec, World* world) {
+static void ui_push_foundation(Vector* vec, World* world) {
     Sprite* deck = world->deck;
     Freecell* freecell = &world->game.freecell;
 
@@ -164,7 +164,7 @@ void ui_push_foundation(Vector* vec, World* world) {
     }
 }
 
-void ui_push_cascade(Vector* vec, World* world, int cascade_index, int x_offset) {
+static void ui_push_cascade(Vector* vec, World* world, int cascade_index, int x_offset) {
     Freecell* freecell = &world->game.freecell;
     Cascade* cascade = &freecell->cascade[cascade_index];
     Sprite* deck = world->deck;
@@ -224,7 +224,7 @@ void ui_push_cascade(Vector* vec, World* world, int cascade_index, int x_offset)
     }
 }
 
-void ui_push_cascades(Vector* vec, World* world) {
+static void ui_push_cascades(Vector* vec, World* world) {
     Sprite* deck = world->deck;
 
     const int CASCADE_COUNT = 8;
@@ -300,7 +300,7 @@ static void text_compute_size(
         *height = max_height;
 }
 
-void ui_push_text(Vector* vec, World* world) {
+static void ui_push_text(Vector* vec, World* world) {
     vec_push_back(vec, &(UIElement) {
         .type = UI_TEXT,
         .sprite = (Sprite) {
@@ -348,11 +348,78 @@ void ui_push_text(Vector* vec, World* world) {
     });
 }
 
+static void ui_push_buttons(Vector* vec, World* world) {
+    const float CARD_HEIGHT = world->deck[NONE].height;
+    const float MARGIN_Y = 30.0f + CARD_HEIGHT / 2.0f;
+
+    const float GAP = 25.0f;
+    const float TOTAL_BUTTON_WIDTH = world->button_new_game.width + world->button_undo.width
+        + world->button_sound.width + 2 * GAP;
+
+    const char new_game_id_str[] = "new";
+    APtr new_game_id = aalloc(sizeof(new_game_id));
+    strcpy(aptr(new_game_id), new_game_id_str);
+
+    Sprite new_game = world->button_new_game;
+    new_game.x = VIRTUAL_WIDTH / 2.0f - TOTAL_BUTTON_WIDTH / 2.0f + new_game.width / 2.0f;
+    new_game.y = MARGIN_Y;
+
+    vec_push_back(vec, &(UIElement) {
+        .type = UI_BUTTON,
+        .sprite = new_game, 
+        .hitbox = compute_hitbox(&new_game),
+        .meta.button = {
+            .id = new_game_id,
+        },
+    });
+
+    const char undo_id_str[] = "undo";
+    APtr undo_id = aalloc(sizeof(undo_id));
+    strcpy(aptr(undo_id), undo_id_str);
+
+    Sprite undo = world->button_undo;
+    undo.x = new_game.x + new_game.width / 2.0f + undo.width / 2.0f + GAP;
+    undo.y = MARGIN_Y;
+
+    vec_push_back(vec, &(UIElement) {
+        .type = UI_BUTTON,
+        .sprite = undo, 
+        .hitbox = compute_hitbox(&undo),
+        .meta.button = {
+            .id = undo_id,
+        },
+    });
+
+    const char sound_id_str[] = "sound";
+    APtr sound_id = aalloc(sizeof(sound_id));
+    strcpy(aptr(sound_id), sound_id_str);
+
+    Sprite sound = world->button_sound;
+    sound.x = undo.x + undo.width / 2.0f + sound.width / 2.0f + GAP;
+    sound.y = MARGIN_Y;
+
+    if (world->sound_enabled) {
+        sound.color = (Color) { 0.55f, 0.55f, 0.85f, 1.0f };
+    } else {
+        sound.color = (Color) { 0.5f, 0.5f, 0.5f, 1.0f };
+    }
+
+    vec_push_back(vec, &(UIElement) {
+        .type = UI_BUTTON,
+        .sprite = sound, 
+        .hitbox = compute_hitbox(&sound),
+        .meta.button = {
+            .id = sound_id,
+        },
+    });
+}
+
 void ui_push_world(Vector* vec, World* world) {
+    ui_push_text(vec, world);
+    ui_push_buttons(vec, world);
     ui_push_freecells(vec, world);
     ui_push_foundation(vec, world);
     ui_push_cascades(vec, world);
-    ui_push_text(vec, world);
 }
 
 bool ui_get_topmost_hit(Vector* ui_elements, vec2s mouse, UIElement* topmost, size_t* index) {
