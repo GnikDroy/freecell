@@ -3,8 +3,8 @@
 #include "rendering/shader.h"
 #include "rendering/texture.h"
 
-#include "game/ui_sprites.h"
 #include "game/constants.h"
+#include "game/ui_sprites.h"
 
 Assets assets_init() {
     Assets assets;
@@ -32,7 +32,7 @@ Assets assets_init() {
 
 void assets_free(Assets* assets) {
     image_free(&assets->spritesheet);
+    texture_free(&assets->spritesheet_texture);
     shader_free(&assets->main_shader);
     shader_free(&assets->background_shader);
-    texture_free(&assets->spritesheet_texture);
 }

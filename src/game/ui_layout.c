@@ -256,9 +256,9 @@ static APtr format_seed(uint32_t seed) {
     return buf;
 }
 
-static void ui_text_compute_text_size(
-    World* world,
+static void text_compute_size(
     const char* text,
+    float glyph_width,
     float font_scaling,
     float line_height_scaling,
     float character_spacing_scaling,
@@ -267,7 +267,7 @@ static void ui_text_compute_text_size(
 ) {
     // assumes font width and height are the same for all characters
     // this is true for the fonts used in this game
-    float font_size = world->characters[0].height * font_scaling;
+    float font_size = glyph_width * font_scaling;
 
     float char_spacing = font_size / 2.0f * character_spacing_scaling;
     float line_height = font_size * line_height_scaling;
@@ -316,7 +316,7 @@ void ui_push_text(Vector* vec, World* world) {
         .hitbox = empty_hitbox(),
         .meta.text = {
             .text = format_elapsed_time(world->game.clock),
-            .font_scaling = 1.3f,
+            .font_scaling = 1.0f,
             .line_height_scaling = 1.0f,
             .character_spacing_scaling = 1.0f,
         },
@@ -324,7 +324,7 @@ void ui_push_text(Vector* vec, World* world) {
 
     APtr seed = format_seed(world->game.freecell.seed);
     float width, height;
-    ui_text_compute_text_size(world, aptr(seed), 1.3f, 1.0f, 1.0f, &width, &height);
+    text_compute_size(aptr(seed), world->characters[0].height, 1.0f, 1.0f, 1.0f, &width, &height);
 
     vec_push_back(vec, &(UIElement) {
         .type = UI_TEXT,
@@ -341,7 +341,7 @@ void ui_push_text(Vector* vec, World* world) {
         .hitbox = empty_hitbox(),
         .meta.text = {
             .text = format_seed(world->game.freecell.seed),
-            .font_scaling = 1.3f,
+            .font_scaling = 1.0f,
             .line_height_scaling = 1.0f,
             .character_spacing_scaling = 1.0f,
         },
