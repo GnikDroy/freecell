@@ -202,7 +202,9 @@ UIElement ui_get_new_state(
     } else if (element->type == UI_BUTTON) {
         const char* id = aptr(element->meta.button.id);
         // Undo button is disabled if no moves left
-        if (world->game.history.size == 0 && strcmp(id, "undo") == 0) {
+        // or if game over
+        if (strcmp(id, "undo") == 0
+            && (world->game.history.size == 0 || freecell_game_over(&world->game.freecell))) {
             disabled = true;
         }
 

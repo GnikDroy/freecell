@@ -357,7 +357,7 @@ static void ui_push_buttons(Vector* vec, World* world) {
         + world->button_sound.width + 2 * GAP;
 
     const char new_game_id_str[] = "new";
-    APtr new_game_id = aalloc(sizeof(new_game_id));
+    APtr new_game_id = aalloc(sizeof(new_game_id_str));
     strcpy(aptr(new_game_id), new_game_id_str);
 
     Sprite new_game = world->button_new_game;
@@ -374,7 +374,7 @@ static void ui_push_buttons(Vector* vec, World* world) {
     });
 
     const char undo_id_str[] = "undo";
-    APtr undo_id = aalloc(sizeof(undo_id));
+    APtr undo_id = aalloc(sizeof(undo_id_str));
     strcpy(aptr(undo_id), undo_id_str);
 
     Sprite undo = world->button_undo;
@@ -391,7 +391,7 @@ static void ui_push_buttons(Vector* vec, World* world) {
     });
 
     const char sound_id_str[] = "sound";
-    APtr sound_id = aalloc(sizeof(sound_id));
+    APtr sound_id = aalloc(sizeof(sound_id_str));
     strcpy(aptr(sound_id), sound_id_str);
 
     Sprite sound = world->button_sound;
