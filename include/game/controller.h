@@ -23,7 +23,6 @@ typedef struct UIDragState {
 typedef struct Controller {
     vec2s mouse;
     vec2s mouse_screen;
-    bool debug;
     UIDragState drag_state;
 } Controller;
 

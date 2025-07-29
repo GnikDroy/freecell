@@ -2,7 +2,7 @@
 #include "game/ui_layout.h"
 #include "game/world.h"
 
-#ifdef _DEBUG
+#ifdef FREECELL_DEBUG
 #include <string.h>
 
 #include "game/ui_element.h"

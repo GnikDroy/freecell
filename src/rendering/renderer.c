@@ -2,8 +2,10 @@
 #include "rendering/mesh.h"
 
 Renderer renderer_init() {
+#ifdef FREECELL_DEBUG
     glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageCallback(openglDebugCallback, NULL);
+#endif
 
     // Cull back faces
     glEnable(GL_CULL_FACE);
@@ -44,7 +46,7 @@ void renderer_draw_mesh(GPUMesh* mesh, GLenum primitive) {
     glBindVertexArray(0);
 }
 
-#ifdef _DEBUG
+#ifdef FREECELL_DEBUG
 #include "core/log.h"
 void APIENTRY openglDebugCallback(
     GLenum source,

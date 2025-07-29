@@ -353,13 +353,9 @@ void controller_toggle_fullscreen(World* world) {
     window_toggle_fullscreen(world->window);
 }
 
-static void controller_toggle_debug(World* world) {
-    Controller* controller = &world->controller;
-
-    controller->debug = !controller->debug;
-}
-
 static void controller_autocompleteable_game(World* world) {
+    (void) world;
+#ifdef FREECELL_DEBUG
     Controller* controller = &world->controller;
 
     // autocompleteable game for debug
@@ -393,9 +389,12 @@ static void controller_autocompleteable_game(World* world) {
     freecell->reserve[3] = NONE;
 
     world->game.history.size = 0;
+#endif
 }
 
 static void controller_fill_cascades(World* world) {
+    (void) world;
+#ifdef FREECELL_DEBUG
     Controller* controller = &world->controller;
 
     // make all cascades full for debugging view
@@ -410,6 +409,7 @@ static void controller_fill_cascades(World* world) {
     }
 
     world->game.history.size = 0;
+#endif
 }
 
 void controller_handle_input(InputAction ia) {
@@ -438,8 +438,6 @@ void controller_handle_input(InputAction ia) {
         controller_new_game(world);
     } else if (ia.type == INPUT_ACTION_TOGGLE_FULLSCREEN) {
         controller_toggle_fullscreen(world);
-    } else if (ia.type == INPUT_ACTION_TOGGLE_DEBUG) {
-        controller_toggle_debug(world);
     } else if (ia.type == INPUT_ACTION_AUTOCOMPLETEABLE_GAME) {
         controller_autocompleteable_game(world);
     } else if (ia.type == INPUT_ACTION_FILL_CASCADES) {

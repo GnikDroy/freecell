@@ -45,6 +45,7 @@ int main(void) {
         .max_height = GLFW_DONT_CARE,
         .title = GAME_TITLE,
         .vsync = true,
+        .fullscreen_monitor = NULL,
         .on_close = NULL,
         .on_window_resize = NULL,
         .on_framebuffer_resize = input_on_framebuffer_resize,

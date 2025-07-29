@@ -18,6 +18,7 @@ typedef struct WindowConfig_t {
     size_t max_height;
     const char* title;
     bool vsync;
+    GLFWmonitor* fullscreen_monitor;
 
     void (*on_close)(GLFWwindow*);
     void (*on_window_resize)(GLFWwindow*, int x, int y);

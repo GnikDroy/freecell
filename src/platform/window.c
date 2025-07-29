@@ -20,15 +20,15 @@ GLFWmonitor* get_primary_monitor() {
 }
 
 GLFWwindow* window_init(WindowConfig config) {
+    glfwSetErrorCallback(glfwErrCallback);
     glfwInit();
     glfwWindowHint(GLFW_DOUBLEBUFFER, 1);
     glfwWindowHint(GLFW_DEPTH_BITS, 24);
     GLFWwindow* window
-        = glfwCreateWindow((int)config.width, (int)config.height, config.title, NULL, NULL);
+        = glfwCreateWindow((int)config.width, (int)config.height, config.title, config.fullscreen_monitor, NULL);
     if (!window) {
         glfwTerminate();
     }
-    glfwSetErrorCallback(glfwErrCallback);
     glfwSetWindowSizeLimits(
         window,
         config.min_width,

@@ -300,7 +300,7 @@ static void text_compute_size(
         *height = max_height;
 }
 
-static void ui_push_text(Vector* vec, World* world) {
+static void ui_push_display(Vector* vec, World* world) {
     vec_push_back(vec, &(UIElement) {
         .type = UI_TEXT,
         .sprite = (Sprite) {
@@ -415,7 +415,7 @@ static void ui_push_buttons(Vector* vec, World* world) {
 }
 
 void ui_push_world(Vector* vec, World* world) {
-    ui_push_text(vec, world);
+    ui_push_display(vec, world);
     ui_push_buttons(vec, world);
     ui_push_freecells(vec, world);
     ui_push_foundation(vec, world);

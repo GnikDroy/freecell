@@ -249,8 +249,8 @@ void render_world(World* world) {
 
     renderer_draw_mesh(&world->game_gpu_mesh, GL_TRIANGLES);
 
-    if (world->controller.debug) {
-        debug_render_mouse(world);
-        debug_render_hit_hitbox(world);
-    }
+#ifdef FREECELL_DEBUG
+    debug_render_mouse(world);
+    debug_render_hit_hitbox(world);
+#endif
 }
