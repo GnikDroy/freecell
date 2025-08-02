@@ -18,12 +18,12 @@ static void arena_ensure_capacity(size_t new_capacity) {
 
 APtr aalloc(size_t size) {
     arena_ensure_capacity(arena_size + size);
-    APtr result = { .base = arena_buffer, .offset = arena_size };
+    APtr result = arena_size;
     arena_size += size;
     return result;
 }
 
-void* aptr(APtr ptr) { return (char*)ptr.base + ptr.offset; }
+void* aptr(APtr ptr) { return (char*)arena_buffer + ptr; }
 
 void aclear() { arena_size = 0; }
 

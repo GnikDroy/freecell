@@ -183,16 +183,24 @@ void mesh_push_text(Mesh* mesh, World* world, UIElement* ui_element) {
 
     // assumes font width and height are the same for all characters
     // this is true for the fonts used in this game
-    float font_size = world->characters[0].height * ui_element->meta.text.font_scaling;
+    float font_size = world->characters[' '].height * ui_element->meta.text.font_scaling;
 
     float char_spacing = font_size / 2.0f * ui_element->meta.text.character_spacing_scaling;
     float line_height = font_size * ui_element->meta.text.line_height_scaling;
 
     size_t string_len = strlen(text);
     for (size_t i = 0; i < string_len; i++) {
-        char c = text[i];
-        if (c >= '!' && c <= '~') {
-            Sprite sprite = world->characters[c - ' '];
+        uint8_t c = text[i];
+        if (c == '\n') {
+            offset_x = 0;
+            offset_y += line_height;
+        } else if (c == ' ') {
+            offset_x += char_spacing;
+        } else if (c == '\t') {
+            // one tab should be equal to 4 spaces :P
+            offset_x += char_spacing * 4;
+        } else {
+            Sprite sprite = world->characters[c];
             sprite.color = ui_element->sprite.color;
             sprite.x = offset_x + x;
             sprite.y = offset_y + y;
@@ -201,14 +209,6 @@ void mesh_push_text(Mesh* mesh, World* world, UIElement* ui_element) {
             sprite.height = font_size;
             mesh_push_sprite(&world->game_mesh, sprite);
             offset_x += char_spacing;
-        } else if (c == '\n') {
-            offset_x = 0;
-            offset_y += line_height;
-        } else if (c == ' ') {
-            offset_x += char_spacing;
-        } else if (c == '\t') {
-            // one tab should be equal to 4 spaces :P
-            offset_x += char_spacing * 4;
         }
     }
 }

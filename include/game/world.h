@@ -22,9 +22,7 @@ typedef struct World {
     Assets assets;
 
     Sprite deck[53];
-    Sprite characters['~' - ' ' + 1];
-    Sprite icon_clock;
-    Sprite icon_game;
+    Sprite characters[256];
 
     Sprite button_undo;
     Sprite button_new_game;

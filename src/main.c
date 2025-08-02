@@ -18,8 +18,7 @@ void gameloop(GLFWwindow* window) {
     double time = glfwGetTime();
     while (!glfwWindowShouldClose(window)) {
         glfwSwapBuffers(window);
-        // glfwWaitEvents();
-        glfwPollEvents(); // Animations are real time
+        glfwPollEvents();
 
         double dt = glfwGetTime() - time;
 

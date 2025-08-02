@@ -1,10 +1,8 @@
 #pragma once
+#include <stddef.h>
 #include <stdint.h>
 
-typedef struct {
-    void* base;
-    size_t offset;
-} APtr;
+typedef ptrdiff_t APtr;
 
 extern void* arena_buffer;
 extern size_t arena_size;

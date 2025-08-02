@@ -111,11 +111,16 @@ miniaudio_build()
 
 find_package(OpenGL REQUIRED)
 
+if(WIN32)
+    set(APP_ICON_RESOURCE_WINDOWS "src/freecell.rc")
+endif()
+
 # Main exe
 add_executable(
     freecell 
     WIN32
     src/main.c
+    ${APP_ICON_RESOURCE_WINDOWS}
 
     src/game/assets.c
     src/game/constants.c
@@ -149,6 +154,12 @@ set_property(TARGET freecell PROPERTY MSVC_RUNTIME_LIBRARY MultiThreadedDebug)
 target_link_options(freecell PRIVATE -static)
 target_link_libraries(freecell OpenGL::GL glad glfw cglm stb::stb miniaudio User32.lib)
 target_include_directories(freecell PRIVATE ${PROJECT_SOURCE_DIR}/include)
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_compile_definitions(freecell PRIVATE FREECELL_DEBUG)
+endif()
+
+set_target_properties(freecell PROPERTIES OUTPUT_NAME "Freecell")
 
 # Tests
 add_executable(

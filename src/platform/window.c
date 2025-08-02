@@ -2,15 +2,32 @@
 
 #include "platform/window.h"
 
+#include "GLFW/glfw3.h"
 #include "core/log.h"
 
 #include "game/constants.h"
 
-void glfwErrCallback(int error_code, const char* msg) {
+static int glfw_initialized = GLFW_FALSE;
+
+static void glfwErrCallback(int error_code, const char* msg) {
     log_error("GLFW Error %d : %s", error_code, msg);
 }
 
+static int glfw_initialize() {
+    glfwSetErrorCallback(glfwErrCallback);
+    if (glfw_initialized) {
+        return GLFW_TRUE;
+    }
+
+    int glfw_initialized = glfwInit();
+    if (glfw_initialized != GLFW_TRUE) {
+        exit(EXIT_FAILURE);
+    }
+    return glfw_initialized;
+}
+
 GLFWmonitor* get_primary_monitor() {
+    glfw_initialize();
     GLFWmonitor* primary_monitor = glfwGetPrimaryMonitor();
     if (primary_monitor == NULL) {
         log_error("Failed to get primary monitor.");
@@ -20,12 +37,16 @@ GLFWmonitor* get_primary_monitor() {
 }
 
 GLFWwindow* window_init(WindowConfig config) {
-    glfwSetErrorCallback(glfwErrCallback);
-    glfwInit();
+    glfw_initialize();
     glfwWindowHint(GLFW_DOUBLEBUFFER, 1);
     glfwWindowHint(GLFW_DEPTH_BITS, 24);
-    GLFWwindow* window
-        = glfwCreateWindow((int)config.width, (int)config.height, config.title, config.fullscreen_monitor, NULL);
+    GLFWwindow* window = glfwCreateWindow(
+        (int)config.width,
+        (int)config.height,
+        config.title,
+        config.fullscreen_monitor,
+        NULL
+    );
     if (!window) {
         glfwTerminate();
     }

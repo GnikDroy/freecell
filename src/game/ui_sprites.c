@@ -39,6 +39,9 @@ const int GLYPH_GAP_Y = 2;
 
 const float GLYPH_SCALE = 1.0f;
 
+const char* ICON_GAME = "\x80 ";
+const char* ICON_CLOCK = "\x81 ";
+
 // Button sprite properties
 
 const int BUTTON_COL = 1;
@@ -102,29 +105,28 @@ static void populate_card_sprites(Sprite cards[]) {
 }
 
 static void populate_glyph_sprites(World* world) {
-    char character_set[]
-        = " !\"#$%&'()*+,-./"
-          "0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+    char character_set[] = "!\"#$%&'()*+,-./"
+                           "0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`"
+                           "abcdefghijklmnopqrstuvwxyz{|}~\x80\x81";
 
     // Sprite for space (empty)
     Sprite sprite = get_glyph_sprite_at_idx(0, 0);
     sprite.uv_top = sprite.uv_bottom;
     sprite.uv_left = sprite.uv_right;
-    world->characters[0] = sprite;
+    world->characters[' '] = sprite;
 
     // Sprites for all the non-extended printable ASCII characters
     const int NUM_COLS = 6;
     for (size_t i = 0; i < sizeof(character_set) - 1; i++) {
-        char c = character_set[i];
+        uint8_t c = character_set[i];
         int col = i % NUM_COLS;
         int row = i / NUM_COLS;
 
-        world->characters[i + 1] = get_glyph_sprite_at_idx(row, col);
+        world->characters[c] = get_glyph_sprite_at_idx(row, col);
     }
-
-    // Sprite for some custom game glyphs
-    world->icon_game = get_glyph_sprite_at_idx(15, 4);
-    world->icon_clock = get_glyph_sprite_at_idx(15, 5);
+    // We use the extended ascii characters for the unique glyphs in the game
+    // world->characters[128] = get_glyph_sprite_at_idx(15, 4);
+    // world->characters[129] = get_glyph_sprite_at_idx(15, 5);
 }
 
 static Sprite get_button_sprite_at_idx(int row, int col) {

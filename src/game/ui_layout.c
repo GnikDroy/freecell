@@ -5,6 +5,7 @@
 #include "core/vector.h"
 #include "game/constants.h"
 #include "game/ui_element.h"
+#include "game/ui_sprites.h"
 #include "game/ui_state.h"
 #include "game/world.h"
 
@@ -147,6 +148,19 @@ static void ui_push_foundation(Vector* vec, World* world) {
         sprite.y = sprite.height / 2.f + MARGIN_Y;
         sprite.z = 0.0f;
 
+        // pulse foundation on game over
+        double t = time_millis() / 1000.0;
+        double v = 0.70 + 0.15 * pow(sin(2 * t), 2);
+        if (freecell_game_over(&world->game.freecell)
+            && world->animation_system.ui_animations.size == 0) {
+            sprite.color = (Color) {
+                .r = v * 0.9,
+                .g = v,
+                .b = 0.55f,
+                .a = 1.0f,
+            };
+        }
+
         UIElement ui_element = {
             .type = UI_CARD,
             .sprite = sprite,
@@ -169,7 +183,7 @@ static void ui_push_cascade(Vector* vec, World* world, int cascade_index, int x_
     Cascade* cascade = &freecell->cascade[cascade_index];
     Sprite* deck = world->deck;
 
-    const int MARGIN_Y = deck[NONE].height * 2;
+    const int MARGIN_Y = deck[NONE].height * 1.7f;
     const int OVERLAP = floor(deck[NONE].height * 0.2);
 
     // If the cascade is empty, we add a UIElement with a placeholder card.
@@ -238,28 +252,36 @@ static void ui_push_cascades(Vector* vec, World* world) {
     }
 }
 
-static APtr format_elapsed_time(double seconds) {
+static APtr format_game_info(uint32_t seed, double seconds, uint32_t moves) {
     int hrs = (int)(seconds / 3600);
     int mins = (int)((seconds - hrs * 3600) / 60);
     int secs = (int)(seconds) % 60;
 
-    int needed = snprintf(NULL, 0, "%02d:%02d:%02d", hrs, mins, secs);
+    int needed = snprintf(
+        NULL,
+        0,
+        "# %u\n%s%02d:%02d:%02d\n%s%u",
+        moves,
+        ICON_CLOCK,
+        hrs,
+        mins,
+        secs,
+        ICON_GAME,
+        seed
+    );
     APtr buf = aalloc(needed + 1);
-    snprintf(aptr(buf), needed + 1, "%02d:%02d:%02d", hrs, mins, secs);
-    return buf;
-}
-
-static APtr format_seed(uint32_t seed) {
-    int needed = snprintf(NULL, 0, "#%u", seed);
-    APtr buf = aalloc(needed + 1);
-    snprintf(aptr(buf), needed + 1, "#%u", seed);
-    return buf;
-}
-
-static APtr format_move_count(uint32_t moves) {
-    int needed = snprintf(NULL, 0, "Moves: %u", moves);
-    APtr buf = aalloc(needed + 1);
-    snprintf(aptr(buf), needed + 1, "Moves: %u", moves);
+    snprintf(
+        aptr(buf),
+        needed + 1,
+        "# %u\n%s%02d:%02d:%02d\n%s%u",
+        moves,
+        ICON_CLOCK,
+        hrs,
+        mins,
+        secs,
+        ICON_GAME,
+        seed
+    );
     return buf;
 }
 
@@ -283,23 +305,24 @@ static void text_compute_size(
     float offset_y = 0;
 
     float max_width = 0;
-    float max_height = 0;
 
     size_t string_len = strlen(text);
+    uint32_t num_lines = string_len == 0 ? 0 : 1;
     for (size_t i = 0; i < string_len; i++) {
-        char c = text[i];
-        max_width = max(max_width, offset_x);
-        if (c >= ' ' && c <= '~') {
-            offset_x += char_spacing;
-        } else if (c == '\n') {
+        uint8_t c = text[i];
+        if (c == '\n') {
             offset_x = 0;
-            offset_y += line_height;
+            num_lines++;
         } else if (c == '\t') {
             // one tab should be equal to 4 spaces :P
             offset_x += char_spacing * 4;
+        } else {
+            offset_x += char_spacing;
         }
-        max_height = max(max_height, offset_y + font_size);
+        max_width = max(max_width, offset_x);
     }
+
+    float max_height = num_lines * line_height;
 
     if (width)
         *width = max_width;
@@ -307,85 +330,145 @@ static void text_compute_size(
         *height = max_height;
 }
 
-static void ui_push_display(Vector* vec, World* world) {
-    vec_push_back(vec, &(UIElement) {
-        .type = UI_TEXT,
-        .sprite = (Sprite) {
-            .x = 40.0f,
-            .y = VIRTUAL_HEIGHT - 40.0f,
-            .color = (Color) {
-                .r = 1.0f,
-                .g = 1.0f,
-                .b  = 1.0f,
-                .a = 1.0f,
-            }
-        }, 
-        .hitbox = empty_hitbox(),
-        .meta.text = {
-            .text = format_elapsed_time(world->game.clock),
-            .font_scaling = 1.0f,
-            .line_height_scaling = 1.0f,
-            .character_spacing_scaling = 1.0f,
-        },
-    });
+static void ui_push_shortcuts(Vector* vec, World* world) {
+    const char shortcuts_str[] = "      N     - New game\n"
+                                 "      F     - Toogle full screen\n"
+                                 "Right click - Quick move\n"
+                                 "   Escape   - Undo last move";
+    APtr shortcuts = aalloc(sizeof(shortcuts_str));
+    strcpy(aptr(shortcuts), shortcuts_str);
 
-    vec_push_back(vec, &(UIElement) {
-        .type = UI_TEXT,
-        .sprite = (Sprite) {
-            .x = 40.0f,
-            .y = VIRTUAL_HEIGHT - 80.0f,
-            .color = (Color) {
-                .r = 1.0f,
-                .g = 1.0f,
-                .b  = 1.0f,
-                .a = 1.0f,
-            }
-        }, 
-        .hitbox = empty_hitbox(),
-        .meta.text = {
-            .text = format_move_count(world->game.move_count),
-            .font_scaling = 1.0f,
-            .line_height_scaling = 1.0f,
-            .character_spacing_scaling = 1.0f,
-        },
-    });
-
-    APtr seed = format_seed(world->game.freecell.seed);
     float width, height;
-    text_compute_size(aptr(seed), world->characters[0].height, 1.0f, 1.0f, 1.0f, &width, &height);
-
+    text_compute_size(
+        shortcuts_str,
+        world->characters[' '].height,
+        0.8f,
+        1.0f,
+        1.0f,
+        &width,
+        &height
+    );
     vec_push_back(vec, &(UIElement) {
         .type = UI_TEXT,
         .sprite = (Sprite) {
-            .x = VIRTUAL_WIDTH - 40.0f - width,
-            .y = VIRTUAL_HEIGHT - 40.0f,
+            .x = VIRTUAL_WIDTH - width,
+            .y = VIRTUAL_HEIGHT - height,
             .color = (Color) {
-                .r = 1.0f,
-                .g = 1.0f,
-                .b  = 1.0f,
+                .r = 0.85,
+                .g = 0.55,
+                .b  = 0.55,
                 .a = 1.0f,
             }
         }, 
         .hitbox = empty_hitbox(),
         .meta.text = {
-            .text = format_seed(world->game.freecell.seed),
-            .font_scaling = 1.0f,
+            .text = shortcuts,
+            .font_scaling = 0.8f,
             .line_height_scaling = 1.0f,
             .character_spacing_scaling = 1.0f,
         },
     });
+}
+
+static void ui_push_instructions(Vector* vec, World* world) {
+    const char instructions_str[] = "* Move cards to four foundations in order\n"
+                                    "* Use freecells to store any single card\n"
+                                    "* Descending, alternating stacks can move\n"
+                                    "* Stacks can move only if freecells are sufficient";
+
+    APtr instructions = aalloc(sizeof(instructions_str));
+    strcpy(aptr(instructions), instructions_str);
+
+    float width, height;
+    text_compute_size(
+        aptr(instructions),
+        world->characters[' '].height,
+        0.8f,
+        1.0f,
+        1.0f,
+        &width,
+        &height
+    );
+
+    vec_push_back(vec, &(UIElement) {
+        .type = UI_TEXT,
+        .sprite = (Sprite) {
+            .x = VIRTUAL_WIDTH / 2.0f - width/ 2.0f,
+            .y = VIRTUAL_HEIGHT - height,
+            .color = (Color) {
+                .r = 0.85,
+                .g = 0.55,
+                .b  = 0.55,
+                .a = 1.0f,
+            }
+        }, 
+        .hitbox = empty_hitbox(),
+        .meta.text = {
+            .text = instructions,
+            .font_scaling = 0.8f,
+            .line_height_scaling = 1.0f,
+            .character_spacing_scaling = 1.0f,
+        },
+    });
+}
+
+static void ui_push_game_info(Vector* vec, World* world) {
+    APtr game_info
+        = format_game_info(world->game.freecell.seed, world->game.clock, world->game.move_count);
+
+    float width, height;
+    text_compute_size(
+        aptr(game_info),
+        world->characters[' '].height,
+        1.0f,
+        1.3f,
+        1.0f,
+        &width,
+        &height
+    );
+
+    Color game_info_color = {
+        .r = 0.95f,
+        .g = 0.65,
+        .b = 0.65f,
+        .a = 1.0f,
+    };
 
     if (freecell_game_over(&world->game.freecell)) {
-        text_compute_size(
-            "You Won!",
-            world->characters[0].height,
-            2.0f,
-            1.0f,
-            1.0f,
-            &width,
-            &height
-        );
-        vec_push_back(vec, &(UIElement) {
+        game_info_color.r = 0.55f;
+        game_info_color.g = 0.75f;
+        game_info_color.b = 0.55f;
+    }
+
+    vec_push_back(vec, &(UIElement) {
+        .type = UI_TEXT,
+        .sprite = (Sprite) {
+            .x = 30.0f,
+            .y = VIRTUAL_HEIGHT - height + 10.0f,
+            .color = game_info_color
+        }, 
+        .hitbox = empty_hitbox(),
+        .meta.text = {
+            .text = game_info,
+            .font_scaling = 1.0f,
+            .line_height_scaling = 1.3f,
+            .character_spacing_scaling = 1.0f,
+        },
+    });
+}
+
+static void ui_push_game_over_text(Vector* vec, World* world) {
+    if (!freecell_game_over(&world->game.freecell)) {
+        return;
+    }
+
+    const char win_str[] = "You Won!";
+    APtr win = aalloc(sizeof(win_str));
+    strcpy(aptr(win), win_str);
+
+    float width, height;
+    text_compute_size("You Won!", world->characters[' '].height, 2.0f, 1.0f, 1.0f, &width, &height);
+    vec_push_back(vec, &(UIElement) {
             .type = UI_TEXT,
             .sprite = (Sprite) {
                 .x = VIRTUAL_WIDTH / 2.0f - width / 2.0,
@@ -399,13 +482,19 @@ static void ui_push_display(Vector* vec, World* world) {
             }, 
             .hitbox = empty_hitbox(),
             .meta.text = {
-                .text = "You won!",
+                .text = win,
                 .font_scaling = 2.0f,
                 .line_height_scaling = 1.0f,
                 .character_spacing_scaling = 1.0f,
             },
         });
-    }
+}
+
+static void ui_push_display(Vector* vec, World* world) {
+    ui_push_shortcuts(vec, world);
+    ui_push_instructions(vec, world);
+    ui_push_game_info(vec, world);
+    ui_push_game_over_text(vec, world);
 }
 
 static void ui_push_buttons(Vector* vec, World* world) {
