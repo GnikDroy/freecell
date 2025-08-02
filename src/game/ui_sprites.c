@@ -27,15 +27,15 @@ const int CARD_GAP_Y = 1;
 const float CARD_SCALE = 0.85f;
 
 // Character sprite properties
-const int GLYPH_OFFSET_X = 13 * 128;
-const int GLYPH_OFFSET_Y = 0;
+const int GLYPH_OFFSET_X = 13 * 128 + 1;
+const int GLYPH_OFFSET_Y = 1;
 
 const int GLYPH_COL = 6;
 
-const int GLYPH_WIDTH = 32;
-const int GLYPH_HEIGHT = 32;
-const int GLYPH_GAP_X = 0;
-const int GLYPH_GAP_Y = 0;
+const int GLYPH_WIDTH = 30;
+const int GLYPH_HEIGHT = 30;
+const int GLYPH_GAP_X = 2;
+const int GLYPH_GAP_Y = 2;
 
 const float GLYPH_SCALE = 1.0f;
 
@@ -44,14 +44,14 @@ const float GLYPH_SCALE = 1.0f;
 const int BUTTON_COL = 1;
 const int BUTTON_ROW = 3;
 
-const int BUTTON_WIDTH = 64;
-const int BUTTON_HEIGHT = 65;
+const int BUTTON_WIDTH = 62;
+const int BUTTON_HEIGHT = 64;
 
-const int BUTTON_GAP_X = 0;
-const int BUTTON_GAP_Y = 0;
+const int BUTTON_GAP_X = 1;
+const int BUTTON_GAP_Y = 1;
 
-const int BUTTON_OFFSET_X = (CARD_COL + 1) * (CARD_WIDTH + CARD_GAP_X);
-const int BUTTON_OFFSET_Y = HEIGHT - BUTTON_ROW * (BUTTON_HEIGHT + BUTTON_GAP_Y);
+const int BUTTON_OFFSET_X = (CARD_COL + 1) * (CARD_WIDTH + CARD_GAP_X) + 1;
+const int BUTTON_OFFSET_Y = HEIGHT - BUTTON_ROW * (BUTTON_HEIGHT + BUTTON_GAP_Y) + 1;
 
 const float BUTTON_SCALE = 0.8f;
 

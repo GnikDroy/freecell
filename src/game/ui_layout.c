@@ -256,6 +256,13 @@ static APtr format_seed(uint32_t seed) {
     return buf;
 }
 
+static APtr format_move_count(uint32_t moves) {
+    int needed = snprintf(NULL, 0, "Moves: %u", moves);
+    APtr buf = aalloc(needed + 1);
+    snprintf(aptr(buf), needed + 1, "Moves: %u", moves);
+    return buf;
+}
+
 static void text_compute_size(
     const char* text,
     float glyph_width,
@@ -322,6 +329,27 @@ static void ui_push_display(Vector* vec, World* world) {
         },
     });
 
+    vec_push_back(vec, &(UIElement) {
+        .type = UI_TEXT,
+        .sprite = (Sprite) {
+            .x = 40.0f,
+            .y = VIRTUAL_HEIGHT - 80.0f,
+            .color = (Color) {
+                .r = 1.0f,
+                .g = 1.0f,
+                .b  = 1.0f,
+                .a = 1.0f,
+            }
+        }, 
+        .hitbox = empty_hitbox(),
+        .meta.text = {
+            .text = format_move_count(world->game.move_count),
+            .font_scaling = 1.0f,
+            .line_height_scaling = 1.0f,
+            .character_spacing_scaling = 1.0f,
+        },
+    });
+
     APtr seed = format_seed(world->game.freecell.seed);
     float width, height;
     text_compute_size(aptr(seed), world->characters[0].height, 1.0f, 1.0f, 1.0f, &width, &height);
@@ -346,6 +374,38 @@ static void ui_push_display(Vector* vec, World* world) {
             .character_spacing_scaling = 1.0f,
         },
     });
+
+    if (freecell_game_over(&world->game.freecell)) {
+        text_compute_size(
+            "You Won!",
+            world->characters[0].height,
+            2.0f,
+            1.0f,
+            1.0f,
+            &width,
+            &height
+        );
+        vec_push_back(vec, &(UIElement) {
+            .type = UI_TEXT,
+            .sprite = (Sprite) {
+                .x = VIRTUAL_WIDTH / 2.0f - width / 2.0,
+                .y = VIRTUAL_HEIGHT / 4.0f - height / 2.0,
+                .color = (Color) {
+                    .r = 0.55f,
+                    .g = 0.85f,
+                    .b  = 0.55f,
+                    .a = 1.0f,
+                }
+            }, 
+            .hitbox = empty_hitbox(),
+            .meta.text = {
+                .text = "You won!",
+                .font_scaling = 2.0f,
+                .line_height_scaling = 1.0f,
+                .character_spacing_scaling = 1.0f,
+            },
+        });
+    }
 }
 
 static void ui_push_buttons(Vector* vec, World* world) {

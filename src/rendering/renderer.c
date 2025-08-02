@@ -20,6 +20,7 @@ Renderer renderer_init() {
     // Enable blending
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendColor(1.0f, 1.0f, 1.0f, 1.0f);
 
     Renderer renderer = { 0 };
     return renderer;

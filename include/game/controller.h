@@ -39,6 +39,8 @@ void controller_handle_input(InputAction action);
 
 void controller_start_drag(World* window);
 
+void controller_update_drag(World* window);
+
 void controller_end_drag(World* window);
 
 void controller_toggle_fullscreen(World* world);

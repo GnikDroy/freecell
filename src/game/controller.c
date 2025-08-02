@@ -126,6 +126,7 @@ void controller_update(World* world, double dt) {
         world->game.clock += dt;
     }
 
+    controller_update_drag(world);
     controller_autocomplete_game(world);
     animation_system_update(&world->animation_system, dt);
     render_world(world);
@@ -167,6 +168,13 @@ void controller_start_drag(World* world) {
         drag_state->drag_offset.y = mouse.y;
         drag_state->card_location = ui_element.meta.card.selection_location;
         drag_state->card_index = ui_element.meta.card.card_index;
+    }
+}
+
+void controller_update_drag(World* world) {
+    if (freecell_game_over(&world->game.freecell)
+        || world->animation_system.ui_animations.size > 0) {
+        world->controller.drag_state.dragging = false;
     }
 }
 
@@ -343,7 +351,7 @@ void controller_undo(World* world) {
 
 void controller_new_game(World* world) {
     Controller* controller = &world->controller;
-
+    world->animation_system.ui_animations.size = 0;
     game_new(&world->game);
 }
 
@@ -354,7 +362,7 @@ void controller_toggle_fullscreen(World* world) {
 }
 
 static void controller_autocompleteable_game(World* world) {
-    (void) world;
+    (void)world;
 #ifdef FREECELL_DEBUG
     Controller* controller = &world->controller;
 
@@ -389,11 +397,12 @@ static void controller_autocompleteable_game(World* world) {
     freecell->reserve[3] = NONE;
 
     world->game.history.size = 0;
+    world->animation_system.ui_animations.size = 0;
 #endif
 }
 
 static void controller_fill_cascades(World* world) {
-    (void) world;
+    (void)world;
 #ifdef FREECELL_DEBUG
     Controller* controller = &world->controller;
 
@@ -409,6 +418,7 @@ static void controller_fill_cascades(World* world) {
     }
 
     world->game.history.size = 0;
+    world->animation_system.ui_animations.size = 0;
 #endif
 }
 
