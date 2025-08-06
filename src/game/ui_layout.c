@@ -332,6 +332,7 @@ static void text_compute_size(
 
 static void ui_push_shortcuts(Vector* vec, World* world) {
     const char shortcuts_str[] = "      N     - New game\n"
+                                 "      Q     - Quit\n"
                                  "      F     - Toogle full screen\n"
                                  "Right click - Quick move\n"
                                  "   Escape   - Undo last move";

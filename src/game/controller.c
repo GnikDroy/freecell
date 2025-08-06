@@ -344,7 +344,12 @@ void controller_on_cursor_position(World* world, double x, double y) {
 void controller_undo(World* world) {
     Controller* controller = &world->controller;
 
-    if (!freecell_game_over(&world->game.freecell) && game_undo(&world->game) == MOVE_SUCCESS) {
+    if (freecell_game_over(&world->game.freecell)
+        || freecell_is_trivially_solved(&world->game.freecell)) {
+        return;
+    }
+
+    if (game_undo(&world->game) == MOVE_SUCCESS) {
         controller_play_card_move_sound(world);
     }
 }
