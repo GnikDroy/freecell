@@ -148,19 +148,6 @@ static void ui_push_foundation(Vector* vec, World* world) {
         sprite.y = sprite.height / 2.f + MARGIN_Y;
         sprite.z = 0.0f;
 
-        // pulse foundation on game over
-        double t = time_millis() / 1000.0;
-        double v = 0.70 + 0.15 * pow(sin(2 * t), 2);
-        if (freecell_game_over(&world->game.freecell)
-            && world->animation_system.ui_animations.size == 0) {
-            sprite.color = (Color) {
-                .r = v * 0.9,
-                .g = v,
-                .b = 0.55f,
-                .a = 1.0f,
-            };
-        }
-
         UIElement ui_element = {
             .type = UI_CARD,
             .sprite = sprite,
@@ -183,8 +170,8 @@ static void ui_push_cascade(Vector* vec, World* world, int cascade_index, int x_
     Cascade* cascade = &freecell->cascade[cascade_index];
     Sprite* deck = world->deck;
 
-    const int MARGIN_Y = deck[NONE].height * 1.7f;
-    const int OVERLAP = floor(deck[NONE].height * 0.2);
+    const int MARGIN_Y = deck[NONE].height * 1.5f;
+    const int OVERLAP = floor(deck[NONE].height * 0.23);
 
     // If the cascade is empty, we add a UIElement with a placeholder card.
     // So that cards can be placed here

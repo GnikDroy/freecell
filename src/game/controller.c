@@ -117,7 +117,7 @@ static void controller_autocomplete_game(World* world) {
         .size = 1,
     };
 
-    controller_animated_move(world, move, 0.35f);
+    controller_animated_move(world, move, 0.25f);
 }
 
 void controller_update(World* world, double dt) {

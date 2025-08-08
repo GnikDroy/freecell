@@ -14,7 +14,6 @@ typedef struct UIElement UIElement;
 typedef struct UIDragState {
     bool dragging;
     vec2s drag_offset;
-    vec2s original_position;
 
     SelectionLocation card_location;
     uint8_t card_index;
