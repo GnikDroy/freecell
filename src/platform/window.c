@@ -91,6 +91,8 @@ void window_get_size(GLFWwindow* window, int* width, int* height) {
     glfwGetWindowSize(window, width, height);
 }
 
+const char* window_get_clipboard(GLFWwindow* window) { return glfwGetClipboardString(window); }
+
 void window_toggle_fullscreen(GLFWwindow* window) {
     GLFWmonitor* monitor = window_get_current_monitor(window);
     if (monitor == NULL) {

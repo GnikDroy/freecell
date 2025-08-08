@@ -34,6 +34,8 @@ void window_free(GLFWwindow* window);
 
 void window_get_size(GLFWwindow* window, int* width, int* height);
 
+const char* window_get_clipboard(GLFWwindow* window);
+
 void window_toggle_fullscreen(GLFWwindow* window);
 
 GLFWmonitor* window_get_current_monitor(GLFWwindow* window);

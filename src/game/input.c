@@ -7,6 +7,7 @@
 
 #include "game/controller.h"
 #include "game/input_action.h"
+#include "platform/window.h"
 
 const float CLICK_THRESHOLD = 5.0f;
 static double mouse_press_x = 0.0;
@@ -32,6 +33,20 @@ void input_on_key(GLFWwindow* window, int key, int scancode, int action, int mod
             ia.type = INPUT_ACTION_FILL_CASCADES;
         } else if (key == GLFW_KEY_Q) {
             glfwSetWindowShouldClose(window, GLFW_TRUE);
+        } else if (key == GLFW_KEY_V && (mods & GLFW_MOD_CONTROL)) {
+            const char* clipboard_content = window_get_clipboard(window);
+            if (!clipboard_content) {
+                return;
+            }
+
+            char* endptr = NULL;
+            long seed = strtol(clipboard_content, &endptr, 10);
+            if (endptr == clipboard_content) {
+                return;
+            }
+
+            ia.type = INPUT_ACTION_NEW_GAME_WITH_SEED;
+            ia.data.new_game_with_seed.seed = seed;
         }
     }
     controller_handle_input(ia);

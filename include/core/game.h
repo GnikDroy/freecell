@@ -18,6 +18,8 @@ void game_free(Game* game);
 
 void game_new(Game* game);
 
+void game_new_from_seed(Game* game, uint32_t seed);
+
 bool game_can_move_from(Game* game, SelectionLocation from, uint32_t card_index);
 
 MoveResult game_validate_move(Game* game, Move move);

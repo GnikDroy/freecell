@@ -360,6 +360,12 @@ void controller_new_game(World* world) {
     game_new(&world->game);
 }
 
+void controller_new_game_with_seed(World* world, uint32_t seed) {
+    Controller* controller = &world->controller;
+    world->animation_system.ui_animations.size = 0;
+    game_new_from_seed(&world->game, seed);
+}
+
 void controller_toggle_fullscreen(World* world) {
     Controller* controller = &world->controller;
 
@@ -451,6 +457,8 @@ void controller_handle_input(InputAction ia) {
         controller_undo(world);
     } else if (ia.type == INPUT_ACTION_NEW_GAME) {
         controller_new_game(world);
+    } else if (ia.type == INPUT_ACTION_NEW_GAME_WITH_SEED) {
+        controller_new_game_with_seed(world, ia.data.new_game_with_seed.seed);
     } else if (ia.type == INPUT_ACTION_TOGGLE_FULLSCREEN) {
         controller_toggle_fullscreen(world);
     } else if (ia.type == INPUT_ACTION_AUTOCOMPLETEABLE_GAME) {

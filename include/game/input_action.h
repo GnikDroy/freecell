@@ -1,10 +1,12 @@
 #pragma once
 
+#include <stdint.h>
 typedef struct GLFWwindow GLFWwindow;
 
 typedef enum InputActionType {
     INPUT_ACTION_NONE,
     INPUT_ACTION_NEW_GAME,
+    INPUT_ACTION_NEW_GAME_WITH_SEED,
     INPUT_ACTION_UNDO,
     INPUT_ACTION_TOGGLE_FULLSCREEN,
     INPUT_ACTION_CLICK,
@@ -31,6 +33,9 @@ typedef struct InputAction {
             int width;
             int height;
         } framebuffer_resize;
+
+        struct {
+            uint32_t seed;
+        } new_game_with_seed;
     } data;
 } InputAction;
-

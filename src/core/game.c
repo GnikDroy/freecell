@@ -36,6 +36,13 @@ void game_new(Game* game) {
     game->history.size = 0;
 }
 
+void game_new_from_seed(Game* game, uint32_t seed) {
+    game->freecell = freecell_init(seed);
+    game->clock = 0;
+    game->move_count = 0;
+    game->history.size = 0;
+}
+
 bool game_can_move_from(Game* game, SelectionLocation from, uint32_t card_index) {
     Freecell* freecell = &game->freecell;
 
