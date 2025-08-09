@@ -4,7 +4,7 @@
 #include "game/ui_element.h"
 #include <math.h>
 
-typedef struct MoveAnimation {
+typedef struct UIElementAnimation {
     UIElement from;
     UIElement to;
 

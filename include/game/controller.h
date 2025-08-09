@@ -34,6 +34,8 @@ void controller_undo(World* world);
 
 void controller_new_game(World* world);
 
+void controller_new_game_with_seed(World* world, uint32_t seed);
+
 void controller_handle_input(InputAction action);
 
 void controller_start_drag(World* window);
@@ -43,6 +45,8 @@ void controller_update_drag(World* window);
 void controller_end_drag(World* window);
 
 void controller_toggle_fullscreen(World* world);
+
+void controller_toggle_help(World* world);
 
 void controller_on_framebuffer_resize(World* world, int width, int height);
 

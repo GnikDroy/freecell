@@ -21,16 +21,14 @@ void input_on_key(GLFWwindow* window, int key, int scancode, int action, int mod
     ia.window = window;
 
     if (action == GLFW_PRESS) {
-        if (key == GLFW_KEY_ESCAPE) {
+        if (key == GLFW_KEY_ESCAPE || (key == GLFW_KEY_Z && (mods & GLFW_MOD_CONTROL))) {
             ia.type = INPUT_ACTION_UNDO;
-        } else if (key == GLFW_KEY_N) {
+        } else if (key == GLFW_KEY_F2) {
             ia.type = INPUT_ACTION_NEW_GAME;
-        } else if (key == GLFW_KEY_M) {
-            ia.type = INPUT_ACTION_AUTOCOMPLETEABLE_GAME;
-        } else if (key == GLFW_KEY_F) {
+        } else if (key == GLFW_KEY_F1) {
+            ia.type = INPUT_ACTION_TOGGLE_HELP;
+        } else if (key == GLFW_KEY_F11) {
             ia.type = INPUT_ACTION_TOGGLE_FULLSCREEN;
-        } else if (key == GLFW_KEY_C) {
-            ia.type = INPUT_ACTION_FILL_CASCADES;
         } else if (key == GLFW_KEY_Q) {
             glfwSetWindowShouldClose(window, GLFW_TRUE);
         } else if (key == GLFW_KEY_V && (mods & GLFW_MOD_CONTROL)) {
@@ -47,6 +45,10 @@ void input_on_key(GLFWwindow* window, int key, int scancode, int action, int mod
 
             ia.type = INPUT_ACTION_NEW_GAME_WITH_SEED;
             ia.data.new_game_with_seed.seed = seed;
+        } else if (key == GLFW_KEY_M) {
+            ia.type = INPUT_ACTION_AUTOCOMPLETEABLE_GAME;
+        } else if (key == GLFW_KEY_C) {
+            ia.type = INPUT_ACTION_FILL_CASCADES;
         }
     }
     controller_handle_input(ia);

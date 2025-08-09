@@ -21,9 +21,9 @@ static void ui_element_apply_style(UIElement* ui_element) {
             ui_element->sprite.color.g *= 0.8f;
             ui_element->sprite.color.b *= 0.8f;
         } else if (ui_element->meta.card.state == CARD_UI_STATE_DROP_TARGET) {
-            ui_element->sprite.color.r *= 0.9f;
+            ui_element->sprite.color.r *= 0.8f;
             ui_element->sprite.color.g *= 1.0f;
-            ui_element->sprite.color.b *= 0.9f;
+            ui_element->sprite.color.b *= 0.8f;
         } else {
             ui_element->sprite.color.r *= 1.0f;
             ui_element->sprite.color.g *= 1.0f;
@@ -39,9 +39,10 @@ static void ui_element_apply_style(UIElement* ui_element) {
             ui_element->sprite.color.g *= 0.8f;
             ui_element->sprite.color.b *= 0.8f;
         } else if (ui_element->meta.button.state == BUTTON_UI_STATE_DISABLED) {
-            ui_element->sprite.color.r *= 0.5f;
-            ui_element->sprite.color.g *= 0.5f;
-            ui_element->sprite.color.b *= 0.5f;
+            ui_element->sprite.color.r *= 0.7f;
+            ui_element->sprite.color.g *= 0.7f;
+            ui_element->sprite.color.b *= 0.7f;
+            ui_element->sprite.color.a *= 0.7f;
         } else {
             ui_element->sprite.color.r *= 1.0f;
             ui_element->sprite.color.g *= 1.0f;
@@ -202,9 +203,10 @@ UIElement ui_get_new_state(
     } else if (element->type == UI_BUTTON) {
         const char* id = aptr(element->meta.button.id);
         // Undo button is disabled if no moves left
-        // or if game over
+        // or if game over or potentially solved
         if (strcmp(id, "undo") == 0
-            && (world->game.history.size == 0 || freecell_game_over(&world->game.freecell))) {
+            && (world->game.history.size == 0 || freecell_game_over(&world->game.freecell)
+                || freecell_is_trivially_solved(&world->game.freecell))) {
             disabled = true;
         }
 

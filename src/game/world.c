@@ -72,6 +72,7 @@ World world_init(GLFWwindow* window) {
     }
 
     world.animation_system = animation_system_init();
+    world.show_help = true;
 
     return world;
 }

@@ -70,6 +70,12 @@ GLFWwindow* window_init(WindowConfig config) {
     if (config.on_cursor_position)
         glfwSetCursorPosCallback(window, config.on_cursor_position);
 
+    // Set window position to center of monitor
+    GLFWmonitor* monitor
+        = config.fullscreen_monitor == NULL ? get_primary_monitor() : config.fullscreen_monitor;
+    const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+    glfwSetWindowPos(window, (mode->width - config.width) / 2, (mode->height - config.height) / 2);
+
     glfwMakeContextCurrent(window);
     glfwSwapInterval(config.vsync);
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {

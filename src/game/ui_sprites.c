@@ -24,7 +24,7 @@ const int CARD_HEIGHT = 180;
 const int CARD_GAP_X = 1;
 const int CARD_GAP_Y = 1;
 
-const float CARD_SCALE = 0.85f;
+const float CARD_SCALE = 0.80f;
 
 // Character sprite properties
 const int GLYPH_OFFSET_X = 13 * 128 + 1;

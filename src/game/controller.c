@@ -66,8 +66,21 @@ static void controller_autocomplete_game(World* world) {
         return;
     }
 
-    if (world->animation_system.ui_animations.size > 0) {
+    // better UX if i allow more than one animation
+    // if the earlier is beyond threshold
+    if (world->animation_system.ui_animations.size > 2) {
         return;
+    } else if (world->animation_system.ui_animations.size > 0) {
+        float progress_threshold = 0.5;
+        vec_get_as(
+            UIElementAnimation,
+            anim,
+            &world->animation_system.ui_animations,
+            world->animation_system.ui_animations.size - 1
+        );
+        if (anim.elapsed / anim.duration < progress_threshold) {
+            return;
+        }
     }
 
     // find the smallest card in the cascade (or reserve)
@@ -117,7 +130,7 @@ static void controller_autocomplete_game(World* world) {
         .size = 1,
     };
 
-    controller_animated_move(world, move, 0.25f);
+    controller_animated_move(world, move, 0.35f);
 }
 
 void controller_update(World* world, double dt) {
@@ -372,6 +385,8 @@ void controller_toggle_fullscreen(World* world) {
     window_toggle_fullscreen(world->window);
 }
 
+void controller_toggle_help(World* world) { world->show_help = !world->show_help; }
+
 static void controller_autocompleteable_game(World* world) {
     (void)world;
 #ifdef FREECELL_DEBUG
@@ -379,6 +394,7 @@ static void controller_autocompleteable_game(World* world) {
 
     // autocompleteable game for debug
     Freecell* freecell = &world->game.freecell;
+    freecell->seed = 0;
 
     freecell->foundation[SPADES] = NONE;
     freecell->foundation[HEARTS] = NONE;
@@ -408,6 +424,8 @@ static void controller_autocompleteable_game(World* world) {
     freecell->reserve[3] = NONE;
 
     world->game.history.size = 0;
+    world->game.move_count = 0;
+    world->game.clock = 0.0;
     world->animation_system.ui_animations.size = 0;
 #endif
 }
@@ -419,6 +437,7 @@ static void controller_fill_cascades(World* world) {
 
     // make all cascades full for debugging view
     Freecell* freecell = &world->game.freecell;
+    freecell->seed = 0;
 
     const int MAX_CASCADE_SIZE = sizeof(freecell->cascade[0].cards) / sizeof(Card);
     for (int j = 0; j < 8; j++) {
@@ -428,7 +447,14 @@ static void controller_fill_cascades(World* world) {
         }
     }
 
+    for (int i = 0; i < 4; i++) {
+        freecell->reserve[i] = NONE;
+        freecell->foundation[i] = NONE;
+    }
+
     world->game.history.size = 0;
+    world->game.move_count = 0;
+    world->game.clock = 0.0;
     world->animation_system.ui_animations.size = 0;
 #endif
 }
@@ -461,6 +487,8 @@ void controller_handle_input(InputAction ia) {
         controller_new_game_with_seed(world, ia.data.new_game_with_seed.seed);
     } else if (ia.type == INPUT_ACTION_TOGGLE_FULLSCREEN) {
         controller_toggle_fullscreen(world);
+    } else if (ia.type == INPUT_ACTION_TOGGLE_HELP) {
+        controller_toggle_help(world);
     } else if (ia.type == INPUT_ACTION_AUTOCOMPLETEABLE_GAME) {
         controller_autocompleteable_game(world);
     } else if (ia.type == INPUT_ACTION_FILL_CASCADES) {

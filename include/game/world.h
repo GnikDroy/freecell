@@ -36,6 +36,8 @@ typedef struct World {
     bool sound_enabled;
     ma_engine engine;
 
+    bool show_help;
+
     ma_decoder card_move_decoder;
     ma_sound card_move_sound;
 

@@ -318,19 +318,22 @@ static void text_compute_size(
 }
 
 static void ui_push_shortcuts(Vector* vec, World* world) {
-    const char shortcuts_str[] = "      N     - New game\n"
-                                 "      Q     - Quit\n"
-                                 "      F     - Toogle full screen\n"
-                                 "Right click - Quick move\n"
-                                 "   Escape   - Undo last move";
+    const char shortcuts_str[] = "            SHORTCUTS            \n"
+                                 "           -----------           \n"
+                                 "      F1     - Toggle Help\n"
+                                 "    F2 / Q   - New game / Quit\n"
+                                 "      F11    - Toogle full screen\n"
+                                 " Right click - Quick move\n"
+                                 "    CTRL+V   - Paste game seed\n"
+                                 "CTRL+Z / Esc - Undo last move";
     APtr shortcuts = aalloc(sizeof(shortcuts_str));
     strcpy(aptr(shortcuts), shortcuts_str);
 
     float width, height;
     text_compute_size(
-        shortcuts_str,
+        aptr(shortcuts),
         world->characters[' '].height,
-        0.8f,
+        0.7f,
         1.0f,
         1.0f,
         &width,
@@ -342,16 +345,16 @@ static void ui_push_shortcuts(Vector* vec, World* world) {
             .x = VIRTUAL_WIDTH - width,
             .y = VIRTUAL_HEIGHT - height,
             .color = (Color) {
-                .r = 0.85,
-                .g = 0.55,
-                .b  = 0.55,
-                .a = 1.0f,
+                .r = 1.0f,
+                .g = 1.0f,
+                .b  = 1.0f,
+                .a = 0.6f,
             }
         }, 
         .hitbox = empty_hitbox(),
         .meta.text = {
             .text = shortcuts,
-            .font_scaling = 0.8f,
+            .font_scaling = 0.7f,
             .line_height_scaling = 1.0f,
             .character_spacing_scaling = 1.0f,
         },
@@ -359,7 +362,9 @@ static void ui_push_shortcuts(Vector* vec, World* world) {
 }
 
 static void ui_push_instructions(Vector* vec, World* world) {
-    const char instructions_str[] = "* Move cards to four foundations in order\n"
+    const char instructions_str[] = " INSTRUCTIONS \n"
+                                    " ------------ \n"
+                                    "* Move cards to four foundations in order\n"
                                     "* Use freecells to store any single card\n"
                                     "* Descending, alternating stacks can move\n"
                                     "* Stacks can move only if freecells are sufficient";
@@ -371,7 +376,7 @@ static void ui_push_instructions(Vector* vec, World* world) {
     text_compute_size(
         aptr(instructions),
         world->characters[' '].height,
-        0.8f,
+        0.75f,
         1.0f,
         1.0f,
         &width,
@@ -384,16 +389,16 @@ static void ui_push_instructions(Vector* vec, World* world) {
             .x = VIRTUAL_WIDTH / 2.0f - width/ 2.0f,
             .y = VIRTUAL_HEIGHT - height,
             .color = (Color) {
-                .r = 0.85,
-                .g = 0.55,
-                .b  = 0.55,
-                .a = 1.0f,
+                .r = 1.0f,
+                .g = 1.0f,
+                .b = 1.0f,
+                .a = 0.6f,
             }
         }, 
         .hitbox = empty_hitbox(),
         .meta.text = {
             .text = instructions,
-            .font_scaling = 0.8f,
+            .font_scaling = 0.75f,
             .line_height_scaling = 1.0f,
             .character_spacing_scaling = 1.0f,
         },
@@ -416,16 +421,17 @@ static void ui_push_game_info(Vector* vec, World* world) {
     );
 
     Color game_info_color = {
-        .r = 0.95f,
-        .g = 0.65,
-        .b = 0.65f,
-        .a = 1.0f,
+        .r = 1.0f,
+        .g = 1.0f,
+        .b = 1.0f,
+        .a = 0.7f,
     };
 
     if (freecell_game_over(&world->game.freecell)) {
         game_info_color.r = 0.55f;
         game_info_color.g = 0.75f;
         game_info_color.b = 0.55f;
+        game_info_color.a = 1.0f;
     }
 
     vec_push_back(vec, &(UIElement) {
@@ -460,7 +466,7 @@ static void ui_push_game_over_text(Vector* vec, World* world) {
             .type = UI_TEXT,
             .sprite = (Sprite) {
                 .x = VIRTUAL_WIDTH / 2.0f - width / 2.0,
-                .y = VIRTUAL_HEIGHT / 4.0f - height / 2.0,
+                .y = VIRTUAL_HEIGHT / 2.0f - height / 2.0,
                 .color = (Color) {
                     .r = 0.55f,
                     .g = 0.85f,
@@ -479,8 +485,10 @@ static void ui_push_game_over_text(Vector* vec, World* world) {
 }
 
 static void ui_push_display(Vector* vec, World* world) {
-    ui_push_shortcuts(vec, world);
-    ui_push_instructions(vec, world);
+    if (world->show_help) {
+        ui_push_shortcuts(vec, world);
+        ui_push_instructions(vec, world);
+    }
     ui_push_game_info(vec, world);
     ui_push_game_over_text(vec, world);
 }

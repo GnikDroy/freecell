@@ -77,8 +77,6 @@ void mesh_push_sprite(Mesh* mesh, Sprite sprite) {
 }
 
 void render_background(World* world) {
-    Mesh mesh = mesh_init();
-
     // clang-format off
     Vertex vertices[4] = {
         {
@@ -104,19 +102,18 @@ void render_background(World* world) {
     };
     // clang-format on
 
+    mesh_clear(&world->game_mesh);
     for (int i = 0; i < 4; i++) {
-        vec_push_back(&mesh.vertices, vertices + i);
+        vec_push_back(&world->game_mesh.vertices, vertices + i);
     }
 
     uint32_t indices[] = { 0, 1, 2, 0, 2, 3 };
 
     for (size_t i = 0; i < sizeof(indices) / sizeof(indices[0]); i++) {
-        vec_push_back(&mesh.indices, indices + i);
+        vec_push_back(&world->game_mesh.indices, indices + i);
     }
 
-    GPUMesh gpu_mesh = gpu_mesh_init();
-    upload_mesh(&gpu_mesh, &mesh);
-    mesh_free(&mesh);
+    upload_mesh(&world->game_gpu_mesh, &world->game_mesh);
 
     renderer_set_shader(world->assets.background_shader);
     shader_set_mat4(world->assets.background_shader, "view", (const float*)world->camera.view);
@@ -126,9 +123,7 @@ void render_background(World* world) {
         (const float*)world->camera.projection
     );
 
-    renderer_draw_mesh(&gpu_mesh, GL_TRIANGLES);
-
-    gpu_mesh_free(&gpu_mesh);
+    renderer_draw_mesh(&world->game_gpu_mesh, GL_TRIANGLES);
 }
 
 void mesh_push_ui_element(Mesh* mesh, World* world, UIElement* ui_element) {
