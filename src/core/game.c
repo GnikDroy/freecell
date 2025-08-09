@@ -82,8 +82,8 @@ MoveResult game_validate_move(Game* game, Move move) {
 MoveResult game_move(Game* game, Move move) {
     MoveResult result = freecell_validate_move(&game->freecell, move);
     if (result == MOVE_SUCCESS) {
+        game->move_count += freecell_move_count(&game->freecell, move);
         freecell_move(&game->freecell, move);
-        game->move_count += move.size;
         vec_push_back(&game->history, &move);
     }
     return result;
@@ -109,7 +109,10 @@ MoveResult game_undo(Game* game) {
     freecell_move(&game->freecell, reverse_move);
 
     vec_pop_back(&game->history);
-    game->move_count += reverse_move.size; // Freecell rules allow undoing moves,
-                                           // so we increment the move count
+
+    // Freecell rules allow undoing moves,
+    // so we increment the move count
+    game->move_count += freecell_move_count(&game->freecell, last_move);
+
     return MOVE_SUCCESS;
 }

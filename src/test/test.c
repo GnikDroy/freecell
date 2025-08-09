@@ -46,6 +46,16 @@ void test_freecell_init_distribution(void) {
     assert(pass);
 }
 
+void test_freecell_move_counts(void) {
+    assert(freecell_move_count_recurse(11, 3, 3) == 29);
+    assert(freecell_move_count_recurse(5, 1, 3) == 9);
+    assert(freecell_move_count_recurse(13, 4, 7) == 27);
+    assert(freecell_move_count_recurse(13, 4, 3) == 35);
+    assert(freecell_move_count_recurse(13, 4, 2) == 37);
+    assert(freecell_move_count_recurse(8, 1, 3) == 21);
+    print_test_result("test_freecell_move_counts", true);
+}
+
 void test_suits_differ_by_color(void) {
     assert(suits_differ_by_color(SPADES, HEARTS));
     assert(suits_differ_by_color(CLUBS, DIAMONDS));
@@ -463,6 +473,7 @@ int main(void) {
     test_suits_differ_by_color();
     test_cascade_is_stacked_properly();
     test_freecell_init_distribution();
+    test_freecell_move_counts();
     test_freecell_move_to_foundation();
     test_freecell_move_to_reserve();
     test_freecell_move_to_cascade_single();

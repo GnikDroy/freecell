@@ -1,6 +1,8 @@
 #include <assert.h>
+#include <limits.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
@@ -197,22 +199,73 @@ uint8_t freecell_get_index_from_size(
     }
 }
 
-uint8_t freecell_count_max_moves(Freecell* freecell) {
-    uint8_t empty_cascades = 0;
-    for (int i = 0; i < 8; i++) {
-        if (freecell->cascade[i].size == 0) {
-            empty_cascades++;
-        }
-    }
-
+static uint8_t freecell_count_empty_freecells(Freecell* freecell) {
     uint8_t freecells = 0;
     for (int i = 0; i < 4; i++) {
         if (freecell->reserve[i] == NONE) {
             freecells++;
         }
     }
+    return freecells;
+}
 
+static uint8_t freecell_count_empty_cascades(Freecell* freecell) {
+    uint8_t empty_cascades = 0;
+    for (int i = 0; i < 8; i++) {
+        if (freecell->cascade[i].size == 0) {
+            empty_cascades++;
+        }
+    }
+    return empty_cascades;
+}
+
+uint8_t freecell_count_max_moves(Freecell* freecell) {
+    uint8_t empty_cascades = freecell_count_empty_cascades(freecell);
+    uint8_t freecells = freecell_count_empty_freecells(freecell);
     return (1 << empty_cascades) * (freecells + 1);
+}
+
+static int freecell_move_count_recurse(int num_cards, int num_freecells, int num_cascades) {
+    if (num_cards <= 1) {
+        return num_cards;
+    }
+
+    if (num_cascades < 0) {
+        return INT_MAX;
+    }
+
+    if (num_cards <= num_freecells + num_cascades + 1) {
+        return 2 * num_cards - 1;
+    }
+
+    int min_moves = INT_MAX;
+    for (int i = 1; i <= num_cards; i++) {
+        int left = freecell_move_count_recurse(i, num_freecells, num_cascades - 1);
+        int middle = freecell_move_count_recurse(num_cards - i, num_freecells, num_cascades - 1);
+        int right = freecell_move_count_recurse(i, num_freecells, num_cascades - 1);
+        if (left != INT_MAX && middle != INT_MAX && right != INT_MAX) {
+            int moves = left + middle + right;
+            min_moves = min(min_moves, moves);
+        }
+    }
+    return min_moves;
+}
+
+uint64_t freecell_move_count(Freecell* freecell, Move move) {
+    bool from_cascade = selection_location_is_cascade(move.from);
+    bool to_cascade = selection_location_is_cascade(move.to);
+
+    bool multi_move = from_cascade && to_cascade && move.size > 1;
+    if (!multi_move) {
+        return move.size;
+    }
+
+    uint8_t empty_freecells = freecell_count_empty_freecells(freecell);
+    uint8_t empty_cascades = freecell_count_empty_cascades(freecell);
+    if (freecell->cascade[move.to].size == 0) {
+        empty_cascades--;
+    }
+    return freecell_move_count_recurse(move.size, empty_freecells, empty_cascades);
 }
 
 MoveResult freecell_validate_to_foundation(Freecell* freecell, Card card, SelectionLocation dest) {

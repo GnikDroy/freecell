@@ -220,6 +220,8 @@ inline Card freecell_get_card(
 
 uint8_t freecell_count_max_moves(Freecell* freecell);
 
+uint64_t freecell_move_count(Freecell* freecell, Move move);
+
 MoveResult freecell_validate_to_foundation(Freecell* freecell, Card card, SelectionLocation dest);
 
 MoveResult freecell_validate_to_reserve(Freecell* freecell, Card card, SelectionLocation dest);
