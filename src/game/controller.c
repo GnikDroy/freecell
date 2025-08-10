@@ -140,9 +140,9 @@ void controller_update(World* world, double dt) {
     }
 
     controller_update_drag(world);
-    controller_autocomplete_game(world);
     animation_system_update(&world->animation_system, dt);
     render_world(world);
+    controller_autocomplete_game(world);
 }
 
 void controller_click(World* world) {
