@@ -25,21 +25,30 @@ void mesh_push_sprite(Mesh* mesh, Sprite sprite) {
     float halfW = sprite.width / 2.f;
     float halfH = sprite.height / 2.f;
 
-    vertices[0].x = x + halfW;
-    vertices[0].y = y - halfH;
-    vertices[0].z = sprite.z;
+    float angle = sprite.rotation;
+    float cosA = cosf(angle);
+    float sinA = sinf(angle);
 
-    vertices[1].x = x + halfW;
-    vertices[1].y = y + halfH;
-    vertices[1].z = sprite.z;
+    // Define the 4 corners relative to center
+    float localX[4] = { +halfW, +halfW, -halfW, -halfW };
+    float localY[4] = { -halfH, +halfH, +halfH, -halfH };
 
-    vertices[2].x = x - halfW;
-    vertices[2].y = y + halfH;
-    vertices[2].z = sprite.z;
+    for (int i = 0; i < 4; i++) {
+        float lx = localX[i];
+        float ly = localY[i];
 
-    vertices[3].x = x - halfW;
-    vertices[3].y = y - halfH;
-    vertices[3].z = sprite.z;
+        float rx = lx * cosA - ly * sinA;
+        float ry = lx * sinA + ly * cosA;
+
+        vertices[i].x = x + rx;
+        vertices[i].y = y + ry;
+        vertices[i].z = sprite.z;
+
+        vertices[i].r = sprite.color.r;
+        vertices[i].g = sprite.color.g;
+        vertices[i].b = sprite.color.b;
+        vertices[i].a = sprite.color.a;
+    }
 
     for (size_t i = 0; i < sizeof(vertices) / sizeof(vertices[0]); i++) {
         vertices[i].r = sprite.color.r;

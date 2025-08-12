@@ -7,6 +7,7 @@ typedef struct Sprite {
     float uv_top, uv_bottom, uv_left, uv_right;
     float x, y, z;
     float width, height;
+    float rotation;
     Color color;
 } Sprite;
 

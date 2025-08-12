@@ -38,6 +38,8 @@ inline UIElement animation_system_get_next_frame(
     result.sprite.x = lerp(animation->from.sprite.x, animation->to.sprite.x, factor);
     result.sprite.y = lerp(animation->from.sprite.y, animation->to.sprite.y, factor);
     result.sprite.z = lerp(animation->from.sprite.z, animation->to.sprite.z, factor);
+    result.sprite.rotation
+        = lerp(animation->from.sprite.rotation, animation->to.sprite.rotation, factor);
 
     result.sprite.color.r
         = lerp(animation->from.sprite.color.r, animation->to.sprite.color.r, factor);
