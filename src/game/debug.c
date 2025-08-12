@@ -93,12 +93,15 @@ void debug_render_hit_hitbox(World* world) {
 
     vec2s mouse = world->controller.mouse;
 
-    Color color = (Color) { 100.0f, 0.0f, 0.0f, 10.0f };
+    for (int i = 0; i < world->ui_elements.size; i++) {
+        vec_get_as(UIElement, ui_element, &world->ui_elements, i);
+        mesh_push_hitbox(&mesh, ui_element.hitbox, (Color) { 100.0f, 0.0f, 0.0f, 10.0f });
+    }
 
     UIElement topmost_ui_element;
     if (ui_get_topmost_hit(&world->ui_elements, mouse, &topmost_ui_element, NULL)) {
-        mesh_push_hitbox(&mesh, topmost_ui_element.hitbox, color);
-    }
+        mesh_push_hitbox(&mesh, topmost_ui_element.hitbox, (Color) { 0.0f, 0.0f, 100.0f, 10.0f });
+    } 
 
     upload_mesh(&gpu_mesh, &mesh);
     renderer_draw_mesh(&gpu_mesh, GL_LINES);

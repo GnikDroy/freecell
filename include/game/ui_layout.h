@@ -14,8 +14,13 @@ typedef struct UIElement UIElement;
 
 Rect compute_hitbox(Sprite* sprite);
 
-bool ui_find_in_layout(Vector* vec, SelectionLocation location, uint32_t card_index,
-    UIElement* dest, size_t* dest_idx);
+bool ui_find_in_layout(
+    Vector* vec,
+    SelectionLocation location,
+    uint32_t card_index,
+    UIElement* dest,
+    size_t* dest_idx
+);
 
 void ui_push_world(Vector* vec, World* world);
 

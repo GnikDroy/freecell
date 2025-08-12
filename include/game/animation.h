@@ -27,7 +27,9 @@ inline AnimationSystem animation_system_init(void) {
 inline void animation_system_free(AnimationSystem* system) { vec_free(&system->ui_animations); }
 
 inline UIElement animation_system_get_next_frame(
-    AnimationSystem* system, UIElementAnimation* animation) {
+    AnimationSystem* system,
+    UIElementAnimation* animation
+) {
     UIElement result = animation->from;
 
     float factor = (animation->duration > 0.0f) ? animation->elapsed / animation->duration : 1.0f;
@@ -46,10 +48,8 @@ inline UIElement animation_system_get_next_frame(
     result.sprite.color.a
         = lerp(animation->from.sprite.color.a, animation->to.sprite.color.a, factor);
 
-    result.sprite.width
-        = lerp(animation->from.sprite.width, animation->to.sprite.width, factor);
-    result.sprite.height
-        = lerp(animation->from.sprite.height, animation->to.sprite.height, factor);
+    result.sprite.width = lerp(animation->from.sprite.width, animation->to.sprite.width, factor);
+    result.sprite.height = lerp(animation->from.sprite.height, animation->to.sprite.height, factor);
 
     result.hitbox.x = lerp(animation->from.hitbox.x, animation->to.hitbox.x, factor);
     result.hitbox.y = lerp(animation->from.hitbox.y, animation->to.hitbox.y, factor);
@@ -70,7 +70,7 @@ inline void animation_system_update(AnimationSystem* system, float delta_time) {
 
     for (size_t i = 0; i < system->ui_animations.size;) {
         vec_get_as(UIElementAnimation, animation, &system->ui_animations, i);
-        animation.elapsed = clamp(animation.elapsed + delta_time, 0.0f, animation.duration);
+        animation.elapsed = clamp(animation.elapsed + delta_time, -INFINITY, animation.duration);
         vec_set(&system->ui_animations, i, &animation);
 
         if (animation.elapsed >= animation.duration) {
@@ -79,4 +79,24 @@ inline void animation_system_update(AnimationSystem* system, float delta_time) {
             i++;
         }
     }
+}
+
+inline bool animation_system_is_animated(AnimationSystem* anim_sys, UIElement* element) {
+    for (size_t i = 0; i < anim_sys->ui_animations.size; i++) {
+        vec_get_as(UIElementAnimation, anim, &anim_sys->ui_animations, i);
+        if (anim.to.type == element->type && element->type == UI_CARD) {
+            if (anim.to.meta.card.selection_location == element->meta.card.selection_location
+                && anim.to.meta.card.card_index == element->meta.card.card_index) {
+                return true;
+            }
+        }
+
+        if (anim.from.type == element->type && element->type == UI_CARD) {
+            if (anim.from.meta.card.selection_location == element->meta.card.selection_location
+                && anim.from.meta.card.card_index == element->meta.card.card_index) {
+                return true;
+            }
+        }
+    }
+    return false;
 }

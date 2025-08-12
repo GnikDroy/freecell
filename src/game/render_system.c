@@ -83,37 +83,25 @@ void mesh_push_ui_element(Mesh* mesh, World* world, UIElement* ui_element) {
     }
 }
 
-bool is_ui_element_animated(AnimationSystem* anim_sys, UIElement* element) {
-    for (size_t i = 0; i < anim_sys->ui_animations.size; i++) {
-        vec_get_as(UIElementAnimation, anim, &anim_sys->ui_animations, i);
-        if (anim.to.type == element->type && element->type == UI_CARD) {
-            if (anim.to.meta.card.selection_location == element->meta.card.selection_location
-                && anim.to.meta.card.card_index == element->meta.card.card_index) {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
 void mesh_push_ui_elements(Mesh* mesh, World* world, Vector* ui_elements) {
     AnimationSystem* anim_sys = &world->animation_system;
     for (size_t i = 0; i < ui_elements->size; i++) {
         vec_get_as(UIElement, element, ui_elements, i);
-        if (!is_ui_element_animated(anim_sys, &element)) {
+        if (!animation_system_is_animated(anim_sys, &element)) {
             mesh_push_ui_element(mesh, world, &element);
         }
     }
 }
 
-static void ui_push_animation(World* world) {
+void mesh_push_animations(Mesh* mesh, World* world) {
     // animate ui elements
     AnimationSystem* animation_system = &world->animation_system;
     for (int i = 0; i < animation_system->ui_animations.size; i++) {
         vec_get_as(UIElementAnimation, animation, &animation_system->ui_animations, i);
         UIElement ui_element = animation_system_get_next_frame(animation_system, &animation);
-        vec_push_back(&world->ui_elements, &animation.to);
-        vec_push_back(&world->ui_elements, &ui_element);
+        if (animation.elapsed > 0) {
+            mesh_push_ui_element(mesh, world, &ui_element);
+        }
     }
 }
 
@@ -181,12 +169,10 @@ void render_world(World* world) {
     // update ui elements state
     ui_update_element_states(world);
 
-    // push animation ui_elements
-    ui_push_animation(world);
-
     // create game mesh and upload to gpu
     mesh_clear(&world->game_mesh);
     mesh_push_ui_elements(&world->game_mesh, world, &world->ui_elements);
+    mesh_push_animations(&world->game_mesh, world);
     upload_mesh(&world->game_gpu_mesh, &world->game_mesh);
 
     // draw

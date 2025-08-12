@@ -24,6 +24,53 @@ static void controller_play_card_move_sound(World* world) {
     }
 }
 
+static void controller_animate_new_game(World* world) {
+    // Before new game ui_elements
+    AnimationSystem* animation_system = &world->animation_system;
+    animation_system->ui_animations.size = 0; // clear all other animations.
+
+    for (int i = 0; i < world->ui_elements.size; i++) {
+        vec_get_as(UIElement, to, &world->ui_elements, i);
+        UIElement from = to;
+        to.sprite.x = VIRTUAL_WIDTH / 2.0;
+        to.sprite.y = VIRTUAL_HEIGHT / 2.0;
+
+        if (to.type == UI_CARD) {
+            vec_push_back(
+                &animation_system->ui_animations,
+                &(UIElementAnimation) {
+                    .from = from,
+                    .to = to,
+                    .elapsed = 0.0f,
+                    .duration = 0.3f,
+                }
+            );
+        }
+    }
+
+    render_world(world);
+
+    // After new game ui_elements
+    for (int i = 0; i < world->ui_elements.size; i++) {
+        vec_get_as(UIElement, to, &world->ui_elements, i);
+        UIElement from = to;
+        from.sprite.x = VIRTUAL_WIDTH / 2.0;
+        from.sprite.y = VIRTUAL_HEIGHT / 2.0;
+
+        if (to.type == UI_CARD) {
+            vec_push_back(
+                &animation_system->ui_animations,
+                &(UIElementAnimation) {
+                    .from = from,
+                    .to = to,
+                    .elapsed = -0.3f,
+                    .duration = 0.3f,
+                }
+            );
+        }
+    }
+}
+
 static MoveResult controller_animated_move(World* world, Move move, float duration) {
     Controller* controller = &world->controller;
     AnimationSystem* animation_system = &world->animation_system;
@@ -268,6 +315,11 @@ void controller_smart_move(World* world) {
     UIElement topmost;
     size_t index;
     if (ui_get_topmost_hit(&world->ui_elements, mouse, &topmost, &index)) {
+        if (animation_system_is_animated(animation_system, &topmost)) {
+            // if we are clicking on an animated element, do nothing
+            return;
+        }
+
         if (topmost.type == UI_CARD) {
             Card card = topmost.meta.card.card;
             SelectionLocation location = topmost.meta.card.selection_location;
@@ -363,6 +415,7 @@ void controller_undo(World* world) {
     }
 
     if (game_undo(&world->game) == MOVE_SUCCESS) {
+        world->animation_system.ui_animations.size = 0;
         controller_play_card_move_sound(world);
     }
 }
@@ -371,12 +424,14 @@ void controller_new_game(World* world) {
     Controller* controller = &world->controller;
     world->animation_system.ui_animations.size = 0;
     game_new(&world->game);
+    controller_animate_new_game(world);
 }
 
 void controller_new_game_with_seed(World* world, uint32_t seed) {
     Controller* controller = &world->controller;
     world->animation_system.ui_animations.size = 0;
     game_new_from_seed(&world->game, seed);
+    controller_animate_new_game(world);
 }
 
 void controller_toggle_fullscreen(World* world) {
