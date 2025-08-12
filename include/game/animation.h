@@ -5,12 +5,19 @@
 #include "platform/window.h"
 #include "utils.h"
 
+typedef enum UIElementAnimationEndBehaviour {
+    ANIMATION_DELETE_ON_FINISH,
+    ANIMATION_STOP_ON_FINISH,
+    ANIMATION_LOOP,
+} UIElementAnimationEndBehaviour;
+
 typedef struct UIElementAnimation {
     UIElement from;
     UIElement to;
 
     float elapsed;
     float duration;
+    UIElementAnimationEndBehaviour behaviour;
 } UIElementAnimation;
 
 typedef struct AnimationSystem {
@@ -76,7 +83,14 @@ inline void animation_system_update(AnimationSystem* system, float delta_time) {
         vec_set(&system->ui_animations, i, &animation);
 
         if (animation.elapsed >= animation.duration) {
-            vec_delete(&system->ui_animations, i);
+            if (animation.behaviour == ANIMATION_DELETE_ON_FINISH) {
+                vec_delete(&system->ui_animations, i);
+            } else if (animation.behaviour == ANIMATION_STOP_ON_FINISH) {
+                i++;
+            } else {
+                animation.elapsed = 0.0f;
+                i++;
+            }
         } else {
             i++;
         }

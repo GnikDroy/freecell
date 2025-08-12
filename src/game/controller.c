@@ -35,7 +35,7 @@ static void controller_animate_new_game(World* world) {
         to.sprite.x = VIRTUAL_WIDTH / 2.0;
         to.sprite.y = VIRTUAL_HEIGHT / 2.0;
 
-        if (to.type == UI_CARD) {
+        if (to.type == UI_CARD && to.meta.card.card != NONE) {
             vec_push_back(
                 &animation_system->ui_animations,
                 &(UIElementAnimation) {
@@ -43,6 +43,7 @@ static void controller_animate_new_game(World* world) {
                     .to = to,
                     .elapsed = 0.0f,
                     .duration = 0.3f,
+                    .behaviour = ANIMATION_DELETE_ON_FINISH,
                 }
             );
         }
@@ -65,6 +66,7 @@ static void controller_animate_new_game(World* world) {
                     .to = to,
                     .elapsed = -0.3f,
                     .duration = 0.3f,
+                    .behaviour = ANIMATION_DELETE_ON_FINISH,
                 }
             );
         }
@@ -97,6 +99,7 @@ static MoveResult controller_animated_move(World* world, Move move, float durati
                     .to = to,
                     .elapsed = 0.0f,
                     .duration = duration,
+                    .behaviour = ANIMATION_DELETE_ON_FINISH,
                 }
             );
         }
