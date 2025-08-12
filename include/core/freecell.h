@@ -109,7 +109,6 @@ typedef struct Freecell {
     Card reserve[4];
     Card foundation[4];
     Cascade cascade[8];
-    uint32_t seed;
 } Freecell;
 
 typedef uint8_t SelectionLocation;

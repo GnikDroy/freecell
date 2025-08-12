@@ -407,7 +407,7 @@ static void ui_push_instructions(Vector* vec, World* world) {
 
 static void ui_push_game_info(Vector* vec, World* world) {
     APtr game_info
-        = format_game_info(world->game.freecell.seed, world->game.clock, world->game.move_count);
+        = format_game_info(world->game.seed, world->game.clock, world->game.move_count);
 
     float width, height;
     text_compute_size(

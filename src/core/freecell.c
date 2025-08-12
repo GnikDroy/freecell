@@ -121,7 +121,6 @@ bool cascade_is_descending(Cascade* cascade, size_t start_index) {
 
 Freecell freecell_init(uint32_t seed) {
     Freecell game = { 0 };
-    game.seed = seed;
 
     // Get a random deck
     Card deck[52];

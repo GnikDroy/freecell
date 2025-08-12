@@ -7,6 +7,7 @@
 
 typedef struct Game {
     Freecell freecell;
+    uint32_t seed;
     size_t move_count;
     Vector history;
     double clock;

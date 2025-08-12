@@ -393,8 +393,8 @@ static void controller_autocompleteable_game(World* world) {
     Controller* controller = &world->controller;
 
     // autocompleteable game for debug
+    world->game.seed = 0;
     Freecell* freecell = &world->game.freecell;
-    freecell->seed = 0;
 
     freecell->foundation[SPADES] = NONE;
     freecell->foundation[HEARTS] = NONE;
@@ -436,8 +436,8 @@ static void controller_fill_cascades(World* world) {
     Controller* controller = &world->controller;
 
     // make all cascades full for debugging view
+    world->game.seed = 0;
     Freecell* freecell = &world->game.freecell;
-    freecell->seed = 0;
 
     const int MAX_CASCADE_SIZE = sizeof(freecell->cascade[0].cards) / sizeof(Card);
     for (int j = 0; j < 8; j++) {

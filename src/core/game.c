@@ -18,8 +18,10 @@ static uint32_t get_initial_seed(void) {
 }
 
 Game game_init(void) {
+    uint32_t seed = get_initial_seed();
     Game game = {
-        .freecell = freecell_init(get_initial_seed()),
+        .freecell = freecell_init(seed),
+        .seed = seed,
         .move_count = 0,
         .history = vec_init(sizeof(Move)),
         .clock = 0,
@@ -30,7 +32,9 @@ Game game_init(void) {
 void game_free(Game* game) { vec_free(&game->history); }
 
 void game_new(Game* game) {
-    game->freecell = freecell_init(get_initial_seed());
+    uint32_t seed = get_initial_seed();
+    game->freecell = freecell_init(seed);
+    game->seed = seed;
     game->clock = 0;
     game->move_count = 0;
     game->history.size = 0;
@@ -38,6 +42,7 @@ void game_new(Game* game) {
 
 void game_new_from_seed(Game* game, uint32_t seed) {
     game->freecell = freecell_init(seed);
+    game->seed = seed;
     game->clock = 0;
     game->move_count = 0;
     game->history.size = 0;

@@ -1,5 +1,4 @@
 #pragma once
-#include <math.h>
 
 #include "core/vector.h"
 #include "game/ui_element.h"
