@@ -7,6 +7,8 @@
 #include "game/ui_sprites.h"
 #include "game/ui_element.h"
 
+const Color BACKGROUND_COLOR = (Color) { 20 / 256.0, 63 / 256.0, 23 / 256.0 };
+
 World world_init(GLFWwindow* window) {
     World world = { 0 };
     world.window = window;

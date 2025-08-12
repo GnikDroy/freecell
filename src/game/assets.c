@@ -1,5 +1,6 @@
 #include "game/assets.h"
 
+#include "rendering/image.h"
 #include "rendering/shader.h"
 #include "rendering/texture.h"
 
@@ -9,10 +10,10 @@
 Assets assets_init() {
     Assets assets;
 
-    assets.spritesheet
+    Image spritesheet
         = image_load_from_memory((const uint8_t*)MAIN_SPRITESHEET, MAIN_SPRITESHEET_SIZE, 4);
-
-    assets.spritesheet_texture = texture_init(&assets.spritesheet);
+    assets.spritesheet_texture = texture_init(&spritesheet);
+    image_free(&spritesheet);
 
     assets.main_shader = shader_init(MAIN_VERTEX_SHADER_SOURCE, MAIN_FRAGMENT_SHADER_SOURCE);
 
@@ -24,7 +25,6 @@ Assets assets_init() {
 }
 
 void assets_free(Assets* assets) {
-    image_free(&assets->spritesheet);
     texture_free(&assets->spritesheet_texture);
     shader_free(&assets->main_shader);
 }

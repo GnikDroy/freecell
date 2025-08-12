@@ -53,6 +53,12 @@ int main(void) {
         .on_cursor_position = input_on_cursor_position,
     });
 
+    // Clear screen immediately to avoid white flash of blindness
+    renderer_clear(BACKGROUND_COLOR);
+    glfwSwapBuffers(window);
+
+    window_maximize(window);
+
     gameloop(window);
 
     window_free(window);

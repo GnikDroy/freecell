@@ -14,6 +14,8 @@
 #include "game/assets.h"
 #include "game/controller.h"
 
+extern const Color BACKGROUND_COLOR;
+
 typedef struct World {
     GLFWwindow* window;
     Game game;

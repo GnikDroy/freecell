@@ -38,6 +38,8 @@ const char* window_get_clipboard(GLFWwindow* window);
 
 void window_toggle_fullscreen(GLFWwindow* window);
 
+void window_maximize(GLFWwindow* window);
+
 GLFWmonitor* window_get_current_monitor(GLFWwindow* window);
 
 void window_get_cursor_position(GLFWwindow* window, double* x, double* y);

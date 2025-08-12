@@ -84,7 +84,6 @@ GLFWwindow* window_init(WindowConfig config) {
     }
 
     glViewport(0, 0, (int32_t)config.width, (int32_t)config.height);
-    glEnable(GL_MULTISAMPLE);
     return window;
 }
 
@@ -117,6 +116,8 @@ void window_toggle_fullscreen(GLFWwindow* window) {
     }
 };
 
+void window_maximize(GLFWwindow* window) { glfwMaximizeWindow(window); }
+
 GLFWmonitor* window_get_current_monitor(GLFWwindow* window) { return glfwGetWindowMonitor(window); }
 
 void window_get_cursor_position(GLFWwindow* window, double* x, double* y) {
@@ -127,6 +128,4 @@ int window_get_mouse_button_state(GLFWwindow* window, int button) {
     return glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
 }
 
-void event_post_empty() {
-    return glfwPostEmptyEvent();
-}
+void event_post_empty() { return glfwPostEmptyEvent(); }

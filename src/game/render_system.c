@@ -11,7 +11,6 @@
 #include "rendering/renderer.h"
 #include "rendering/shader.h"
 
-#include "game/constants.h"
 #include "game/debug.h"
 #include "game/ui_element.h"
 #include "game/ui_layout.h"
@@ -158,13 +157,23 @@ void mesh_push_text(Mesh* mesh, World* world, UIElement* ui_element) {
     }
 }
 
+static int set_state = false;
+static void render_set_static_state_once(World* world) {
+    if (!set_state) {
+        set_state = true;
+        renderer_bind_texture(0, GL_TEXTURE_2D, world->assets.spritesheet_texture);
+        renderer_set_shader(world->assets.main_shader);
+        shader_set_mat4(world->assets.main_shader, "view", (const float*)world->camera.view);
+        shader_set_mat4(
+            world->assets.main_shader,
+            "projection",
+            (const float*)world->camera.projection
+        );
+        shader_set_int(world->assets.main_shader, "spritesheet", 0);
+    }
+}
+
 void render_world(World* world) {
-    const Color clear_color = { 20 / 256.0, 63 / 256.0, 23 / 256.0 };
-
-    renderer_clear(clear_color);
-
-    renderer_bind_texture(0, GL_TEXTURE_2D, world->assets.spritesheet_texture);
-
     // layout the world
     world->ui_elements.size = 0;
     ui_push_world(&world->ui_elements, world);
@@ -180,16 +189,9 @@ void render_world(World* world) {
     mesh_push_ui_elements(&world->game_mesh, world, &world->ui_elements);
     upload_mesh(&world->game_gpu_mesh, &world->game_mesh);
 
-    // set shaders draw the mesh
-    renderer_set_shader(world->assets.main_shader);
-    shader_set_mat4(world->assets.main_shader, "view", (const float*)world->camera.view);
-    shader_set_mat4(
-        world->assets.main_shader,
-        "projection",
-        (const float*)world->camera.projection
-    );
-    shader_set_int(world->assets.main_shader, "spritesheet", 0);
-
+    // draw
+    renderer_clear(BACKGROUND_COLOR);
+    render_set_static_state_once(world);
     renderer_draw_mesh(&world->game_gpu_mesh, GL_TRIANGLES);
 
 #ifdef FREECELL_DEBUG

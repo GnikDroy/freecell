@@ -67,7 +67,7 @@ void upload_mesh(GPUMesh* gpu_mesh, Mesh* mesh) {
         GL_ARRAY_BUFFER,
         mesh->vertices.size * mesh->vertices.elem_size,
         mesh->vertices.data,
-        GL_STATIC_DRAW
+        GL_DYNAMIC_DRAW
     );
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gpu_mesh->EBO);
@@ -75,7 +75,7 @@ void upload_mesh(GPUMesh* gpu_mesh, Mesh* mesh) {
         GL_ELEMENT_ARRAY_BUFFER,
         mesh->indices.size * mesh->indices.elem_size,
         mesh->indices.data,
-        GL_STATIC_DRAW
+        GL_DYNAMIC_DRAW
     );
     glBindVertexArray(0);
     gpu_mesh->index_count = mesh->indices.size;
