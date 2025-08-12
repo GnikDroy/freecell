@@ -76,56 +76,6 @@ void mesh_push_sprite(Mesh* mesh, Sprite sprite) {
     }
 }
 
-void render_background(World* world) {
-    // clang-format off
-    Vertex vertices[4] = {
-        {
-            .x = 0, .y = 0, .z = 0,
-            .r = 1, .g = 1, .b = 1, .a = 1,
-            .u = 0, .v = 0
-        }, // Top-left
-        {
-            .x = 0, .y = VIRTUAL_HEIGHT, .z = 0,
-            .r = 1, .g = 1, .b = 1, .a = 1,
-            .u = 0, .v = 1
-        }, // Bottom-left
-        {
-            .x = VIRTUAL_WIDTH, .y = VIRTUAL_HEIGHT, .z = 0,
-            .r = 1, .g = 1, .b = 1, .a = 1,
-            .u = 1, .v = 1
-        }, // Bottom-right
-        {
-            .x = VIRTUAL_WIDTH, .y = 0, .z = 0,
-            .r = 1, .g = 1, .b = 1, .a = 1,
-            .u = 1, .v = 0
-        }, // Top-right
-    };
-    // clang-format on
-
-    mesh_clear(&world->game_mesh);
-    for (int i = 0; i < 4; i++) {
-        vec_push_back(&world->game_mesh.vertices, vertices + i);
-    }
-
-    uint32_t indices[] = { 0, 1, 2, 0, 2, 3 };
-
-    for (size_t i = 0; i < sizeof(indices) / sizeof(indices[0]); i++) {
-        vec_push_back(&world->game_mesh.indices, indices + i);
-    }
-
-    upload_mesh(&world->game_gpu_mesh, &world->game_mesh);
-
-    renderer_set_shader(world->assets.background_shader);
-    shader_set_mat4(world->assets.background_shader, "view", (const float*)world->camera.view);
-    shader_set_mat4(
-        world->assets.background_shader,
-        "projection",
-        (const float*)world->camera.projection
-    );
-
-    renderer_draw_mesh(&world->game_gpu_mesh, GL_TRIANGLES);
-}
-
 void mesh_push_ui_element(Mesh* mesh, World* world, UIElement* ui_element) {
     if (ui_element->type == UI_TEXT) {
         mesh_push_text(mesh, world, ui_element);
@@ -209,13 +159,11 @@ void mesh_push_text(Mesh* mesh, World* world, UIElement* ui_element) {
 }
 
 void render_world(World* world) {
-    const Color clear_color = { 0 };
+    const Color clear_color = { 20 / 256.0, 63 / 256.0, 23 / 256.0 };
+
     renderer_clear(clear_color);
 
     renderer_bind_texture(0, GL_TEXTURE_2D, world->assets.spritesheet_texture);
-
-    // renders the background
-    render_background(world);
 
     // layout the world
     world->ui_elements.size = 0;

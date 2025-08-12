@@ -18,7 +18,7 @@ void gameloop(GLFWwindow* window) {
     double time = glfwGetTime();
     while (!glfwWindowShouldClose(window)) {
         glfwSwapBuffers(window);
-        glfwPollEvents();
+        glfwWaitEventsTimeout(0.2f); // only 5fps if no events are received
 
         double dt = glfwGetTime() - time;
 

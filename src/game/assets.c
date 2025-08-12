@@ -20,13 +20,6 @@ Assets assets_init() {
         exit(EXIT_FAILURE);
     }
 
-    assets.background_shader
-        = shader_init(BACKGROUND_VERTEX_SHADER_SOURCE, BACKGROUND_FRAGMENT_SHADER_SOURCE);
-
-    if (assets.background_shader == 0) {
-        exit(EXIT_FAILURE);
-    }
-
     return assets;
 }
 
@@ -34,5 +27,4 @@ void assets_free(Assets* assets) {
     image_free(&assets->spritesheet);
     texture_free(&assets->spritesheet_texture);
     shader_free(&assets->main_shader);
-    shader_free(&assets->background_shader);
 }

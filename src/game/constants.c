@@ -19,14 +19,6 @@ const char MAIN_FRAGMENT_SHADER_SOURCE[] = {
     '\0'
 };
 
-const char BACKGROUND_VERTEX_SHADER_SOURCE[] = {
-#embed "shaders/background_vs.glsl"
-};
-
-const char BACKGROUND_FRAGMENT_SHADER_SOURCE[] = {
-#embed "shaders/background_fs.glsl"
-};
-
 const char CARD_MOVE_SOUND[] = {
 #embed "assets/card_move.wav"
 };
