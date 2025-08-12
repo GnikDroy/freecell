@@ -1,8 +1,9 @@
 #pragma once
+#include <math.h>
 
 #include "core/vector.h"
 #include "game/ui_element.h"
-#include <math.h>
+#include "utils.h"
 
 typedef struct UIElementAnimation {
     UIElement from;
@@ -24,22 +25,6 @@ inline AnimationSystem animation_system_init(void) {
 }
 
 inline void animation_system_free(AnimationSystem* system) { vec_free(&system->ui_animations); }
-
-inline float lerp(float a, float b, float t) { return a + (b - a) * t; }
-
-inline float clamp(float value, float min, float max) {
-    if (value < min)
-        return min;
-    if (value > max)
-        return max;
-    return value;
-}
-
-inline float ease_in_out_cubic(float t) {
-    return t < 0.5f
-        ? 4.0f * t * t * t
-        : 1.0f - powf(-2.0f * t + 2.0f, 3.0f) / 2.0f;
-}
 
 inline UIElement animation_system_get_next_frame(
     AnimationSystem* system, UIElementAnimation* animation) {

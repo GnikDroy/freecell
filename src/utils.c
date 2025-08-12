@@ -77,3 +77,20 @@ vec2s screen_to_world(
 
     return (vec2s) { .x = world[0], .y = world[1] };
 }
+
+float lerp(float a, float b, float t) { return a + (b - a) * t; }
+
+float clamp(float value, float min, float max) {
+    if (value < min)
+        return min;
+    if (value > max)
+        return max;
+    return value;
+}
+
+float ease_in_out_cubic(float t) {
+    return t < 0.5f
+        ? 4.0f * t * t * t
+        : 1.0f - powf(-2.0f * t + 2.0f, 3.0f) / 2.0f;
+}
+
