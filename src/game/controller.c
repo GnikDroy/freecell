@@ -24,6 +24,138 @@ static void controller_play_card_move_sound(World* world) {
     }
 }
 
+static void controller_animate_game_over(World* world) {
+    AnimationSystem* animation_system = &world->animation_system;
+
+    // Don't add too many animations if there are already animations running
+    if (world->animation_system.ui_animations.size > 2) {
+        return;
+    } else if (world->animation_system.ui_animations.size > 0) {
+        float progress_threshold = 0.5;
+        vec_get_as(
+            UIElementAnimation,
+            anim,
+            &world->animation_system.ui_animations,
+            world->animation_system.ui_animations.size - 1
+        );
+        if (anim.elapsed / anim.duration < progress_threshold) {
+            return;
+        }
+    }
+
+    // nothing left in foundation
+    bool found = false;
+    for (int i = 0; i < 4; i++) {
+        if (world->game.freecell.foundation[0] != NONE) {
+            found = true;
+        }
+    }
+    if (!found)
+        return;
+
+    Freecell* freecell = &world->game.freecell;
+
+    // find largest ranked foundation.
+    int idx = 0;
+    int largest_rank = -1;
+    for (int i = 3; i >= 0; i--) {
+        if (freecell->foundation[i] != NONE && get_rank(freecell->foundation[i]) > largest_rank) {
+            largest_rank = get_rank(freecell->foundation[i]);
+            idx = i;
+        }
+    }
+
+    UIElement foundation_item;
+    if (ui_find_in_layout(
+            &world->ui_elements,
+            FOUNDATION_SPADES + idx,
+            0,
+            &foundation_item,
+            NULL
+        )) {
+        Card card = world->game.freecell.foundation[idx];
+        Rank rank = get_rank(card);
+        Card new_card = (rank == ACE) ? NONE : get_card(rank - 1, get_suit(card));
+        world->game.freecell.foundation[idx] = new_card;
+
+        UIElement* elem = &foundation_item;
+        float duration = 4.0f;
+
+        if (new_card != NONE) {
+            UIElementAnimation static_animation = { 0 };
+            static_animation.duration = duration;
+            static_animation.behaviour = ANIMATION_DELETE_ON_FINISH;
+            Sprite sprite = world->deck[new_card];
+            sprite.x = elem->sprite.x;
+            sprite.y = elem->sprite.y;
+            sprite.z = 0.0f;
+            static_animation.from = (UIElement) {
+                .type = UI_CARD,
+                .sprite = sprite,
+                .hitbox = compute_hitbox(&sprite),
+                .meta.card = {
+                    .card = card,
+                    .selection_location = elem->meta.card.selection_location,
+                    .card_index = 0,
+                    .state = CARD_UI_STATE_NORMAL,
+                },
+            };
+
+            static_animation.to = static_animation.from;
+            vec_push_back(&animation_system->ui_animations, &static_animation);
+        }
+
+        // actual animation
+        int x_offset = random() * VIRTUAL_WIDTH / 5.0f;
+        int y_offset = 2.0f * VIRTUAL_HEIGHT / 3.0f + random() * (VIRTUAL_HEIGHT / 3.0f);
+
+        Sprite sprite = world->deck[card];
+        sprite.x = elem->sprite.x;
+        sprite.y = elem->sprite.y;
+        sprite.z = 0.0f;
+
+        UIElementAnimation animation = { 0 };
+        animation.duration = duration;
+        animation.behaviour = ANIMATION_DELETE_ON_FINISH;
+        animation.from = (UIElement) {
+                .type = UI_CARD,
+                .sprite = sprite,
+                .hitbox = compute_hitbox(&sprite),
+                .meta.card = {
+                    .card = card,
+                    .selection_location = elem->meta.card.selection_location,
+                    .card_index = 0,
+                    .state = CARD_UI_STATE_NORMAL,
+                },
+            };
+
+        Sprite to = sprite;
+        to.color.r = 0.4 + random() * 0.6;
+        to.color.g = 0.4 + random() * 0.6;
+        to.color.b = 0.4 + random() * 0.6;
+        to.color.a = 0.0f;
+        to.x -= x_offset;
+        to.y += y_offset;
+        to.rotation = 2 * M_PI * (random() > 0.5f ? 1.0f : -1.0f) + M_PI * random();
+        to.width *= 2;
+        to.height *= 2;
+
+        animation.to = (UIElement) {
+                .type = UI_CARD,
+                .sprite = to,
+                .hitbox = compute_hitbox(&to),
+                .meta.card = {
+                    .card = card,
+                    .selection_location = elem->meta.card.selection_location,
+                    .card_index = 0,
+                    .state = CARD_UI_STATE_NORMAL,
+                },
+            };
+
+        vec_push_back(&animation_system->ui_animations, &animation);
+    }
+}
+
 static void controller_animate_new_game(World* world) {
     // Before new game ui_elements
     AnimationSystem* animation_system = &world->animation_system;
@@ -193,6 +325,10 @@ void controller_update(World* world, double dt) {
     animation_system_update(&world->animation_system, dt);
     render_world(world);
     controller_autocomplete_game(world);
+
+    if (freecell_game_over(&world->game.freecell)) {
+        controller_animate_game_over(world);
+    }
 }
 
 void controller_click(World* world) {

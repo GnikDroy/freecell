@@ -4,6 +4,8 @@
 
 #include "game/constants.h"
 
+float random() { return (float)rand() / RAND_MAX; }
+
 uint64_t time_millis() {
     struct timespec now;
     timespec_get(&now, TIME_UTC);
@@ -89,8 +91,5 @@ float clamp(float value, float min, float max) {
 }
 
 float ease_in_out_cubic(float t) {
-    return t < 0.5f
-        ? 4.0f * t * t * t
-        : 1.0f - powf(-2.0f * t + 2.0f, 3.0f) / 2.0f;
+    return t < 0.5f ? 4.0f * t * t * t : 1.0f - powf(-2.0f * t + 2.0f, 3.0f) / 2.0f;
 }
-

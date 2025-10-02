@@ -10,15 +10,15 @@
 
 static int seed = 1;
 
-inline int microsoft_freecell_rand(void) {
+static int microsoft_freecell_rand(void) {
     uint32_t mask = (1U << 31) - 1;
     seed = (seed * 214013 + 2531011) & mask;
     return seed >> 16;
 }
 
-inline void microsoft_freecell_srand(uint32_t x) { seed = x; }
+static void microsoft_freecell_srand(uint32_t x) { seed = x; }
 
-inline void microsoft_freecell_shuffle(Card cards[]) {
+static void microsoft_freecell_shuffle(Card cards[]) {
 
     // clang-format off
     Card initial_deck[] = {
@@ -155,10 +155,7 @@ bool freecell_game_over(Freecell* freecell) {
         }
     }
 
-    return freecell->foundation[SPADES] == KING_SPADES
-        && freecell->foundation[HEARTS] == KING_HEARTS
-        && freecell->foundation[DIAMONDS] == KING_DIAMONDS
-        && freecell->foundation[CLUBS] == KING_CLUBS;
+    return true;
 }
 
 bool freecell_is_trivially_solved(Freecell* freecell) {

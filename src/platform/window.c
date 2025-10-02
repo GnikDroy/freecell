@@ -114,7 +114,7 @@ void window_toggle_fullscreen(GLFWwindow* window) {
         int ypos = (screenHeight - VIRTUAL_HEIGHT) / 2;
         glfwSetWindowMonitor(window, NULL, xpos, ypos, VIRTUAL_WIDTH, VIRTUAL_HEIGHT, 0);
     }
-};
+}
 
 void window_maximize(GLFWwindow* window) { glfwMaximizeWindow(window); }
 
@@ -128,4 +128,4 @@ int window_get_mouse_button_state(GLFWwindow* window, int button) {
     return glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
 }
 
-void event_post_empty() { return glfwPostEmptyEvent(); }
+void event_post_empty() { glfwPostEmptyEvent(); }

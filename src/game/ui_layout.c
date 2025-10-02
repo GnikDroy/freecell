@@ -30,7 +30,7 @@ bool ui_find_in_layout(
     for (size_t i = 0; i < ui_elements->size; i++) {
         vec_get_as(UIElement, element, ui_elements, i);
         if (element.type == UI_CARD && element.meta.card.selection_location == location
-            && element.meta.card.card_index == card_index) {
+            && element.meta.card.card_index == (int) card_index) {
             if (dest != NULL) {
                 *dest = element;
             }
@@ -173,6 +173,24 @@ static void ui_push_cascade(Vector* vec, World* world, int cascade_index, int x_
     const int MARGIN_Y = deck[NONE].height * 1.5f;
     const int OVERLAP = floor(deck[NONE].height * 0.23);
 
+    // PLACEHOLDER WHEN NO CARD IS PRESENT
+    Sprite none_card = deck[NONE];
+    none_card.x = x_offset;
+    none_card.y = none_card.height / 2.f + MARGIN_Y;
+    none_card.z = 0.0f;
+    none_card.color.a = 0.5f;
+    vec_push_back(vec, &(UIElement) {
+            .type = UI_CARD_PLACEHOLDER,
+            .sprite = none_card,
+            .hitbox = empty_hitbox(),
+            .meta.card = {
+                .card = NONE,
+                .selection_location = CASCADE_1 + cascade_index,
+                .card_index = 0,
+                .state = CARD_UI_STATE_NORMAL,
+            },
+        });
+
     // If the cascade is empty, we add a UIElement with a placeholder card.
     // So that cards can be placed here
     // This card can be interacted with, therefore it has a type UI_CARD
@@ -182,8 +200,7 @@ static void ui_push_cascade(Vector* vec, World* world, int cascade_index, int x_
         sprite.x = x_offset;
         sprite.y = sprite.height / 2.f + MARGIN_Y;
         sprite.z = 0.0f;
-
-        sprite.color.a = 0.5f;
+        sprite.color.a = 0.0f;
 
         UIElement ui_element = {
         .type = UI_CARD,
@@ -289,7 +306,6 @@ static void text_compute_size(
     float line_height = font_size * line_height_scaling;
 
     float offset_x = 0;
-    float offset_y = 0;
 
     float max_width = 0;
 

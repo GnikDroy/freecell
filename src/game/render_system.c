@@ -105,7 +105,7 @@ void mesh_push_ui_elements(Mesh* mesh, World* world, Vector* ui_elements) {
 void mesh_push_animations(Mesh* mesh, World* world) {
     // animate ui elements
     AnimationSystem* animation_system = &world->animation_system;
-    for (int i = 0; i < animation_system->ui_animations.size; i++) {
+    for (size_t i = 0; i < animation_system->ui_animations.size; i++) {
         vec_get_as(UIElementAnimation, animation, &animation_system->ui_animations, i);
         UIElement ui_element = animation_system_get_next_frame(animation_system, &animation);
         if (animation.elapsed > 0) {
