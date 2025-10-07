@@ -18,7 +18,8 @@ void gameloop(GLFWwindow* window) {
     double time = glfwGetTime();
     while (!glfwWindowShouldClose(window)) {
         glfwSwapBuffers(window);
-        glfwWaitEventsTimeout(0.2f); // only 5fps if no events are received
+        // wait until the next nearest second
+        glfwWaitEventsTimeout(1 - fmod(world.game.clock, 1.0));
 
         double dt = glfwGetTime() - time;
 
@@ -66,8 +67,14 @@ int main(void) {
 }
 
 #ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+typedef wchar_t WCHAR;
+typedef WCHAR* LPWSTR;
+typedef void* HINSTANCE;
+typedef int INT;
+#define APIENTRY __stdcall
+
+// wWinMain prototype
+int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, INT nCmdShow);
 
 int APIENTRY
 wWinMain(_In_ HINSTANCE hinstance, _In_opt_ HINSTANCE opt, _In_ LPWSTR cmd, _In_ int i) {

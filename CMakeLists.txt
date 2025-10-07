@@ -31,11 +31,11 @@ function(glfw_build)
     set(USE_MSVC_RUNTIME_LIBRARY_DLL OFF CACHE INTERNAL "Use MSVC Runtime")
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded" CACHE STRING "" FORCE)
     FetchContent_Declare(
-            glfw
-            GIT_REPOSITORY https://github.com/glfw/glfw
-            GIT_TAG        3.4
-            GIT_SHALLOW 1
-            GIT_PROGRESS 1
+        glfw
+        GIT_REPOSITORY https://github.com/glfw/glfw
+        GIT_TAG        3.4
+        GIT_SHALLOW 1
+        GIT_PROGRESS 1
     )
 
     FetchContent_MakeAvailable(glfw)
@@ -98,11 +98,11 @@ cglm_build()
 # Setup miniaudio
 function(miniaudio_build)
     FetchContent_Declare(
-      miniaudio
-      GIT_REPOSITORY https://github.com/mackron/miniaudio.git
-      GIT_TAG        0.11.22
-      GIT_SHALLOW 1
-      GIT_PROGRESS 1
+        miniaudio
+        GIT_REPOSITORY https://github.com/mackron/miniaudio.git
+        GIT_TAG        0.11.22
+        GIT_SHALLOW 1
+        GIT_PROGRESS 1
     )
     FetchContent_MakeAvailable(miniaudio)
     target_compile_definitions(miniaudio PRIVATE MA_NO_ENCODING MA_NO_FLAC MA_NO_MP3 MA_NO_GENERATION)
