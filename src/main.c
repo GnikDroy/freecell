@@ -18,8 +18,7 @@ void gameloop(GLFWwindow* window) {
     double time = glfwGetTime();
     while (!glfwWindowShouldClose(window)) {
         glfwSwapBuffers(window);
-        // wait until the next nearest second
-        glfwWaitEventsTimeout(1 - fmod(world.game.clock, 1.0));
+        glfwWaitEventsTimeout(0.2f); // only 5fps if no events are received
 
         double dt = glfwGetTime() - time;
 

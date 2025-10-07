@@ -1,7 +1,6 @@
+#include <stddef.h>
+
 #include <glad/glad.h>
-
-#include <GLFW/glfw3.h>
-
 #include "rendering/mesh.h"
 
 Mesh mesh_init() {
