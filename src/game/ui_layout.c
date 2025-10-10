@@ -1,8 +1,9 @@
 #include "game/ui_layout.h"
 
 #include "core/aalloc.h"
-#include "core/game.h"
 #include "core/vector.h"
+
+#include "game/game.h"
 #include "game/constants.h"
 #include "game/ui_element.h"
 #include "game/ui_sprites.h"
@@ -30,7 +31,7 @@ bool ui_find_in_layout(
     for (size_t i = 0; i < ui_elements->size; i++) {
         vec_get_as(UIElement, element, ui_elements, i);
         if (element.type == UI_CARD && element.meta.card.selection_location == location
-            && element.meta.card.card_index == (int) card_index) {
+            && element.meta.card.card_index == (int)card_index) {
             if (dest != NULL) {
                 *dest = element;
             }

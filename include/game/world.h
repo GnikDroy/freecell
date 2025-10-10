@@ -4,9 +4,9 @@
 #include <cglm/struct.h>
 #include <miniaudio.h>
 
-#include "core/game.h"
-
+#include "game/game.h"
 #include "game/animation.h"
+
 #include "rendering/camera.h"
 #include "rendering/mesh.h"
 #include "rendering/sprite.h"

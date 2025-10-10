@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "core/freecell.h"
+#include "game/freecell.h"
 
 void print_test_result(const char* test_name, bool passed) {
     printf("%s: %s\n", test_name, passed ? "PASS" : "FAIL");

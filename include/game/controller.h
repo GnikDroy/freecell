@@ -2,7 +2,7 @@
 
 #include <stdbool.h>
 
-#include "core/game.h"
+#include "game/game.h"
 #include "game/input_action.h"
 
 #include <cglm/struct.h>

@@ -3,8 +3,7 @@
 #include <GLFW/glfw3.h>
 
 #include "game/ui_state.h"
-
-#include "core/game.h"
+#include "game/game.h"
 #include "game/ui_element.h"
 #include "game/ui_layout.h"
 #include "game/world.h"

@@ -132,10 +132,10 @@ add_executable(
     src/game/ui_sprites.c
     src/game/ui_state.c
     src/game/world.c
+    src/game/freecell.c
+    src/game/game.c
 
     src/core/aalloc.c
-    src/core/freecell.c
-    src/core/game.c
     src/core/vector.c
     src/core/log.c
     src/core/stb_image.c
@@ -165,7 +165,7 @@ set_target_properties(freecell PROPERTIES OUTPUT_NAME "Freecell")
 add_executable(
     tests 
     src/test/test.c 
-    src/core/freecell.c
+    src/game/freecell.c
 )
 
 target_link_libraries(tests User32.lib)

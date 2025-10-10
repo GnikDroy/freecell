@@ -6,7 +6,7 @@
 #include <string.h>
 #include <time.h>
 
-#include "core/game.h"
+#include "game/game.h"
 
 static int seed = 1;
 

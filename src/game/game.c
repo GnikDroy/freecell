@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <time.h>
 
-#include "core/game.h"
+#include "game/game.h"
 
 static uint32_t get_initial_seed(void) {
     struct timespec now;

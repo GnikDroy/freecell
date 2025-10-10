@@ -1,5 +1,8 @@
 #pragma once
 #include "core/vector.h"
+#include "rendering/primitives.h"
+#include "rendering/sprite.h"
+
 #include <stdint.h>
 
 #pragma pack(push, 1)
@@ -28,8 +31,20 @@ void mesh_clear(Mesh* mesh);
 
 void mesh_free(Mesh* mesh);
 
+void mesh_push_line(Mesh* mesh, Line line);
+
+void mesh_push_triangle(Mesh* mesh, Triangle triangle);
+
+void mesh_push_quad(Mesh* mesh, Quad quad);
+
+void mesh_push_ellipse(Mesh* mesh, Ellipse ellipse);
+
+void mesh_push_circle(Mesh* mesh, Circle circle);
+
+void mesh_push_sprite(Mesh* mesh, Sprite sprite);
+
 GPUMesh gpu_mesh_init();
 
 void gpu_mesh_free(GPUMesh* mesh);
 
-void upload_mesh(GPUMesh* gpu_mesh, Mesh* mesh);
+void gpu_mesh_upload(GPUMesh* gpu_mesh, Mesh* mesh);

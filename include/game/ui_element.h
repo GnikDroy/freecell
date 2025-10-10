@@ -1,6 +1,7 @@
 #pragma once
 #include "core/aalloc.h"
-#include "core/game.h"
+
+#include "game/game.h"
 
 #include "rendering/rect.h"
 #include "rendering/sprite.h"

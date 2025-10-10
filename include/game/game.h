@@ -2,7 +2,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "core/freecell.h"
+#include "game/freecell.h"
 #include "core/vector.h"
 
 typedef struct Game {

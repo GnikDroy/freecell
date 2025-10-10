@@ -1,9 +1,9 @@
 #include "game/controller.h"
 
 #include "core/aalloc.h"
-#include "core/game.h"
-
 #include "core/vector.h"
+
+#include "game/game.h"
 #include "game/animation.h"
 #include "game/input_action.h"
 #include "game/ui_element.h"
