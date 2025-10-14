@@ -23,7 +23,7 @@ typedef struct World {
     Camera camera;
     Assets assets;
 
-    Sprite deck[53];
+    Sprite deck[54];
     Sprite characters[256];
 
     Sprite button_undo;

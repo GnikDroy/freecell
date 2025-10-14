@@ -9,7 +9,7 @@
 
 GLFWmonitor* get_primary_monitor();
 
-typedef struct WindowConfig_t {
+typedef struct WindowConfig {
     size_t width;
     size_t height;
     size_t min_width;

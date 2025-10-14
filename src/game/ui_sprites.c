@@ -94,7 +94,13 @@ static Sprite get_glyph_sprite_at_idx(int row, int col) {
 }
 
 static void populate_card_sprites(Sprite cards[]) {
-    cards[0] = get_card_sprite_at_idx(3, 13); // Placeholder for empty card
+    cards[BACK] = get_card_sprite_at_idx(3, 13); // Placeholder for back card
+    // Placeholder for empty card (uvs are inf, so just color matters)
+    cards[NONE] = get_card_sprite_at_idx(3, 13);
+    cards[NONE].uv_top = INFINITY;
+    cards[NONE].uv_bottom = INFINITY;
+    cards[NONE].uv_left = INFINITY;
+    cards[NONE].uv_right = INFINITY;
 
     for (int col = 0; col < CARD_COL; col++) {
         for (int row = 0; row < CARD_ROW; row++) {

@@ -60,7 +60,7 @@ static void ui_push_freecells(Vector* vec, World* world) {
         none_card.x = (none_card.width + GAP) * i + none_card.width / 2.f + MARGIN_X;
         none_card.y = none_card.height / 2.f + MARGIN_Y;
         none_card.z = 0.0f;
-        none_card.color.a = 0.5f;
+        none_card.color.a = 0.3f;
         vec_push_back(vec, &(UIElement) {
             .type = UI_CARD_PLACEHOLDER,
             .sprite = none_card,
@@ -179,7 +179,7 @@ static void ui_push_cascade(Vector* vec, World* world, int cascade_index, int x_
     none_card.x = x_offset;
     none_card.y = none_card.height / 2.f + MARGIN_Y;
     none_card.z = 0.0f;
-    none_card.color.a = 0.5f;
+    none_card.color.a = 0.3f;
     vec_push_back(vec, &(UIElement) {
             .type = UI_CARD_PLACEHOLDER,
             .sprite = none_card,
