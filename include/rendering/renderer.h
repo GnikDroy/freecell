@@ -7,13 +7,7 @@
 #include "rendering/color.h"
 #include "rendering/mesh.h"
 
-typedef struct {
-    char _; // dummy field to ensure this struct is not empty
-} Renderer;
-
-Renderer renderer_init(void);
-
-void renderer_free(Renderer* renderer);
+void renderer_init(void);
 
 void renderer_clear(Color clear_color);
 

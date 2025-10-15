@@ -11,7 +11,6 @@
 
 void gameloop(GLFWwindow* window) {
     World world = world_init(window);
-    Renderer renderer = renderer_init();
 
     glfwSetWindowUserPointer(window, &world);
 
@@ -29,8 +28,6 @@ void gameloop(GLFWwindow* window) {
         aclear(); // Clear the arena allocator for the next frame
     }
     afree(); // Free the arena allocator at the end
-
-    renderer_free(&renderer);
     world_free(&world);
 }
 
@@ -54,6 +51,7 @@ int main(void) {
     });
 
     // Clear screen immediately to avoid white flash of blindness
+    renderer_init();
     renderer_clear(BACKGROUND_COLOR);
     glfwSwapBuffers(window);
 

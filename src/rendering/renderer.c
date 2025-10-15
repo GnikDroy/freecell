@@ -1,7 +1,7 @@
 #include "rendering/renderer.h"
 #include "rendering/mesh.h"
 
-Renderer renderer_init() {
+void renderer_init() {
 #ifdef FREECELL_DEBUG
     // glEnable(GL_DEBUG_OUTPUT);
     // glDebugMessageCallback(openglDebugCallback, NULL);
@@ -18,12 +18,7 @@ Renderer renderer_init() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glBlendColor(1.0f, 1.0f, 1.0f, 1.0f);
-
-    Renderer renderer = { 0 };
-    return renderer;
 }
-
-void renderer_free(Renderer* renderer) { (void)renderer; }
 
 void renderer_clear(Color color) {
     glClearColor(color.r, color.g, color.b, color.a);
