@@ -48,6 +48,7 @@ function(glad_build)
     set(GLAD_PROFILE    "core"  CACHE INTERNAL "")
     set(GLAD_API        "gl="   CACHE INTERNAL "")
     set(GLAD_GENERATOR  "c"     CACHE INTERNAL "")
+    set(GLAD_EXTENSIONS "GL_ARB_texture_storage"    CACHE INTERNAL "")
     FetchContent_Declare(
         glad
         GIT_REPOSITORY https://github.com/Dav1dde/glad

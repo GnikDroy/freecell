@@ -26,7 +26,21 @@ uint32_t texture_init(Image* image) {
 
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
-    glTexStorage2D(GL_TEXTURE_2D, 1, internalFormat, image->width, image->height);
+    if (GLAD_GL_ARB_texture_storage) {
+        glTexStorage2D(GL_TEXTURE_2D, 1, internalFormat, image->width, image->height);
+    } else {
+        glTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            internalFormat,
+            image->width,
+            image->height,
+            0,
+            format,
+            GL_UNSIGNED_BYTE,
+            NULL
+        );
+    }
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexSubImage2D(
@@ -45,5 +59,5 @@ uint32_t texture_init(Image* image) {
 
 void texture_free(uint32_t* texture) {
     glDeleteTextures(1, texture);
-    texture = NULL;
+    *texture = 0;
 }

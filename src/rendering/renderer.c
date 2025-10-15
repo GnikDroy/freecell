@@ -3,8 +3,8 @@
 
 Renderer renderer_init() {
 #ifdef FREECELL_DEBUG
-    glEnable(GL_DEBUG_OUTPUT);
-    glDebugMessageCallback(openglDebugCallback, NULL);
+    // glEnable(GL_DEBUG_OUTPUT);
+    // glDebugMessageCallback(openglDebugCallback, NULL);
 #endif
 
     // Cull back faces

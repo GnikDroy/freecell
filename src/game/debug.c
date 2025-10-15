@@ -29,7 +29,7 @@ void debug_render_mouse(World* world) {
     uint32_t index = 0;
     vec_push_back(&mesh.indices, &index);
 
-    upload_mesh(&gpu_mesh, &mesh);
+    gpu_mesh_upload(&gpu_mesh, &mesh);
 
     glPointSize(10.0f);
     renderer_draw_mesh(&gpu_mesh, GL_POINTS);
@@ -103,7 +103,7 @@ void debug_render_hit_hitbox(World* world) {
         mesh_push_hitbox(&mesh, topmost_ui_element.hitbox, (Color) { 0.0f, 0.0f, 100.0f, 10.0f });
     } 
 
-    upload_mesh(&gpu_mesh, &mesh);
+    gpu_mesh_upload(&gpu_mesh, &mesh);
     renderer_draw_mesh(&gpu_mesh, GL_LINES);
 
     gpu_mesh_free(&gpu_mesh);
