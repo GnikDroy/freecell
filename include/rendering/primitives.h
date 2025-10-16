@@ -22,13 +22,13 @@ typedef struct Quad {
     Color color;
 } Quad;
 
-typedef struct Ellipse {
+typedef struct Ellipse_ {
     float x, y, z;
     float radius_x, radius_y;
     int segments;
     float rotation;
     Color color;
-} Ellipse;
+} Ellipse_;
 
 typedef struct Circle {
     float x, y, z;

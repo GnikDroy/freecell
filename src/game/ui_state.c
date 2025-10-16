@@ -1,11 +1,11 @@
 #include <glad/glad.h>
 
-#include <GLFW/glfw3.h>
+#include <RGFW.h>
 
-#include "game/ui_state.h"
 #include "game/game.h"
 #include "game/ui_element.h"
 #include "game/ui_layout.h"
+#include "game/ui_state.h"
 #include "game/world.h"
 #include "platform/window.h"
 
@@ -219,8 +219,7 @@ UIElement ui_get_new_state(
 
 void ui_update_element_states(World* world) {
     Controller* controller = &world->controller;
-    bool pressed
-        = window_get_mouse_button_state(world->window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
+    bool pressed = window_is_mouse_pressed(world->window, RGFW_mouseLeft);
 
     size_t hit_index = -1;
     ui_get_topmost_hit(&world->ui_elements, controller->mouse, NULL, &hit_index);

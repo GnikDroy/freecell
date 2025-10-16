@@ -22,26 +22,21 @@ endif()
 
 Include(FetchContent)
 
-# Setup glfw
-function(glfw_build)
-    set(GLFW_BUILD_EXAMPLES  OFF CACHE INTERNAL "Build the GLFW example programs")
-    set(GLFW_BUILD_TESTS     OFF CACHE INTERNAL "Build the GLFW test programs")
-    set(GLFW_BUILD_DOCS      OFF CACHE INTERNAL "Build the GLFW documentation")
-    set(GLFW_INSTALL         OFF CACHE INTERNAL "Generate installation target")
-    set(USE_MSVC_RUNTIME_LIBRARY_DLL OFF CACHE INTERNAL "Use MSVC Runtime")
-    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded" CACHE STRING "" FORCE)
+# Setup rgfw
+function(rgfw_build)
     FetchContent_Declare(
-        glfw
-        GIT_REPOSITORY https://github.com/glfw/glfw
-        GIT_TAG        3.4
+        rgfw
+        GIT_REPOSITORY https://github.com/RSGL/RGFW-dev
+        GIT_TAG        main
         GIT_SHALLOW 1
         GIT_PROGRESS 1
     )
 
-    FetchContent_MakeAvailable(glfw)
+    FetchContent_MakeAvailable(rgfw)
+    add_library(rgfw INTERFACE)
+    target_include_directories(rgfw INTERFACE ${rgfw_SOURCE_DIR})
 endfunction()
-glfw_build()
-
+rgfw_build()
 
 # Setup glad
 function(glad_build)
@@ -153,7 +148,7 @@ add_executable(
 )
 set_property(TARGET freecell PROPERTY MSVC_RUNTIME_LIBRARY MultiThreadedDebug)
 target_link_options(freecell PRIVATE -static)
-target_link_libraries(freecell OpenGL::GL glad glfw cglm stb::stb miniaudio User32.lib)
+target_link_libraries(freecell OpenGL::GL glad rgfw cglm stb::stb miniaudio User32.lib)
 target_include_directories(freecell PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")

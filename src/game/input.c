@@ -3,108 +3,130 @@
 
 #include <glad/glad.h>
 
-#include <GLFW/glfw3.h>
+#include <RGFW.h>
 
+#include "core/log.h"
 #include "game/controller.h"
 #include "game/input_action.h"
 #include "platform/window.h"
 
 const float CLICK_THRESHOLD = 5.0f;
-static double mouse_press_x = 0.0;
-static double mouse_press_y = 0.0;
+static int mouse_press_x = 0.0;
+static int mouse_press_y = 0.0;
 
-void input_on_key(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    (void)scancode;
-    (void)mods;
-
+InputAction input_on_key(RGFW_window* window, World* world, RGFW_keyEvent event) {
     InputAction ia = { 0 };
-    ia.window = window;
+    ia.world = world;
 
-    if (action == GLFW_PRESS) {
-        if (key == GLFW_KEY_ESCAPE || (key == GLFW_KEY_Z && (mods & GLFW_MOD_CONTROL))) {
+    if (event.type == RGFW_keyPressed && !event.repeat) {
+        RGFW_key key = event.value;
+        if (key == RGFW_escape || (key == RGFW_z && (event.mod & RGFW_modControl))) {
             ia.type = INPUT_ACTION_UNDO;
-        } else if (key == GLFW_KEY_F2) {
+        } else if (key == RGFW_F2) {
             ia.type = INPUT_ACTION_NEW_GAME;
-        } else if (key == GLFW_KEY_F1) {
+        } else if (key == RGFW_F1) {
             ia.type = INPUT_ACTION_TOGGLE_HELP;
-        } else if (key == GLFW_KEY_F11) {
+        } else if (key == RGFW_F11) {
             ia.type = INPUT_ACTION_TOGGLE_FULLSCREEN;
-        } else if (key == GLFW_KEY_Q) {
-            glfwSetWindowShouldClose(window, GLFW_TRUE);
-        } else if (key == GLFW_KEY_V && (mods & GLFW_MOD_CONTROL)) {
+        } else if (key == RGFW_q) {
+            window_queue_close(window);
+        } else if (key == RGFW_v && (event.mod & RGFW_modControl)) {
             const char* clipboard_content = window_get_clipboard(window);
             if (!clipboard_content) {
-                return;
+                ia.type = INPUT_ACTION_NONE;
+                return ia;
             }
 
             char* endptr = NULL;
             long seed = strtol(clipboard_content, &endptr, 10);
             if (endptr == clipboard_content) {
-                return;
+                ia.type = INPUT_ACTION_NONE;
+                return ia;
             }
 
             ia.type = INPUT_ACTION_NEW_GAME_WITH_SEED;
             ia.data.new_game_with_seed.seed = seed;
-        } else if (key == GLFW_KEY_M) {
+        } else if (key == RGFW_m) {
             ia.type = INPUT_ACTION_AUTOCOMPLETEABLE_GAME;
-        } else if (key == GLFW_KEY_C) {
+        } else if (key == RGFW_c) {
             ia.type = INPUT_ACTION_FILL_CASCADES;
         }
     }
-    controller_handle_input(ia);
+    return ia;
 }
 
-void input_on_mouse_click(GLFWwindow* window, int code, int state, int mods) {
-    (void)mods;
+InputAction input_on_mouse_action(RGFW_window* window, World* world, RGFW_mouseButtonEvent event) {
     InputAction ia = { 0 };
-    ia.window = window;
+    ia.world = world;
 
-    if (code == GLFW_MOUSE_BUTTON_LEFT) {
-        if (state == GLFW_PRESS) {
-            glfwGetCursorPos(window, &mouse_press_x, &mouse_press_y);
+    if (event.value == RGFW_mouseLeft) {
+        if (event.type == RGFW_mouseButtonPressed) {
+            window_get_cursor_position(window, &mouse_press_x, &mouse_press_y);
             ia.type = INPUT_ACTION_START_DRAG;
-        } else {
-            double x, y;
-            glfwGetCursorPos(window, &x, &y);
-            double dx = x - mouse_press_x;
-            double dy = y - mouse_press_y;
-            double dist_sq = dx * dx + dy * dy;
+        } else if (event.type == RGFW_mouseButtonReleased) {
+            int x, y;
+            window_get_cursor_position(window, &mouse_press_x, &mouse_press_y);
+            int dx = x - mouse_press_x;
+            int dy = y - mouse_press_y;
+            int dist_sq = dx * dx + dy * dy;
 
             // Handle click if the distance is within the threshold
             if (dist_sq < CLICK_THRESHOLD * CLICK_THRESHOLD) {
-                InputAction press_action = { .window = window, .type = INPUT_ACTION_CLICK };
+                InputAction press_action = { .world = world, .type = INPUT_ACTION_CLICK };
                 controller_handle_input(press_action);
             }
 
             ia.type = INPUT_ACTION_END_DRAG;
         }
-    } else if (code == GLFW_MOUSE_BUTTON_RIGHT) {
-        if (state == GLFW_RELEASE) {
+    } else if (event.value == RGFW_mouseRight) {
+        if (event.type == RGFW_mouseButtonReleased) {
             ia.type = INPUT_ACTION_SMART_MOVE;
         }
     }
 
-    controller_handle_input(ia);
+    return ia;
 }
 
-void input_on_framebuffer_resize(GLFWwindow* window, int width, int height) {
+InputAction input_on_framebuffer_resize(RGFW_window* window, World* world, RGFW_commonEvent event) {
     InputAction ia = { 0 };
-    ia.window = window;
+    ia.world = world;
 
     ia.type = INPUT_ACTION_FRAMEBUFFER_RESIZE;
-    ia.data.framebuffer_resize.width = width;
-    ia.data.framebuffer_resize.height = height;
-
-    controller_handle_input(ia);
+    window_get_size(
+        window,
+        (int*)&ia.data.framebuffer_resize.width,
+        (int*)&ia.data.framebuffer_resize.height
+    );
+    return ia;
 }
 
-void input_on_cursor_position(GLFWwindow* window, double x, double y) {
+InputAction input_on_cursor_position(RGFW_window* window, World* world, RGFW_mousePosEvent event) {
     InputAction ia = { 0 };
-    ia.window = window;
+    ia.world = world;
 
     ia.type = INPUT_ACTION_POINTER_MOVE;
-    ia.data.pointer_move.x = x;
-    ia.data.pointer_move.y = y;
+    ia.data.pointer_move.x = event.x;
+    ia.data.pointer_move.y = event.y;
 
-    controller_handle_input(ia);
+    return ia;
+}
+
+bool input_get_input_action(RGFW_window* window, World* world, InputAction* ia) {
+    RGFW_event event;
+    if (window_get_event(window, &event) && event.type != RGFW_eventNone) {
+        if (ia != NULL) {
+            if (event.type == RGFW_keyPressed || event.type == RGFW_keyReleased) {
+                *ia = input_on_key(window, world, event.key);
+            } else if (event.type == RGFW_mouseButtonPressed
+                       || event.type == RGFW_mouseButtonReleased) {
+                *ia = input_on_mouse_action(window, world, event.button);
+            } else if (event.type == RGFW_windowResized) {
+                *ia = input_on_framebuffer_resize(window, world, event.common);
+            } else if (event.type == RGFW_mousePosChanged) {
+                *ia = input_on_cursor_position(window, world, event.mouse);
+            }
+        }
+        return true;
+    }
+    return false;
 }

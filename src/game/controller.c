@@ -3,9 +3,9 @@
 #include "core/aalloc.h"
 #include "core/vector.h"
 
-#include "game/game.h"
 #include "game/animation.h"
-#include "game/input_action.h"
+#include "game/game.h"
+#include "game/input.h"
 #include "game/ui_element.h"
 #include "game/ui_state.h"
 #include "platform/window.h"
@@ -316,6 +316,8 @@ static void controller_autocomplete_game(World* world) {
 }
 
 void controller_update(World* world, double dt) {
+    controller_handle_inputs(world);
+
     Controller* controller = &world->controller;
     if (!freecell_game_over(&world->game.freecell)) {
         world->game.clock += dt;
@@ -654,38 +656,42 @@ static void controller_fill_cascades(World* world) {
 }
 
 void controller_handle_input(InputAction ia) {
-    GLFWwindow* window = ia.window;
-    World* world = glfwGetWindowUserPointer(window);
-
     if (ia.type == INPUT_ACTION_FRAMEBUFFER_RESIZE) {
         controller_on_framebuffer_resize(
-            world,
+            ia.world,
             ia.data.framebuffer_resize.width,
             ia.data.framebuffer_resize.height
         );
     } else if (ia.type == INPUT_ACTION_POINTER_MOVE) {
-        controller_on_cursor_position(world, ia.data.pointer_move.x, ia.data.pointer_move.y);
+        controller_on_cursor_position(ia.world, ia.data.pointer_move.x, ia.data.pointer_move.y);
     } else if (ia.type == INPUT_ACTION_CLICK) {
-        controller_click(world);
+        controller_click(ia.world);
     } else if (ia.type == INPUT_ACTION_START_DRAG) {
-        controller_start_drag(world);
+        controller_start_drag(ia.world);
     } else if (ia.type == INPUT_ACTION_END_DRAG) {
-        controller_end_drag(world);
+        controller_end_drag(ia.world);
     } else if (ia.type == INPUT_ACTION_SMART_MOVE) {
-        controller_smart_move(world);
+        controller_smart_move(ia.world);
     } else if (ia.type == INPUT_ACTION_UNDO) {
-        controller_undo(world);
+        controller_undo(ia.world);
     } else if (ia.type == INPUT_ACTION_NEW_GAME) {
-        controller_new_game(world);
+        controller_new_game(ia.world);
     } else if (ia.type == INPUT_ACTION_NEW_GAME_WITH_SEED) {
-        controller_new_game_with_seed(world, ia.data.new_game_with_seed.seed);
+        controller_new_game_with_seed(ia.world, ia.data.new_game_with_seed.seed);
     } else if (ia.type == INPUT_ACTION_TOGGLE_FULLSCREEN) {
-        controller_toggle_fullscreen(world);
+        controller_toggle_fullscreen(ia.world);
     } else if (ia.type == INPUT_ACTION_TOGGLE_HELP) {
-        controller_toggle_help(world);
+        controller_toggle_help(ia.world);
     } else if (ia.type == INPUT_ACTION_AUTOCOMPLETEABLE_GAME) {
-        controller_autocompleteable_game(world);
+        controller_autocompleteable_game(ia.world);
     } else if (ia.type == INPUT_ACTION_FILL_CASCADES) {
-        controller_fill_cascades(world);
+        controller_fill_cascades(ia.world);
+    }
+}
+
+void controller_handle_inputs(World* world) {
+    InputAction ia;
+    while (input_get_input_action(world->window, world, &ia)) {
+        controller_handle_input(ia);
     }
 }

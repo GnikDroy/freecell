@@ -1,8 +1,11 @@
+#include <stdint.h>
 #include <time.h>
 
 #include "utils.h"
 
 #include "game/constants.h"
+
+uint64_t time_start = 0;
 
 float random() { return (float)rand() / RAND_MAX; }
 
@@ -10,6 +13,13 @@ uint64_t time_millis() {
     struct timespec now;
     timespec_get(&now, TIME_UTC);
     return (now.tv_sec * 1000) + (now.tv_nsec / 1000000);
+}
+
+uint64_t time_millis_from_start() {
+    if (time_start == 0) {
+        time_start = time_millis();
+    }
+    return time_millis() - time_start;
 }
 
 bool point_in_rect(float px, float py, Rect rect) {

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdint.h>
-typedef struct GLFWwindow GLFWwindow;
+typedef struct World World;
 
 typedef enum InputActionType {
     INPUT_ACTION_NONE,
@@ -23,7 +23,7 @@ typedef enum InputActionType {
 
 typedef struct InputAction {
     InputActionType type;
-    GLFWwindow* window;
+    World* world;
     union {
         struct {
             double x;

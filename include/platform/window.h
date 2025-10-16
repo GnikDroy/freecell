@@ -2,48 +2,43 @@
 
 #include <glad/glad.h>
 
-#include <GLFW/glfw3.h>
-
 #include <stdbool.h>
 #include <stdint.h>
 
-GLFWmonitor* get_primary_monitor();
+typedef struct RGFW_window RGFW_window;
+typedef union RGFW_event RGFW_event;
 
 typedef struct WindowConfig {
     size_t width;
     size_t height;
-    size_t min_width;
-    size_t min_height;
-    size_t max_width;
-    size_t max_height;
+    int32_t min_width;
+    int32_t min_height;
+    int32_t max_width;
+    int32_t max_height;
     const char* title;
     bool vsync;
-    GLFWmonitor* fullscreen_monitor;
-
-    void (*on_close)(GLFWwindow*);
-    void (*on_window_resize)(GLFWwindow*, int x, int y);
-    void (*on_framebuffer_resize)(GLFWwindow*, int width, int height);
-    void (*on_cursor_position)(GLFWwindow*, double x, double y);
-    void (*on_mouse_click)(GLFWwindow*, int code, int state, int mods);
-    void (*on_key)(GLFWwindow*, int key, int scancode, int action, int mods);
 } WindowConfig;
 
-GLFWwindow* window_init(WindowConfig config);
+RGFW_window* window_init(WindowConfig config);
 
-void window_free(GLFWwindow* window);
+void window_free(RGFW_window* window);
 
-void window_get_size(GLFWwindow* window, int* width, int* height);
+void window_swap_buffers(RGFW_window* window);
 
-const char* window_get_clipboard(GLFWwindow* window);
+void window_get_size(RGFW_window* window, int* width, int* height);
 
-void window_toggle_fullscreen(GLFWwindow* window);
+const char* window_get_clipboard(RGFW_window* window);
 
-void window_maximize(GLFWwindow* window);
+void window_toggle_fullscreen(RGFW_window* window);
 
-GLFWmonitor* window_get_current_monitor(GLFWwindow* window);
+void window_maximize(RGFW_window* window);
 
-void window_get_cursor_position(GLFWwindow* window, double* x, double* y);
+void window_get_cursor_position(RGFW_window* window, int* x, int* y);
 
-int window_get_mouse_button_state(GLFWwindow* window, int button);
+bool window_is_mouse_pressed(RGFW_window* window, uint8_t button);
 
-void event_post_empty();
+void window_queue_close(RGFW_window*);
+
+bool window_is_queued_to_close(RGFW_window* window);
+
+bool window_get_event(RGFW_window* window, RGFW_event* event);

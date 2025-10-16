@@ -73,10 +73,6 @@ inline UIElement animation_system_get_next_frame(
 }
 
 inline void animation_system_update(AnimationSystem* system, float delta_time) {
-    if (system->ui_animations.size != 0) {
-        event_post_empty();
-    }
-
     for (size_t i = 0; i < system->ui_animations.size;) {
         vec_get_as(UIElementAnimation, animation, &system->ui_animations, i);
         animation.elapsed = clamp(animation.elapsed + delta_time, -INFINITY, animation.duration);

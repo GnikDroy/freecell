@@ -1,13 +1,10 @@
 #pragma once
 #include <math.h>
 #include <stdint.h>
+#include "input_action.h"
 
-typedef struct GLFWwindow GLFWwindow;
+typedef struct RGFW_window RGFW_window;
+typedef struct World World;
+typedef struct InputAction InputAction;
 
-void input_on_key(GLFWwindow* window, int key, int scancode, int action, int mods) ;
-
-void input_on_mouse_click(GLFWwindow* window, int code, int state, int mods) ;
-
-void input_on_framebuffer_resize(GLFWwindow* window, int width, int height) ;
-
-void input_on_cursor_position(GLFWwindow* window, double x, double y) ;
+bool input_get_input_action(RGFW_window* window, World* world, InputAction* ia);

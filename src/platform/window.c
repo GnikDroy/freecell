@@ -1,84 +1,33 @@
 #include <stdlib.h>
 
+#include "core/log.h"
 #include "platform/window.h"
 
-#include <GLFW/glfw3.h>
-#include "core/log.h"
+#define RGFW_EXPORT
+#define RGFW_IMPLEMENTATION
+#define RGFW_OPENGL
+#include <RGFW.h>
 
-#include "game/constants.h"
-
-static int glfw_initialized = GLFW_FALSE;
-
-static void glfwErrCallback(int error_code, const char* msg) {
-    log_error("GLFW Error %d : %s", error_code, msg);
-}
-
-static int glfw_initialize() {
-    glfwSetErrorCallback(glfwErrCallback);
-    if (glfw_initialized) {
-        return GLFW_TRUE;
-    }
-
-    int glfw_initialized = glfwInit();
-    if (glfw_initialized != GLFW_TRUE) {
-        exit(EXIT_FAILURE);
-    }
-    return glfw_initialized;
-}
-
-GLFWmonitor* get_primary_monitor() {
-    glfw_initialize();
-    GLFWmonitor* primary_monitor = glfwGetPrimaryMonitor();
-    if (primary_monitor == NULL) {
-        log_error("Failed to get primary monitor.");
-        exit(EXIT_FAILURE);
-    }
-    return primary_monitor;
-}
-
-GLFWwindow* window_init(WindowConfig config) {
-    glfw_initialize();
-    glfwWindowHint(GLFW_DOUBLEBUFFER, 1);
-    glfwWindowHint(GLFW_DEPTH_BITS, 24);
-    GLFWwindow* window = glfwCreateWindow(
-        (int)config.width,
-        (int)config.height,
+RGFW_window* window_init(WindowConfig config) {
+    RGFW_window* window = RGFW_createWindow(
         config.title,
-        config.fullscreen_monitor,
-        NULL
+        0,
+        0,
+        config.width,
+        config.height,
+        RGFW_windowAllowDND | RGFW_windowCenter | RGFW_windowScaleToMonitor | RGFW_windowOpenGL
     );
     if (!window) {
-        glfwTerminate();
+        log_error("Failed to create RGFW window\n");
+        exit(EXIT_FAILURE);
     }
-    glfwSetWindowSizeLimits(
-        window,
-        config.min_width,
-        config.min_height,
-        config.max_width,
-        config.max_height
-    );
-    if (config.on_close)
-        glfwSetWindowCloseCallback(window, config.on_close);
-    if (config.on_window_resize)
-        glfwSetWindowSizeCallback(window, config.on_window_resize);
-    if (config.on_framebuffer_resize)
-        glfwSetFramebufferSizeCallback(window, config.on_framebuffer_resize);
-    if (config.on_key)
-        glfwSetKeyCallback(window, config.on_key);
-    if (config.on_mouse_click)
-        glfwSetMouseButtonCallback(window, config.on_mouse_click);
-    if (config.on_cursor_position)
-        glfwSetCursorPosCallback(window, config.on_cursor_position);
-
-    // Set window position to center of monitor
-    GLFWmonitor* monitor
-        = config.fullscreen_monitor == NULL ? get_primary_monitor() : config.fullscreen_monitor;
-    const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-    glfwSetWindowPos(window, (mode->width - config.width) / 2, (mode->height - config.height) / 2);
-
-    glfwMakeContextCurrent(window);
-    glfwSwapInterval(config.vsync);
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+    RGFW_window_makeCurrentContext_OpenGL(window);
+    if (config.max_width != -1 && config.max_height != -1) {
+        RGFW_window_setMaxSize(window, config.max_width, config.max_height);
+    }
+    RGFW_window_setMinSize(window, config.min_width, config.min_height);
+    RGFW_window_swapInterval_OpenGL(window, config.vsync);
+    if (!gladLoadGLLoader((GLADloadproc)RGFW_getProcAddress_OpenGL)) {
         log_error("Failed to initialize GLAD.\n");
         exit(EXIT_FAILURE);
     }
@@ -87,45 +36,36 @@ GLFWwindow* window_init(WindowConfig config) {
     return window;
 }
 
-void window_free(GLFWwindow* window) {
-    glfwDestroyWindow(window);
-    glfwTerminate();
+void window_free(RGFW_window* window) { RGFW_window_close(window); }
+
+void window_swap_buffers(RGFW_window* window) { RGFW_window_swapBuffers_OpenGL(window); }
+
+void window_get_size(RGFW_window* window, int* width, int* height) {
+    RGFW_window_getSize(window, width, height);
 }
 
-void window_get_size(GLFWwindow* window, int* width, int* height) {
-    glfwGetWindowSize(window, width, height);
+const char* window_get_clipboard(RGFW_window* window) { return RGFW_readClipboard(NULL); }
+
+void window_toggle_fullscreen(RGFW_window* window) {
+    RGFW_window_setFullscreen(window, !RGFW_window_isFullscreen(window));
 }
 
-const char* window_get_clipboard(GLFWwindow* window) { return glfwGetClipboardString(window); }
+void window_maximize(RGFW_window* window) { RGFW_window_maximize(window); }
 
-void window_toggle_fullscreen(GLFWwindow* window) {
-    GLFWmonitor* monitor = window_get_current_monitor(window);
-    if (monitor == NULL) {
-        monitor = get_primary_monitor();
-        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-        glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
-        return;
-    } else {
-        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-        int screenWidth = mode->width;
-        int screenHeight = mode->height;
-
-        int xpos = (screenWidth - VIRTUAL_WIDTH) / 2;
-        int ypos = (screenHeight - VIRTUAL_HEIGHT) / 2;
-        glfwSetWindowMonitor(window, NULL, xpos, ypos, VIRTUAL_WIDTH, VIRTUAL_HEIGHT, 0);
-    }
+void window_get_cursor_position(RGFW_window* window, int* x, int* y) {
+    RGFW_window_getMouse(window, x, y);
 }
 
-void window_maximize(GLFWwindow* window) { glfwMaximizeWindow(window); }
-
-GLFWmonitor* window_get_current_monitor(GLFWwindow* window) { return glfwGetWindowMonitor(window); }
-
-void window_get_cursor_position(GLFWwindow* window, double* x, double* y) {
-    glfwGetCursorPos(window, x, y);
+bool window_is_mouse_pressed(RGFW_window* window, uint8_t button) {
+    return RGFW_window_isMousePressed(window, button);
 }
 
-int window_get_mouse_button_state(GLFWwindow* window, int button) {
-    return glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+void window_queue_close(RGFW_window* window) { RGFW_window_setShouldClose(window, RGFW_TRUE); }
+
+bool window_is_queued_to_close(RGFW_window* window) {
+    return RGFW_window_shouldClose(window) == RGFW_TRUE;
 }
 
-void event_post_empty() { glfwPostEmptyEvent(); }
+bool window_get_event(RGFW_window* window, RGFW_event* event) {
+    return RGFW_window_checkEvent(window, event);
+}

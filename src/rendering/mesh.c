@@ -150,7 +150,7 @@ void mesh_push_quad(Mesh* mesh, Quad quad) {
     }
 }
 
-void mesh_push_ellipse(Mesh* mesh, Ellipse ellipse) {
+void mesh_push_ellipse(Mesh* mesh, Ellipse_ ellipse) {
     if (ellipse.radius_x <= 0.0f || ellipse.radius_y <= 0.0f || ellipse.segments <= 3) {
         return;
     }
@@ -196,7 +196,7 @@ void mesh_push_ellipse(Mesh* mesh, Ellipse ellipse) {
 void mesh_push_circle(Mesh* mesh, Circle circle) {
     mesh_push_ellipse(
         mesh,
-        (Ellipse) {
+        (Ellipse_) {
             .x = circle.x,
             .y = circle.y,
             .z = circle.z,

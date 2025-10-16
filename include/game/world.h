@@ -17,7 +17,7 @@
 extern const Color BACKGROUND_COLOR;
 
 typedef struct World {
-    GLFWwindow* window;
+    RGFW_window* window;
     Game game;
 
     Camera camera;
@@ -47,6 +47,6 @@ typedef struct World {
     AnimationSystem animation_system;
 } World;
 
-World world_init(GLFWwindow* window);
+World world_init(RGFW_window* window);
 
 void world_free(World* world);

@@ -1,29 +1,39 @@
+#include "platform/window.h"
 #include <stdint.h>
 
-#include "platform/window.h"
+#include <RGFW.h>
+#include <glad/glad.h>
 
 #include "rendering/renderer.h"
 
 #include "game/constants.h"
-#include "game/input.h"
 #include "game/render_system.h"
 #include "game/world.h"
+#include "utils.h"
 
-void gameloop(GLFWwindow* window) {
+void gameloop(RGFW_window* window) {
     World world = world_init(window);
 
-    glfwSetWindowUserPointer(window, &world);
+    // Clear screen immediately to avoid white flash of blindness
+    renderer_init();
+    renderer_clear(BACKGROUND_COLOR);
+    window_swap_buffers(window);
 
-    double time = glfwGetTime();
-    while (!glfwWindowShouldClose(window)) {
-        glfwSwapBuffers(window);
-        glfwWaitEventsTimeout(0.2f); // only 5fps if no events are received
+    // Maximize window and resize framebuffer
+    window_maximize(window);
+    int width, height;
+    window_get_size(window, &width, &height);
+    controller_on_framebuffer_resize(&world, width, height);
 
-        double dt = glfwGetTime() - time;
+    double time = time_millis_from_start() / 1000.0;
+    while (!window_is_queued_to_close(window)) {
+        window_swap_buffers(window);
+
+        double dt = time_millis_from_start() / 1000.0 - time;
 
         controller_update(&world, dt);
 
-        time = glfwGetTime();
+        time = time_millis_from_start() / 1000.0;
 
         aclear(); // Clear the arena allocator for the next frame
     }
@@ -32,30 +42,16 @@ void gameloop(GLFWwindow* window) {
 }
 
 int main(void) {
-    GLFWwindow* window = window_init((WindowConfig) {
+    RGFW_window* window = window_init((WindowConfig) {
         .width = VIRTUAL_WIDTH,
         .height = VIRTUAL_HEIGHT,
         .min_width = GAME_MIN_WIDTH,
         .min_height = GAME_MIN_HEIGHT,
-        .max_width = GLFW_DONT_CARE,
-        .max_height = GLFW_DONT_CARE,
+        .max_width = -1,
+        .max_height = -1,
         .title = GAME_TITLE,
         .vsync = true,
-        .fullscreen_monitor = NULL,
-        .on_close = NULL,
-        .on_window_resize = NULL,
-        .on_framebuffer_resize = input_on_framebuffer_resize,
-        .on_key = input_on_key,
-        .on_mouse_click = input_on_mouse_click,
-        .on_cursor_position = input_on_cursor_position,
     });
-
-    // Clear screen immediately to avoid white flash of blindness
-    renderer_init();
-    renderer_clear(BACKGROUND_COLOR);
-    glfwSwapBuffers(window);
-
-    window_maximize(window);
 
     gameloop(window);
 

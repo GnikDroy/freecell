@@ -2,13 +2,13 @@
 
 #include <stdbool.h>
 
-#include "game/game.h"
 #include "game/input_action.h"
+#include "game/game.h"
 
 #include <cglm/struct.h>
 
 typedef struct World World;
-typedef struct GLFWwindow GLFWwindow;
+typedef struct RGFW_window RGFW_window;
 typedef struct UIElement UIElement;
 
 typedef struct UIDragState {
@@ -35,6 +35,8 @@ void controller_undo(World* world);
 void controller_new_game(World* world);
 
 void controller_new_game_with_seed(World* world, uint32_t seed);
+
+void controller_handle_inputs(World* world);
 
 void controller_handle_input(InputAction action);
 

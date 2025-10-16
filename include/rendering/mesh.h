@@ -37,7 +37,7 @@ void mesh_push_triangle(Mesh* mesh, Triangle triangle);
 
 void mesh_push_quad(Mesh* mesh, Quad quad);
 
-void mesh_push_ellipse(Mesh* mesh, Ellipse ellipse);
+void mesh_push_ellipse(Mesh* mesh, Ellipse_ ellipse);
 
 void mesh_push_circle(Mesh* mesh, Circle circle);
 

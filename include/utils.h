@@ -10,6 +10,8 @@ float random();
 
 uint64_t time_millis();
 
+uint64_t time_millis_from_start();
+
 bool point_in_rect(float px, float py, Rect rect);
 
 vec2s screen_to_world(
