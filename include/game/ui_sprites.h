@@ -1,3 +1,6 @@
+#pragma once
+#include <stddef.h>
+
 typedef struct World World;
 
 extern const char MAIN_SPRITESHEET[];

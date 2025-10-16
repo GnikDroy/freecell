@@ -106,8 +106,8 @@ static void controller_animate_game_over(World* world) {
         }
 
         // actual animation
-        int x_offset = random() * VIRTUAL_WIDTH / 5.0f;
-        int y_offset = 2.0f * VIRTUAL_HEIGHT / 3.0f + random() * (VIRTUAL_HEIGHT / 3.0f);
+        int x_offset = random_uniform() * VIRTUAL_WIDTH / 5.0f;
+        int y_offset = 2.0f * VIRTUAL_HEIGHT / 3.0f + random_uniform() * (VIRTUAL_HEIGHT / 3.0f);
 
         Sprite sprite = world->deck[card];
         sprite.x = elem->sprite.x;
@@ -130,13 +130,13 @@ static void controller_animate_game_over(World* world) {
             };
 
         Sprite to = sprite;
-        to.color.r = 0.4 + random() * 0.6;
-        to.color.g = 0.4 + random() * 0.6;
-        to.color.b = 0.4 + random() * 0.6;
+        to.color.r = 0.4 + random_uniform() * 0.6;
+        to.color.g = 0.4 + random_uniform() * 0.6;
+        to.color.b = 0.4 + random_uniform() * 0.6;
         to.color.a = 0.0f;
         to.x -= x_offset;
         to.y += y_offset;
-        to.rotation = 2 * M_PI * (random() > 0.5f ? 1.0f : -1.0f) + M_PI * random();
+        to.rotation = 2 * M_PI * (random_uniform() > 0.5f ? 1.0f : -1.0f) + M_PI * random_uniform();
         to.width *= 2;
         to.height *= 2;
 

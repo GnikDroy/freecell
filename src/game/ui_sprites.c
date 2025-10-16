@@ -1,3 +1,4 @@
+#include <stddef.h>
 #include "game/ui_sprites.h"
 
 #include "rendering/sprite.h"

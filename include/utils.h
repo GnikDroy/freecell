@@ -6,7 +6,7 @@
 #include "rendering/camera.h"
 #include "rendering/rect.h"
 
-float random();
+float random_uniform();
 
 uint64_t time_millis();
 

@@ -1,4 +1,5 @@
 #pragma once
+#include <stddef.h>
 
 extern const char GAME_TITLE[];
 extern const int GAME_MIN_WIDTH;

@@ -149,7 +149,16 @@ add_executable(
 )
 set_property(TARGET freecell PROPERTY MSVC_RUNTIME_LIBRARY MultiThreadedDebug)
 target_link_options(freecell PRIVATE -static)
-target_link_libraries(freecell OpenGL::GL glad rgfw cglm stb::stb miniaudio User32.lib)
+target_link_libraries(freecell OpenGL::GL glad rgfw cglm stb::stb miniaudio)
+
+if(WIN32)
+    target_link_libraries(freecell User32.lib)
+endif()
+
+if(EMSCRIPTEN)
+    set_target_properties(freecell PROPERTIES SUFFIX ".html")
+endif()
+
 target_include_directories(freecell PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -165,7 +174,12 @@ add_executable(
     src/game/freecell.c
 )
 
-target_link_libraries(tests User32.lib)
+target_link_libraries(tests)
+
+if(WIN32)
+    target_link_libraries(tests User32.lib)
+endif()
+
 target_include_directories(tests PRIVATE ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src )
 
 target_link_options(tests PRIVATE)

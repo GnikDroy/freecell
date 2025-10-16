@@ -323,7 +323,7 @@ static void text_compute_size(
         } else {
             offset_x += char_spacing;
         }
-        max_width = max(max_width, offset_x);
+        max_width = fmaxf(max_width, offset_x);
     }
 
     float max_height = num_lines * line_height;

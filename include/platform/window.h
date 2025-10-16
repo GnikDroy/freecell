@@ -4,6 +4,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stddef.h>
 
 typedef struct RGFW_window RGFW_window;
 typedef union RGFW_event RGFW_event;

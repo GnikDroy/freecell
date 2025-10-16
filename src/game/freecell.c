@@ -241,7 +241,9 @@ static int freecell_move_count_recurse(int num_cards, int num_freecells, int num
         int right = freecell_move_count_recurse(i, num_freecells, num_cascades - 1);
         if (left != INT_MAX && middle != INT_MAX && right != INT_MAX) {
             int moves = left + middle + right;
-            min_moves = min(min_moves, moves);
+            if (moves < min_moves) {
+                min_moves = moves;
+            }
         }
     }
     return min_moves;

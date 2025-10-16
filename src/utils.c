@@ -7,7 +7,7 @@
 
 uint64_t time_start = 0;
 
-float random() { return (float)rand() / RAND_MAX; }
+float random_uniform() { return (float)rand() / RAND_MAX; }
 
 uint64_t time_millis() {
     struct timespec now;
