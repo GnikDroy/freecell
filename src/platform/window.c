@@ -69,3 +69,7 @@ bool window_is_queued_to_close(RGFW_window* window) {
 bool window_get_event(RGFW_window* window, RGFW_event* event) {
     return RGFW_window_checkEvent(window, event);
 }
+
+void event_wait_timeout(uint32_t waitMS) {
+    RGFW_waitForEvent(waitMS);
+}

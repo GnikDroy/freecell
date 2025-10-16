@@ -42,3 +42,5 @@ void window_queue_close(RGFW_window*);
 bool window_is_queued_to_close(RGFW_window* window);
 
 bool window_get_event(RGFW_window* window, RGFW_event* event);
+
+void event_wait_timeout(uint32_t waitMS);

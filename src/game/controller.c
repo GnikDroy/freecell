@@ -316,6 +316,7 @@ static void controller_autocomplete_game(World* world) {
 }
 
 void controller_update(World* world, double dt) {
+    world->controller.screen_needs_update = false;
     controller_handle_inputs(world);
 
     Controller* controller = &world->controller;
@@ -324,7 +325,7 @@ void controller_update(World* world, double dt) {
     }
 
     controller_update_drag(world);
-    animation_system_update(&world->animation_system, dt);
+    animation_system_update(&world->animation_system, controller, dt);
     render_world(world);
     controller_autocomplete_game(world);
 

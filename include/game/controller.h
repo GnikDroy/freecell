@@ -23,6 +23,7 @@ typedef struct Controller {
     vec2s mouse;
     vec2s mouse_screen;
     UIDragState drag_state;
+    bool screen_needs_update;
 } Controller;
 
 void controller_update(World* world, double dt);

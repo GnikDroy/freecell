@@ -118,18 +118,19 @@ add_executable(
     src/main.c
     ${APP_ICON_RESOURCE_WINDOWS}
 
+    src/game/animation.c
     src/game/assets.c
     src/game/constants.c
     src/game/controller.c
     src/game/debug.c
+    src/game/freecell.c
+    src/game/game.c
     src/game/input.c
     src/game/render_system.c
     src/game/ui_layout.c
     src/game/ui_sprites.c
     src/game/ui_state.c
     src/game/world.c
-    src/game/freecell.c
-    src/game/game.c
 
     src/core/aalloc.c
     src/core/vector.c

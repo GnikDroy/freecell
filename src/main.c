@@ -28,11 +28,11 @@ void gameloop(RGFW_window* window) {
     double time = time_millis_from_start() / 1000.0;
     while (!window_is_queued_to_close(window)) {
         window_swap_buffers(window);
-
+        if (!world.controller.screen_needs_update) {
+            event_wait_timeout(1000 / 5.0);
+        }
         double dt = time_millis_from_start() / 1000.0 - time;
-
         controller_update(&world, dt);
-
         time = time_millis_from_start() / 1000.0;
 
         aclear(); // Clear the arena allocator for the next frame
