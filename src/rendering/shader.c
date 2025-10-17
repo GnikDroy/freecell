@@ -1,5 +1,9 @@
 #include <stddef.h>
+#ifndef __EMSCRIPTEN__
 #include <glad/glad.h>
+#else
+#include <GLES3/gl3.h>
+#endif
 
 #include "rendering/shader.h"
 
@@ -56,7 +60,7 @@ Shader shader_init(const char* vertex_shader_source, const char* fragment_shader
 
 void shader_free(Shader* shader) {
     glDeleteProgram(*shader);
-    shader = NULL;
+    *shader = 0;
 }
 
 void shader_set_int(Shader shader, const char* name, int value) {

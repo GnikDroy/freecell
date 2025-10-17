@@ -9,6 +9,14 @@
 #include <RGFW.h>
 
 RGFW_window* window_init(WindowConfig config) {
+#ifdef __EMSCRIPTEN__
+    RGFW_glHints hints = {
+        .major = 3,
+        .minor = 0,
+    };
+    RGFW_setGlobalHints_OpenGL(&hints);
+#endif
+
     RGFW_window* window = RGFW_createWindow(
         config.title,
         0,
@@ -27,11 +35,12 @@ RGFW_window* window_init(WindowConfig config) {
     }
     RGFW_window_setMinSize(window, config.min_width, config.min_height);
     RGFW_window_swapInterval_OpenGL(window, config.vsync);
+#ifndef __EMSCRIPTEN__
     if (!gladLoadGLLoader((GLADloadproc)RGFW_getProcAddress_OpenGL)) {
         log_error("Failed to initialize GLAD.\n");
         exit(EXIT_FAILURE);
     }
-
+#endif
     glViewport(0, 0, (int32_t)config.width, (int32_t)config.height);
     return window;
 }
@@ -70,6 +79,4 @@ bool window_get_event(RGFW_window* window, RGFW_event* event) {
     return RGFW_window_checkEvent(window, event);
 }
 
-void event_wait_timeout(uint32_t waitMS) {
-    RGFW_waitForEvent(waitMS);
-}
+void event_wait_timeout(uint32_t waitMS) { RGFW_waitForEvent(waitMS); }

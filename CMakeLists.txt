@@ -26,7 +26,7 @@ Include(FetchContent)
 function(rgfw_build)
     FetchContent_Declare(
         rgfw
-        GIT_REPOSITORY https://github.com/RSGL/RGFW-dev
+        GIT_REPOSITORY https://github.com/ColleagueRiley/RGFW
         GIT_TAG        main
         GIT_SHALLOW 1
         GIT_PROGRESS 1
@@ -157,6 +157,14 @@ endif()
 
 if(EMSCRIPTEN)
     set_target_properties(freecell PROPERTIES SUFFIX ".html")
+    target_link_options(freecell PRIVATE
+        "-s" "EXPORTED_RUNTIME_METHODS=stringToNewUTF8"
+        "-sUSE_WEBGL2=1"
+        "-sMAX_WEBGL_VERSION=2" 
+        "-sMIN_WEBGL_VERSION=2"
+        "-sFULL_ES3=1"
+        "-sASYNCIFY=1"
+    )
 endif()
 
 target_include_directories(freecell PRIVATE ${PROJECT_SOURCE_DIR}/include)

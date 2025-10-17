@@ -2,7 +2,6 @@
 #include <stdint.h>
 
 #include <RGFW.h>
-#include <glad/glad.h>
 
 #include "rendering/renderer.h"
 
@@ -12,15 +11,18 @@
 #include "utils.h"
 
 void gameloop(RGFW_window* window) {
-    World world = world_init(window);
-
     // Clear screen immediately to avoid white flash of blindness
     renderer_init();
     renderer_clear(BACKGROUND_COLOR);
     window_swap_buffers(window);
 
     // Maximize window and resize framebuffer
-    window_maximize(window);
+    // window_maximize(window);
+    renderer_clear(BACKGROUND_COLOR);
+    window_swap_buffers(window);
+
+    World world = world_init(window);
+
     int width, height;
     window_get_size(window, &width, &height);
     controller_on_framebuffer_resize(&world, width, height);

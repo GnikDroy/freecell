@@ -3,7 +3,12 @@
 #include <stddef.h>
 
 #include "rendering/mesh.h"
+
+#ifndef __EMSCRIPTEN__
 #include <glad/glad.h>
+#else
+#include <GLES3/gl3.h>
+#endif
 
 Mesh mesh_init() {
     Mesh mesh;

@@ -7,6 +7,8 @@ const int GAME_MIN_HEIGHT = 600;
 const int VIRTUAL_WIDTH = 1600;
 const int VIRTUAL_HEIGHT = 900;
 
+#ifndef __EMSCRIPTEN__
+
 const char MAIN_VERTEX_SHADER_SOURCE[] = {
 #embed "shaders/main_vs.glsl"
     ,
@@ -18,6 +20,19 @@ const char MAIN_FRAGMENT_SHADER_SOURCE[] = {
     ,
     '\0'
 };
+#else
+const char MAIN_VERTEX_SHADER_SOURCE[] = {
+#embed "shaders/main_vs_es.glsl"
+    ,
+    '\0'
+};
+
+const char MAIN_FRAGMENT_SHADER_SOURCE[] = {
+#embed "shaders/main_fs_es.glsl"
+    ,
+    '\0'
+};
+#endif
 
 const char CARD_MOVE_SOUND[] = {
 #embed "assets/card_move.wav"

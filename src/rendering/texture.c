@@ -1,4 +1,8 @@
+#ifndef __EMSCRIPTEN__
 #include <glad/glad.h>
+#else
+#include <GLES3/gl3.h>
+#endif
 
 #include "rendering/texture.h"
 
@@ -26,6 +30,20 @@ uint32_t texture_init(Image* image) {
 
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
+#ifdef __EMSCRIPTEN__
+    // WebGL 2 guarantees TexStorage2D
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0,
+        internalFormat,
+        image->width,
+        image->height,
+        0,
+        format,
+        GL_UNSIGNED_BYTE,
+        NULL
+    );
+#else
     if (GLAD_GL_ARB_texture_storage) {
         glTexStorage2D(GL_TEXTURE_2D, 1, internalFormat, image->width, image->height);
     } else {
@@ -41,6 +59,7 @@ uint32_t texture_init(Image* image) {
             NULL
         );
     }
+#endif
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexSubImage2D(
