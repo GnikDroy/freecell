@@ -19,8 +19,10 @@
 
 static void controller_play_card_move_sound(World* world) {
     if (world->sound_enabled) {
+#ifndef __EMSCRIPTEN__
         ma_sound_stop(&world->card_move_sound);
         ma_sound_start(&world->card_move_sound);
+#endif
     }
 }
 
@@ -349,7 +351,9 @@ void controller_click(World* world) {
             } else if (strcmp(id, "undo") == 0) {
                 controller_undo(world);
             } else if (strcmp(id, "sound") == 0) {
+#ifndef __EMSCRIPTEN__
                 world->sound_enabled = !world->sound_enabled;
+#endif
             }
         }
     }
@@ -579,7 +583,9 @@ void controller_new_game_with_seed(World* world, uint32_t seed) {
 void controller_toggle_fullscreen(World* world) {
     Controller* controller = &world->controller;
 
+#ifndef __EMSCRIPTEN__
     window_toggle_fullscreen(world->window);
+#endif
 }
 
 void controller_toggle_help(World* world) { world->show_help = !world->show_help; }
