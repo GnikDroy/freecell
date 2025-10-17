@@ -3,6 +3,7 @@
 #include "game/world.h"
 
 #ifdef FREECELL_DEBUG
+#include "rendering/mesh.h"
 #include <string.h>
 
 #include "game/ui_element.h"
@@ -12,27 +13,16 @@ void debug_render_mouse(World* world) {
     Mesh mesh = mesh_init();
     GPUMesh gpu_mesh = gpu_mesh_init();
 
-    Vertex vertex = {
-        .x = world->controller.mouse.x,
-        .y = world->controller.mouse.y,
-        .z = 0,
-        .r = 1.0f,
-        .g = 0.0f,
-        .b = 0.0f,
-        .a = 1.0f,
-        .u = 0.2f,
-        .v = 0.0f,
-    };
-
-    vec_push_back(&mesh.vertices, &vertex);
-
-    uint32_t index = 0;
-    vec_push_back(&mesh.indices, &index);
-
+    mesh_push_circle(
+        &mesh,
+        (Circle) { .x = world->controller.mouse.x,
+                   .y = world->controller.mouse.y,
+                   .radius = 5.0f,
+                   12,
+                   (Color) { 1.0f, 0.0f, 0.0f, 1.0f } }
+    );
     gpu_mesh_upload(&gpu_mesh, &mesh);
-
-    glPointSize(10.0f);
-    renderer_draw_mesh(&gpu_mesh, GL_POINTS);
+    renderer_draw_mesh(&gpu_mesh, GL_TRIANGLES);
 
     gpu_mesh_free(&gpu_mesh);
     mesh_free(&mesh);
@@ -101,7 +91,7 @@ void debug_render_hit_hitbox(World* world) {
     UIElement topmost_ui_element;
     if (ui_get_topmost_hit(&world->ui_elements, mouse, &topmost_ui_element, NULL)) {
         mesh_push_hitbox(&mesh, topmost_ui_element.hitbox, (Color) { 0.0f, 0.0f, 100.0f, 10.0f });
-    } 
+    }
 
     gpu_mesh_upload(&gpu_mesh, &mesh);
     renderer_draw_mesh(&gpu_mesh, GL_LINES);

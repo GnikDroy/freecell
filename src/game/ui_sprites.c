@@ -25,7 +25,11 @@ const int CARD_HEIGHT = 180;
 const int CARD_GAP_X = 1;
 const int CARD_GAP_Y = 1;
 
-const float CARD_SCALE = 0.80f;
+#ifdef __EMSCRIPTEN__
+const float CARD_SCALE = 0.68f;
+#else
+const float CARD_SCALE = 0.8f;
+#endif
 
 // Character sprite properties
 const int GLYPH_OFFSET_X = 13 * 128 + 1;
@@ -38,7 +42,11 @@ const int GLYPH_HEIGHT = 30;
 const int GLYPH_GAP_X = 2;
 const int GLYPH_GAP_Y = 2;
 
+#ifdef __EMSCRIPTEN__
+const float GLYPH_SCALE = 0.8f;
+#else
 const float GLYPH_SCALE = 1.0f;
+#endif
 
 const char* ICON_GAME = "\x80 ";
 const char* ICON_CLOCK = "\x81 ";

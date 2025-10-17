@@ -4,10 +4,9 @@ const char GAME_TITLE[] = "Freecell";
 const int GAME_MIN_WIDTH = 800;
 const int GAME_MIN_HEIGHT = 600;
 
+#ifndef __EMSCRIPTEN__
 const int VIRTUAL_WIDTH = 1600;
 const int VIRTUAL_HEIGHT = 900;
-
-#ifndef __EMSCRIPTEN__
 
 const char MAIN_VERTEX_SHADER_SOURCE[] = {
 #embed "shaders/main_vs.glsl"
@@ -21,6 +20,9 @@ const char MAIN_FRAGMENT_SHADER_SOURCE[] = {
     '\0'
 };
 #else
+const int VIRTUAL_WIDTH = 1280;
+const int VIRTUAL_HEIGHT = 720;
+
 const char MAIN_VERTEX_SHADER_SOURCE[] = {
 #embed "shaders/main_vs_es.glsl"
     ,
