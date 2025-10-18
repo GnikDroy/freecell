@@ -156,7 +156,6 @@ if(WIN32)
 endif()
 
 if(EMSCRIPTEN)
-    set_target_properties(freecell PROPERTIES SUFFIX ".html")
     target_link_options(freecell PRIVATE
         "-s" "EXPORTED_RUNTIME_METHODS=stringToNewUTF8"
         "-sUSE_WEBGL2=1"
@@ -164,6 +163,17 @@ if(EMSCRIPTEN)
         "-sMIN_WEBGL_VERSION=2"
         "-sFULL_ES3=1"
         "-sASYNCIFY=1"
+    )
+
+    # Copy index.html and icon.ico (as favicon.ico) to the Emscripten output directory
+    add_custom_command(TARGET freecell POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${PROJECT_SOURCE_DIR}/src/index.html"
+            "$<TARGET_FILE_DIR:freecell>/index.html"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${PROJECT_SOURCE_DIR}/src/game/assets/icon.ico"
+            "$<TARGET_FILE_DIR:freecell>/favicon.ico"
+        COMMENT "Copying Emscripten web assets (index.html, favicon.ico) to output directory"
     )
 endif()
 
