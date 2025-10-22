@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Freecell</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <style>
+      body {
+        background: #143f17;
+        padding: 0;
+        margin: 0;
+      }
+      .canvasContainer {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+      }
+      #canvas {
+        margin: auto auto;
+      }
+      #loadingOverlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #143f17;
+        color: white;
+        font-family: Arial, sans-serif;
+        font-size: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="canvasContainer">
+      <canvas
+        id="canvas"
+        oncontextmenu="event.preventDefault()"
+        tabindex="0"
+        style="background-color: black"
+      ></canvas>
+      <div id="loadingOverlay">Loading Game...</div>
+    </div>
+    <script>
+      var Module = {
+        canvas: document.getElementById("canvas"),
+        onRuntimeInitialized: function () {
+          // Hide the loading screen once WASM is ready
+          const overlay = document.getElementById("loadingOverlay");
+          if (overlay) overlay.style.display = "none";
+        }
+      };
+    </script>
+    <script src="Freecell.js"></script>
+  </body>
+</html>
