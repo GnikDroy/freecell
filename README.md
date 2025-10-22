@@ -1,5 +1,7 @@
 # 🃏 Freecell
 
+A live instance is running on [gnikdroy.github.io/freecell](https://gnikdroy.github.io/freecell)
+
 Freecell implementation in C. Play Freecell in a native build or in the browser (WebAssembly). This repo contains the game core, simple rendering/platform glue, and build rules using CMake + Ninja.
 
 This implementation uses the same RNG as the original Microsoft FreeCell, so game deal numbers match the original implementation.

@@ -148,8 +148,22 @@ add_executable(
     src/utils.c
 )
 set_property(TARGET freecell PROPERTY MSVC_RUNTIME_LIBRARY MultiThreadedDebug)
-target_link_options(freecell PRIVATE -static)
-target_link_libraries(freecell OpenGL::GL glad rgfw cglm stb::stb miniaudio)
+
+target_link_options(freecell PRIVATE "-Wl,-static")
+target_link_libraries(freecell glad rgfw cglm stb::stb miniaudio)
+
+if(UNIX AND NOT EMSCRIPTEN)
+    # On Linux, mostly static, but OpenGL dynamic
+    target_link_options(freecell PRIVATE
+        "-Wl,-Bdynamic"
+    )
+
+    target_link_libraries(freecell OpenGL::GL -lm -lX11 -lXrandr)
+else()
+    # On Windows, fully static runtime
+    target_link_options(freecell PRIVATE "-Wl,-static")
+    target_link_libraries(freecell OpenGL::GL)
+endif()
 
 if(WIN32)
     target_link_libraries(freecell User32.lib)
@@ -169,11 +183,17 @@ if(EMSCRIPTEN)
     add_custom_command(TARGET freecell POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "${PROJECT_SOURCE_DIR}/src/index.html"
-            "$<TARGET_FILE_DIR:freecell>/index.html"
+            "$<TARGET_FILE_DIR:freecell>/site/index.html"
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "${PROJECT_SOURCE_DIR}/src/game/assets/icon.ico"
-            "$<TARGET_FILE_DIR:freecell>/favicon.ico"
-        COMMENT "Copying Emscripten web assets (index.html, favicon.ico) to output directory"
+            "$<TARGET_FILE_DIR:freecell>/site/favicon.ico"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${CMAKE_BINARY_DIR}/Freecell.js"
+            "$<TARGET_FILE_DIR:freecell>/site/Freecell.js"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${CMAKE_BINARY_DIR}/Freecell.wasm"
+            "$<TARGET_FILE_DIR:freecell>/site/Freecell.wasm"
+        COMMENT "Copying Emscripten web assets (index.html, favicon.ico) to site directory"
     )
 endif()
 
@@ -199,5 +219,3 @@ if(WIN32)
 endif()
 
 target_include_directories(tests PRIVATE ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src )
-
-target_link_options(tests PRIVATE)
