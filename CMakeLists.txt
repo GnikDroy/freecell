@@ -10,6 +10,15 @@ endif()
 
 project(freecell C)
 
+if(WIN32)
+    # Use the DLL CRT on Windows so all targets (including FetchContent deps)
+    # resolve UCRT imports consistently with clang/lld-link.
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+endif()
+
+# Prefer static libraries for dependencies unless a dependency explicitly overrides it.
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libraries" FORCE)
+
 # Only do these if this is the main project, and not if it is included through add_subdirectory
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     set(CMAKE_C_STANDARD 23)
@@ -157,13 +166,16 @@ add_executable(
 )
 set_property(TARGET freecell PROPERTY MSVC_RUNTIME_LIBRARY MultiThreadedDebug)
 
-if (NOT APPLE)
+if(UNIX AND NOT APPLE AND NOT EMSCRIPTEN)
     target_link_options(freecell PRIVATE "-Wl,-static")
 endif()
 
 target_link_libraries(freecell glad rgfw cglm stb::stb miniaudio)
 
 if (APPLE)
+    # Prefer .a archives over .dylib for non-system libraries.
+    target_link_options(freecell PRIVATE "-Wl,-search_paths_first")
+
     target_link_libraries(freecell
         OpenGL::GL
         "-framework Cocoa"
@@ -180,8 +192,7 @@ elseif(UNIX AND NOT EMSCRIPTEN)
 
     target_link_libraries(freecell OpenGL::GL -lm -lX11 -lXrandr)
 else()
-    # On Windows, fully static runtime
-    target_link_options(freecell PRIVATE "-Wl,-static")
+    # On Windows, keep CRT/runtime dynamic to avoid UCRT import mismatches.
     target_link_libraries(freecell OpenGL::GL)
 endif()
 
