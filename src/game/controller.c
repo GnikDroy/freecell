@@ -521,6 +521,10 @@ void controller_smart_move(World* world) {
 }
 
 void controller_on_framebuffer_resize(World* world, int width, int height) {
+    float pixelRatio = window_get_pixel_ratio(world->window);
+    width *= pixelRatio;
+    height *= pixelRatio;
+
     float aspectVirtual = (float)VIRTUAL_WIDTH / (float)VIRTUAL_HEIGHT;
     float aspectWindow = (float)width / (float)height;
 

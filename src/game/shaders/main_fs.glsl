@@ -11,7 +11,8 @@ void main()
 {
     vec4 texColor = vec4(1.0);
 
-    if (!(isinf(tex_coords.x) || isnan(tex_coords.x))) {
+    if (tex_coords.x == tex_coords.x && tex_coords.y == tex_coords.y && tex_coords.x >= 0.0
+        && tex_coords.x <= 1.0 && tex_coords.y >= 0.0 && tex_coords.y <= 1.0) {
         texColor = texture(spritesheet, tex_coords);
     }
 

@@ -27,7 +27,7 @@ function(rgfw_build)
     FetchContent_Declare(
         rgfw
         GIT_REPOSITORY https://github.com/ColleagueRiley/RGFW
-        GIT_TAG        main
+        GIT_TAG        1.8.1
         GIT_SHALLOW 1
         GIT_PROGRESS 1
     )
@@ -111,12 +111,20 @@ if(WIN32)
     set(APP_ICON_RESOURCE_WINDOWS "src/freecell.rc")
 endif()
 
+if (APPLE)
+    set(MACOSX_BUNDLE_ICON_FILE icon.icns)
+    set(ICON_FILE_PATH "src/game/assets/icon.icns")
+    set_source_files_properties(${ICON_FILE_PATH} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
+endif()
+
 # Main exe
 add_executable(
     freecell 
     WIN32
+    MACOSX_BUNDLE 
     src/main.c
     ${APP_ICON_RESOURCE_WINDOWS}
+    ${ICON_FILE_PATH}
 
     src/game/animation.c
     src/game/assets.c
@@ -149,10 +157,22 @@ add_executable(
 )
 set_property(TARGET freecell PROPERTY MSVC_RUNTIME_LIBRARY MultiThreadedDebug)
 
-target_link_options(freecell PRIVATE "-Wl,-static")
+if (NOT APPLE)
+    target_link_options(freecell PRIVATE "-Wl,-static")
+endif()
+
 target_link_libraries(freecell glad rgfw cglm stb::stb miniaudio)
 
-if(UNIX AND NOT EMSCRIPTEN)
+if (APPLE)
+    target_link_libraries(freecell
+        OpenGL::GL
+        "-framework Cocoa"
+        "-framework CoreFoundation"
+        "-framework IOKit"
+        "-framework QuartzCore"
+        "-framework ApplicationServices"
+    )
+elseif(UNIX AND NOT EMSCRIPTEN)
     # On Linux, mostly static, but OpenGL dynamic
     target_link_options(freecell PRIVATE
         "-Wl,-Bdynamic"

@@ -7,8 +7,8 @@
 #endif
 
 #include <stdbool.h>
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
 typedef struct RGFW_window RGFW_window;
 typedef union RGFW_event RGFW_event;
@@ -29,6 +29,8 @@ RGFW_window* window_init(WindowConfig config);
 void window_free(RGFW_window* window);
 
 void window_swap_buffers(RGFW_window* window);
+
+float window_get_pixel_ratio(RGFW_window* window);
 
 void window_get_size(RGFW_window* window, int* width, int* height);
 

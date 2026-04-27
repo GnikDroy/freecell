@@ -14,12 +14,14 @@ void gameloop(RGFW_window* window) {
     // Clear screen immediately to avoid white flash of blindness
     renderer_init();
     renderer_clear(BACKGROUND_COLOR);
+    renderer_flush();
     window_swap_buffers(window);
 
     // Maximize window and resize framebuffer
     // window_maximize(window);
-    renderer_clear(BACKGROUND_COLOR);
-    window_swap_buffers(window);
+    // renderer_clear(BACKGROUND_COLOR);
+    // renderer_flush();
+    // window_swap_buffers(window);
 
     World world = world_init(window);
 
@@ -29,14 +31,16 @@ void gameloop(RGFW_window* window) {
 
     double time = time_millis_from_start() / 1000.0;
     while (!window_is_queued_to_close(window)) {
-        window_swap_buffers(window);
-        if (!world.controller.screen_needs_update) {
+        double current_time = time_millis_from_start() / 1000.0;
+        double dt = current_time - time;
+        time = current_time;
+        
+        if (dt == 0.0 && !world.controller.screen_needs_update) {
             event_wait_timeout(1000 / 5.0);
         }
-        double dt = time_millis_from_start() / 1000.0 - time;
+        
         controller_update(&world, dt);
-        time = time_millis_from_start() / 1000.0;
-
+        window_swap_buffers(window);
         aclear(); // Clear the arena allocator for the next frame
     }
     afree(); // Free the arena allocator at the end

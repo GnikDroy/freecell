@@ -17,6 +17,15 @@ RGFW_window* window_init(WindowConfig config) {
     RGFW_setGlobalHints_OpenGL(&hints);
 #endif
 
+#ifdef __APPLE__
+    RGFW_glHints hints = {
+        .major = 3,
+        .minor = 3,
+        .debug = true,
+    };
+    RGFW_setGlobalHints_OpenGL(&hints);
+#endif
+
     RGFW_window* window = RGFW_createWindow(
         config.title,
         0,
@@ -48,6 +57,11 @@ RGFW_window* window_init(WindowConfig config) {
 void window_free(RGFW_window* window) { RGFW_window_close(window); }
 
 void window_swap_buffers(RGFW_window* window) { RGFW_window_swapBuffers_OpenGL(window); }
+
+float window_get_pixel_ratio(RGFW_window* window) {
+    RGFW_monitor monitor = RGFW_window_getMonitor(window);
+    return monitor.pixelRatio;
+}
 
 void window_get_size(RGFW_window* window, int* width, int* height) {
     RGFW_window_getSize(window, width, height);

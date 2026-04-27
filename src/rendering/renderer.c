@@ -15,6 +15,10 @@ void renderer_init() {
     glBlendColor(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
+void renderer_flush() {
+    glFlush();
+}
+
 void renderer_clear(Color color) {
     glClearColor(color.r, color.g, color.b, color.a);
     glClear(GL_COLOR_BUFFER_BIT);

@@ -11,6 +11,8 @@
 
 void renderer_init(void);
 
+void renderer_flush();
+
 void renderer_clear(Color clear_color);
 
 void renderer_set_shader(uint32_t shader);

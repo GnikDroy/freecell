@@ -125,4 +125,6 @@ void render_world(World* world) {
     debug_render_mouse(world);
     debug_render_hit_hitbox(world);
 #endif
+
+    renderer_flush();
 }
