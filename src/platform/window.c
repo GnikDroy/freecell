@@ -21,7 +21,8 @@ RGFW_window* window_init(WindowConfig config) {
     RGFW_glHints hints = {
         .major = 3,
         .minor = 3,
-        .debug = true,
+        .depth = 24,
+        .doubleBuffer = 1,
     };
     RGFW_setGlobalHints_OpenGL(&hints);
 #endif
