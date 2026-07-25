@@ -60,8 +60,16 @@ void window_free(RGFW_window* window) { RGFW_window_close(window); }
 void window_swap_buffers(RGFW_window* window) { RGFW_window_swapBuffers_OpenGL(window); }
 
 float window_get_pixel_ratio(RGFW_window* window) {
+#ifdef __EMSCRIPTEN__
+    (void)window;
+    return 1.0f;
+#else
     RGFW_monitor monitor = RGFW_window_getMonitor(window);
+    if (monitor.pixelRatio <= 0.0f) {
+        return 1.0f;
+    }
     return monitor.pixelRatio;
+#endif
 }
 
 void window_get_size(RGFW_window* window, int* width, int* height) {

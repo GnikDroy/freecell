@@ -11,9 +11,8 @@ endif()
 project(freecell C)
 
 if(WIN32)
-    # Use the DLL CRT on Windows so all targets (including FetchContent deps)
-    # resolve UCRT imports consistently with clang/lld-link.
-    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+    set(CMAKE_POLICY_DEFAULT_CMP0091 NEW)
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 endif()
 
 # Prefer static libraries for dependencies unless a dependency explicitly overrides it.
@@ -28,6 +27,8 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     set_property(GLOBAL PROPERTY USE_FOLDERS ON)
     set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 endif()
+
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 
 Include(FetchContent)
 
@@ -164,7 +165,6 @@ add_executable(
 
     src/utils.c
 )
-set_property(TARGET freecell PROPERTY MSVC_RUNTIME_LIBRARY MultiThreadedDebug)
 
 if(UNIX AND NOT APPLE AND NOT EMSCRIPTEN)
     target_link_options(freecell PRIVATE "-Wl,-static")
